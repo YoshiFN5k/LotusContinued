@@ -172,7 +172,7 @@ internal class BlackscreenResolver
     private PlayerControl EmergencyKillHost()
     {
         resetCameraPosition = PlayerControl.LocalPlayer.GetTruePosition();
-        StaticLogger.SendInGame("Unable to get an eligible dead player for blackscreen patching. " +
+        LogManager.SendInGame("Unable to get an eligible dead player for blackscreen patching. " +
                               "Unfortunately there's nothing further we can do at this point other than killing (you) the host." +
                               "The reasons for this are very complicated, but a lot of code went into preventing this from happening, but it's never guarantees this scenario won't occur.", LogLevel.Fatal);
         PlayerControl.LocalPlayer.MurderPlayer(PlayerControl.LocalPlayer, MurderResultFlags.DecisionByHost);

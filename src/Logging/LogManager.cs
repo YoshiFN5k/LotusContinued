@@ -42,6 +42,11 @@ public class LogManager
         _logUI.Open();
     }
 
+    public static void SendInGame(string message, params object[] args)
+    {
+        StaticLogger.Debug($"Sending In Game: {message}", args);
+        if (DestroyableSingleton<HudManager>.Instance) DestroyableSingleton<HudManager>.Instance.Notifier.AddItem(message);
+    }
     public static void BeginGameLogSession(bool isNewGame)
     {
         string directory = CreateSessionDirectory();
@@ -96,7 +101,7 @@ public class LogManager
         appender.Clear();
         _logIndex += logCount;
 
-        StaticLogger.SendInGame($"Successfully saved {logCount} logs from current session. (Filename={file.Name})", LogLevel.High);
+        LogManager.SendInGame($"Successfully saved {logCount} logs from current session. (Filename={file.Name})", LogLevel.High);
     }
 
     private static string CreateSessionDirectory()

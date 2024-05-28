@@ -122,7 +122,7 @@ public class ModKeybindings
             });
             m.DelaySave(0);
         });
-        StaticLogger.SendInGame("All options have been reset!");
+        LogManager.SendInGame("All options have been reset!");
     }
 
     private static void InstantReduceTimer()
@@ -134,6 +134,6 @@ public class ModKeybindings
     {
         log.Trace("Reload Custom Translation File", "KeyCommand");
         Localizer.Reload();
-        StaticLogger.SendInGame("Reloaded Custom Translation File");
+        LogManager.SendInGame("Reloaded Custom Translation File");
     }
 }

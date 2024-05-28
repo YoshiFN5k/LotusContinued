@@ -9,6 +9,7 @@ using LotusTrigger.Options;
 using UnityEngine;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities;
+using Lotus.Logging;
 
 namespace Lotus.Patches;
 
@@ -100,7 +101,7 @@ public class GameStartRandomMap
 {
     public static bool Prefix(GameStartManager __instance)
     {
-        if (GeneralOptions.AdminOptions.HostGM) StaticLogger.SendInGame("[Info] GM is Enabled");
+        if (GeneralOptions.AdminOptions.HostGM) LogManager.SendInGame("[Info] GM is Enabled");
 
         __instance.ReallyBegin(false);
         return false;

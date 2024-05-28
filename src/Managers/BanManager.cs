@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using InnerNet;
+using Lotus.Logging;
 using Lotus.Managers.Models;
 using VentLib.Localization;
 using VentLib.Utilities;
@@ -48,7 +49,7 @@ public class BanManager
         if (player.FriendCode == "") return;
         if (CheckBanList(player)) return;
 
-        banPlayerFile.Players.Add(new BannedPlayer(reason) {FriendCode = player.FriendCode, Name = player.PlayerName});
+        banPlayerFile.Players.Add(new BannedPlayer(reason) { FriendCode = player.FriendCode, Name = player.PlayerName });
         WriteFile(banPlayerFile);
     }
 
@@ -58,7 +59,7 @@ public class BanManager
         if (!CheckBanList(player)) return;
 
         AmongUsClient.Instance.KickPlayer(player.Id, true);
-        StaticLogger.SendInGame(string.Format(Localizer.Translate("Messages.BanedByBanList"), player.PlayerName));
+        LogManager.SendInGame(string.Format(Localizer.Translate("Messages.BanedByBanList"), player.PlayerName));
     }
 
     public bool CheckBanList(ClientData player)
