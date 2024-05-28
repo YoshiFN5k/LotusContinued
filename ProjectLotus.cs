@@ -32,17 +32,19 @@ using Version = VentLib.Version.Version;
 namespace Lotus;
 
 [BepInPlugin(PluginGuid, "Lotus", $"{MajorVersion}.{MinorVersion}.{PatchVersion}")]
+[BepInDependency("com.tealeaf.VentLib")]
 [BepInProcess("Among Us.exe")]
 public class ProjectLotus : BasePlugin, IGitVersionEmitter
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(ProjectLotus));
+    private const string Id = "com.discussions.LotusContinued";
 
-    public const string PluginGuid = "com.tealeaf.Lotus";
+    public const string PluginGuid = Id;
     public const string CompileVersion = $"{MajorVersion}.{MinorVersion}.{PatchVersion}.{BuildNumber}";
 
     public const string MajorVersion = "1";
-    public const string MinorVersion = "0"; // Update with each release
-    public const string PatchVersion = "1";
+    public const string MinorVersion = "1"; // Update with each release
+    public const string PatchVersion = "0";
     public const string BuildNumber = "0805";
 
     public static string PluginVersion = typeof(ProjectLotus).Assembly.GetName().Version!.ToString();
@@ -54,7 +56,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 
     public static DefinitionUnifier DefinitionUnifier = new();
     public static bool DevVersion = false;
-    public static readonly string DevVersionStr = "Dev 18.06.2023";
+    public static readonly string DevVersionStr = "Dev 28.05.2024";
 
     public Harmony Harmony { get; } = new(PluginGuid);
     public static string CredentialsText = null!;
@@ -71,7 +73,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
         RpcMonitor.Enable();
 #endif
         Instance = this;
-        Vents.Initialize();
+        // Vents.Initialize();
 
         VersionControl versionControl = ModVersion.VersionControl = VersionControl.For(this);
         versionControl.AddVersionReceiver(ReceiveVersion);
@@ -107,10 +109,11 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
     public override void Load()
     {
         //Profilers.Global.SetActive(false);
+        log.Info($"{Application.version}", "AmongUs Version");
+
         GameOptionController.Enable();
         GameModeManager = new GameModeManager();
 
-        log.Info($"{Application.version}", "AmongUs Version");
         log.Info(CurrentVersion.ToString(), "GitVersion");
 
         // Setup, order matters here
