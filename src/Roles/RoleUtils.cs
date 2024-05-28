@@ -146,7 +146,7 @@ public static class RoleUtils
         if (randomPlayer == null) return;
 
         RpcV3.Immediate(target.NetId, RpcCalls.ProtectPlayer).Write(target).Write(0).Send(target.GetClientId());
-        Async.Schedule(() => RpcV3.Immediate(randomPlayer.NetId, RpcCalls.MurderPlayer).Write(target).Send(target.GetClientId()), NetUtils.DeriveDelay(0.1f));
+        Async.Schedule(() => RpcV3.Immediate(randomPlayer.NetId, RpcCalls.MurderPlayer).Write(target).Write((int)MurderResultFlags.FailedProtected).Send(target.GetClientId()), NetUtils.DeriveDelay(0.1f));
     }
 
 

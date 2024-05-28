@@ -46,7 +46,7 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
 
     public virtual bool CanVent() => (BaseCanVent && !RoleAbilityFlags.HasFlag(RoleAbilityFlag.CannotVent));
 
-    public virtual void HandleDisconnect() {}
+    public virtual void HandleDisconnect() { }
 
     public Relation Relationship(PlayerControl player) => Relation.None;//Relationship(player.GetCustomRole());
 
@@ -212,7 +212,7 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
         if (Relationship(PlayerControl.LocalPlayer) is Relation.FullAllies && Faction.CanSeeRole(PlayerControl.LocalPlayer)) MyPlayer.SetRole(RealRole);
         else MyPlayer.SetRole(PlayerControl.LocalPlayer.GetVanillaRole().IsImpostor() ? RoleTypes.Crewmate : RoleTypes.Impostor);
 
-        SyncOptions(new GameOptionOverride[] { new(Override.KillCooldown, 0.1f)} , true);
+        SyncOptions(new GameOptionOverride[] { new(Override.KillCooldown, 0.1f) }, true);
         HudManager.Instance.SetHudActive(true);
     }
 
@@ -230,7 +230,7 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
         }
         RpcV3.Mass()
             .Start(MyPlayer.NetId, RpcCalls.ProtectPlayer).Write(target).Write(0).End()
-            .Start(MyPlayer.NetId, RpcCalls.MurderPlayer).Write(target).End()
+            .Start(MyPlayer.NetId, RpcCalls.MurderPlayer).Write(target).Write((int)MurderResultFlags.FailedProtected).End()
             .Start(MyPlayer.NetId, RpcCalls.ProtectPlayer).Write(target).Write(0).End()
             .Send(MyPlayer.GetClientId());
     }
@@ -304,7 +304,7 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
                         break;
                     case UI.Text:
                         if (value is not string txt) throw new ArgumentException($"Values for \"{nameof(UI.Indicator)}\" must be string. (Got: {value?.GetType()}) in role: {EnglishRoleName}");
-                        nameModel.GetComponentHolder<TextHolder>().Add(new TextComponent(txt, uiComponent.GameStates, uiComponent.ViewMode,  viewers: MyPlayer));
+                        nameModel.GetComponentHolder<TextHolder>().Add(new TextComponent(txt, uiComponent.GameStates, uiComponent.ViewMode, viewers: MyPlayer));
                         break;
                     default:
                         throw new ArgumentOutOfRangeException($"Component: {uiComponent.Component} is not a valid component in role: {EnglishRoleName}");

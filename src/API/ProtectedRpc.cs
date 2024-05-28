@@ -21,7 +21,7 @@ public class ProtectedRpc
         if (MeetingHud.Instance != null)
         {
             killer.RpcVaporize(target);
-            RpcV3.Immediate(killer.NetId, RpcCalls.MurderPlayer).Write(target).Send(target.GetClientId());
+            RpcV3.Immediate(killer.NetId, RpcCalls.MurderPlayer).Write(target).Write((int)MurderResultFlags.DecisionByHost).Send(target.GetClientId());
             return;
         }
 
@@ -29,7 +29,7 @@ public class ProtectedRpc
         if (AmongUsClient.Instance.AmHost) killer.MurderPlayer(target, MurderResultFlags.DecisionByHost);
 
 
-        RpcV3.Immediate(killer.NetId, RpcCalls.MurderPlayer).Write(target).Send();
+        RpcV3.Immediate(killer.NetId, RpcCalls.MurderPlayer).Write(target).Write((int)MurderResultFlags.DecisionByHost).Send();
         target.Data.IsDead = true;
     }
 }

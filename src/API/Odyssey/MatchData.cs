@@ -77,7 +77,7 @@ public class MatchData
         public IEnumerable<UnifiedRoleDefinition> GetRoleDefinitions(byte playerId)
         {
             UnifiedRoleDefinition primaryRoleDefinition = GetPrimaryRole(playerId);
-            return new Singleton<UnifiedRoleDefinition>(primaryRoleDefinition).Concat(SecondaryRoleDefinitions.GetOrCompute(playerId, () => new List<UnifiedRoleDefinition>()));
+            return new List<UnifiedRoleDefinition> { primaryRoleDefinition }.Concat(SecondaryRoleDefinitions.GetOrCompute(playerId, () => new List<UnifiedRoleDefinition>()));
         }
 
         public UnifiedRoleDefinition SetPrimaryRoleDefinition(byte playerId, UnifiedRoleDefinition roleDefinition) => PrimaryRoleDefinitions[playerId] = roleDefinition;
@@ -118,7 +118,7 @@ public class MatchData
             Remote<IStatus> remote = statuses.Add(status);
             Hooks.ModHooks.StatusReceivedHook.Propagate(new PlayerStatusReceivedHook(player, status, infector));
             return remote;
-        }, () =>  null!);
+        }, () => null!);
     }
 
     // TODO make way better

@@ -25,7 +25,7 @@ using static Lotus.ModConstants.Palette;
 namespace Lotus.Chat.Commands;
 
 [LoadStatic]
-public class LastResultCommand: CommandTranslations
+public class LastResultCommand : CommandTranslations
 {
     static LastResultCommand()
     {
@@ -103,7 +103,7 @@ public class LastResultCommand: CommandTranslations
                 List<FrozenPlayer> additionalWinners = Game.MatchData.GameHistory.AdditionalWinners;
                 if (additionalWinners.Count > 0)
                 {
-                    string awText = additionalWinners.Select(fp => new Singleton<UnifiedRoleDefinition>(fp.PrimaryRoleDefinition).Concat(fp.SecondaryRoleDefinitions).MaxBy(r => r.DisplayOrder)).Fuse();
+                    string awText = additionalWinners.Select(fp => new List<UnifiedRoleDefinition> { fp.PrimaryRoleDefinition }.Concat(fp.SecondaryRoleDefinitions).MaxBy(r => r.DisplayOrder)).Fuse();
                     t += $" + {awText}";
                 }
             }

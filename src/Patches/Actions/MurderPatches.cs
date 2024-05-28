@@ -66,9 +66,10 @@ public static class MurderPatches
     }
 
     [QuickPrefix(typeof(PlayerControl), nameof(PlayerControl.MurderPlayer))]
-    public static void SaveAttacker(PlayerControl __instance)
+    public static void SaveAttacker(PlayerControl __instance, MurderResultFlags resultFlags)
     {
-        LastAttacker = __instance;
+        if (resultFlags == MurderResultFlags.Succeeded | resultFlags == MurderResultFlags.DecisionByHost)
+            LastAttacker = __instance;
     }
 
     [QuickPostfix(typeof(PlayerControl), nameof(PlayerControl.MurderPlayer))]

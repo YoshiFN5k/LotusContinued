@@ -97,7 +97,7 @@ public static class PlayerControlExtensions
 
         RpcV3.Mass()
             .Start(killer.NetId, RpcCalls.ProtectPlayer).Write(target).Write(colorId).End()
-            .Start(killer.NetId, RpcCalls.MurderPlayer).Write(target).End()
+            .Start(killer.NetId, RpcCalls.MurderPlayer).Write(target).Write((int)MurderResultFlags.FailedProtected).End()
             .Send(killer.GetClientId());
     }
 
@@ -134,6 +134,7 @@ public static class PlayerControlExtensions
         {
             MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.None, killer.GetClientId());
             messageWriter.WriteNetObject(target);
+            messageWriter.Write((int)MurderResultFlags.DecisionByHost);
             AmongUsClient.Instance.FinishRpcImmediately(messageWriter);
         }
     }

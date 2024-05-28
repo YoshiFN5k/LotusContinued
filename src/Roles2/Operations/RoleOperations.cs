@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Il2CppSystem.Runtime.Remoting;
 using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.Extensions;
@@ -10,12 +12,14 @@ using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Overrides;
 using Lotus.Roles2.Interfaces;
 using Lotus.Roles2.Manager;
+using Rewired.Utils;
+using UnityEngine.ResourceManagement.Util;
 using VentLib.Utilities.Collections;
 
 namespace Lotus.Roles2.Operations;
 
 // ReSharper disable once InconsistentNaming
-public interface RoleOperations: IRoleComponent
+public interface RoleOperations : IRoleComponent
 {
     public static RoleOperations Current => IRoleManager.Current.RoleOperations;
 
@@ -47,11 +51,11 @@ public interface RoleOperations: IRoleComponent
 
     public ActionHandle TriggerFor(IEnumerable<PlayerControl> players, LotusActionType action, PlayerControl? source, params object[] parameters) => TriggerFor(players, action, source, ActionHandle.NoInit(), parameters);
 
-    public ActionHandle TriggerFor(PlayerControl player, LotusActionType action, PlayerControl? source, params object[] parameters) => TriggerFor(new Singleton<PlayerControl>(player), action, source, parameters);
+    public ActionHandle TriggerFor(PlayerControl player, LotusActionType action, PlayerControl? source, params object[] parameters) => TriggerFor(new List<PlayerControl> { player }.ToArray(), action, source, parameters);
 
-    public ActionHandle TriggerFor(PlayerControl player, LotusActionType action, PlayerControl? source, ActionHandle handle, params object[] parameters) => TriggerFor(new Singleton<PlayerControl>(player), action, source, handle, parameters);
+    public ActionHandle TriggerFor(PlayerControl player, LotusActionType action, PlayerControl? source, ActionHandle handle, params object[] parameters) => TriggerFor(new List<PlayerControl> { player }.ToArray(), action, source, handle, parameters);
 
     public ActionHandle TriggerForAll(LotusActionType action, PlayerControl? source, ActionHandle handle, params object[] parameters) => TriggerFor(Players.GetPlayers(), action, source, handle, parameters);
 
-    public ActionHandle TriggerForAll(LotusActionType action, PlayerControl? source,  params object[] parameters) => TriggerFor(Players.GetPlayers(), action, source, parameters);
+    public ActionHandle TriggerForAll(LotusActionType action, PlayerControl? source, params object[] parameters) => TriggerFor(Players.GetPlayers(), action, source, parameters);
 }
