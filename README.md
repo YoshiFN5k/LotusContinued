@@ -14,7 +14,7 @@ Project: Lotus is not affiliated with Among Us or Innersloth LLC, and the conten
 
 ## Releases
 
-AmongUs Version: **2023.6.13**
+AmongUs Version: **2024.3.5**
 **Latest Version: [Here](https://www.innersloth.com/games/among-us/)**
 
 ## Regarding This Mod
