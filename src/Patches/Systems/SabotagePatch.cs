@@ -18,7 +18,7 @@ using VentLib.Utilities.Attributes;
 namespace Lotus.Patches.Systems;
 
 [LoadStatic]
-[HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.RepairSystem))]
+[HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.UpdateSystem))]
 public static class SabotagePatch
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(SabotagePatch));
@@ -73,9 +73,9 @@ public static class SabotagePatch
                 SwitchSystem electrical = systemInstance!.Cast<SwitchSystem>();
                 byte currentSwitches = electrical.ActualSwitches;
                 if (amount.HasBit(128))
-                    currentSwitches ^= (byte) (amount & 31U);
+                    currentSwitches ^= (byte)(amount & 31U);
                 else
-                    currentSwitches ^= (byte) (1U << amount);
+                    currentSwitches ^= (byte)(1U << amount);
                 if (currentSwitches != electrical.ExpectedSwitches)
                 {
                     handle = RoleOperations.Current.Trigger(LotusActionType.SabotagePartialFix, player, CurrentSabotage);
@@ -96,10 +96,11 @@ public static class SabotagePatch
                     handle = RoleOperations.Current.Trigger(LotusActionType.SabotageFixed, player, CurrentSabotage);
                     Hooks.SabotageHooks.SabotageFixedHook.Propagate(new SabotageFixHookEvent(player, CurrentSabotage));
                     CurrentSabotage = null;
-                } else if (systemInstance.TryCast<HqHudSystemType>() != null) // Mira has a special communications which requires two people
+                }
+                else if (systemInstance.TryCast<HqHudSystemType>() != null) // Mira has a special communications which requires two people
                 {
                     HqHudSystemType miraComms = systemInstance.Cast<HqHudSystemType>(); // Get mira comm instance
-                    byte commsNum = (byte) (amount & 15U); // Convert to 0 or 1 for respective console
+                    byte commsNum = (byte)(amount & 15U); // Convert to 0 or 1 for respective console
                     if (miraComms.CompletedConsoles.Contains(commsNum)) break; // Negative check if console has already been fixed (refreshes periodically)
 
                     handle = RoleOperations.Current.Trigger(LotusActionType.SabotagePartialFix, player, CurrentSabotage);

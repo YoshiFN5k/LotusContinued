@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 
 namespace Lotus.Roles2.GUI;
 
-public class RoleButton: RoleButtonEditor, ICloneable<RoleButton>
+public class RoleButton : RoleButtonEditor
 {
     protected Sprite Sprite { get => lazySprite?.Get() ?? _sprite; private set => _sprite = value; }
     internal bool IsOverriding = true;

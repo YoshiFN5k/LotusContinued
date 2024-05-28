@@ -50,6 +50,7 @@ public class LogManager
             var appender = _sessionAppender.Get();
             appender.FileNamePattern = $"_game-{LogDirectory.GetLogs("_game-", _dailyDirectory).Count().ToString()}.txt";
             appender.LogFile = LogDirectory.CreateLog(appender.FileNamePattern, _dailyDirectory);
+            // appender.Clear();
             appender.Flush(true);
         }
 

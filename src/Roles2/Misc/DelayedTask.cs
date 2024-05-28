@@ -45,7 +45,8 @@ public class DelayedTask
 
     public Spawn Start(float delay = -1f)
     {
-
+        // TODO: update this function.
+        return new Spawn(() => { }, delay);
     }
 
     public class Spawn
@@ -55,8 +56,10 @@ public class DelayedTask
         internal DateTime CreationTime { get; } = DateTime.Now;
         private DateTime finishTime;
 
-        public bool IsCancelled {
-            get {
+        public bool IsCancelled
+        {
+            get
+            {
                 if (isCancelled) return true;
                 if ((DateTime.Now < finishTime)) return false;
                 Finish();

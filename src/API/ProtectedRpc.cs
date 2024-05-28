@@ -26,7 +26,7 @@ public class ProtectedRpc
         }
 
         // Suspicious call, perhaps figure out a better way to track if players are protected at all times
-        if (AmongUsClient.Instance.AmHost) killer.MurderPlayer(target);
+        if (AmongUsClient.Instance.AmHost) killer.MurderPlayer(target, MurderResultFlags.DecisionByHost);
 
 
         RpcV3.Immediate(killer.NetId, RpcCalls.MurderPlayer).Write(target).Send();

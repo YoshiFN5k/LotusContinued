@@ -80,7 +80,7 @@ public static class MurderPatches
 
         MurderPatches.Lock(__instance.PlayerId);
 
-        log.Trace($"{__instance.GetNameWithRole()} => {target.GetNameWithRole()}{(target.protectedByGuardian ? "(Protected)" : "")}", "MurderPlayer");
+        log.Trace($"{__instance.GetNameWithRole()} => {target.GetNameWithRole()}{(target.protectedByGuardianId != -1 ? "(Protected)" : "")}", "MurderPlayer");
 
         IDeathEvent deathEvent = Game.MatchData.GameHistory.GetCauseOfDeath(target.PlayerId)
             .OrElseGet(() => __instance.PlayerId == target.PlayerId

@@ -9,7 +9,7 @@ using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles2;
 
-public class RoleProperties: IEnumerable<RoleProperty>
+public class RoleProperties : IEnumerable<RoleProperty>
 {
     public static NamespacedKey<RoleProperties> Key = NamespacedKey.Lotus<RoleProperties>(nameof(RoleProperties));
     private HashSet<RoleProperty> Properties { get; } = new();
@@ -18,9 +18,9 @@ public class RoleProperties: IEnumerable<RoleProperty>
 
     public void Add(RoleProperty roleProperty) => Properties.Add(roleProperty);
 
-    public void AddAll(IEnumerable<RoleProperty> roleProperty) => Properties.AddAll(roleProperty);
+    public void AddAll(IEnumerable<RoleProperty> roleProperty) => roleProperty.All(x => Properties.Add(x));
 
-    public void AddAll(params RoleProperty[] properties) => Properties.AddAll(properties);
+    public void AddAll(params RoleProperty[] properties) => properties.All(x => Properties.Add(x));
 
     public Func<RoleProperties, RoleProperties> ConcatFunction() => props =>
     {

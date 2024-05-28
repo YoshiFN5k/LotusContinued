@@ -175,7 +175,7 @@ internal class BlackscreenResolver
         StaticLogger.SendInGame("Unable to get an eligible dead player for blackscreen patching. " +
                               "Unfortunately there's nothing further we can do at this point other than killing (you) the host." +
                               "The reasons for this are very complicated, but a lot of code went into preventing this from happening, but it's never guarantees this scenario won't occur.", LogLevel.Fatal);
-        PlayerControl.LocalPlayer.MurderPlayer(PlayerControl.LocalPlayer);
+        PlayerControl.LocalPlayer.MurderPlayer(PlayerControl.LocalPlayer, MurderResultFlags.DecisionByHost);
         Game.MatchData.UnreportableBodies.Add(PlayerControl.LocalPlayer.PlayerId);
         playerStates[0] = (true, false);
         Async.Schedule(() => PlayerControl.LocalPlayer.RpcVaporize(PlayerControl.LocalPlayer), 6f);

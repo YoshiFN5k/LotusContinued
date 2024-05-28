@@ -1,3 +1,4 @@
+using Hazel;
 using Il2CppSystem;
 using Lotus.API.Odyssey;
 using Lotus.API.Reactive;
@@ -35,8 +36,11 @@ public class CommsSabotage : ISabotage
         if (systemInstance!.TryCast<HudOverrideSystemType>() != null)
         {
             HudOverrideSystemType hudOverrideSystemType = systemInstance.Cast<HudOverrideSystemType>();
-            hudOverrideSystemType.RepairDamage(fixer, 0);
-        } else if (systemInstance.TryCast<HqHudSystemType>() != null) // Mira has a special communications which requires two people
+            hudOverrideSystemType.IsActive = false;
+            hudOverrideSystemType.IsDirty = true;
+
+        }
+        else if (systemInstance.TryCast<HqHudSystemType>() != null) // Mira has a special communications which requires two people
         {
             HqHudSystemType miraComms = systemInstance.Cast<HqHudSystemType>(); // Get mira comm instance
             miraComms.CompletedConsoles.Add(0);
@@ -59,7 +63,7 @@ public class CommsSabotage : ISabotage
         RoleOperations.Current.TriggerForAll(LotusActionType.SabotageStarted, sabotageCaller, handle, this);
         if (handle.IsCanceled) return;
 
-        ShipStatus.Instance.RepairSystem(SabotageType().ToSystemType(), sabotageCaller, 128);
+        ShipStatus.Instance.UpdateSystem(SabotageType().ToSystemType(), sabotageCaller, 128);
         caller.OrElseSet(() => sabotageCaller);
         SabotagePatch.CurrentSabotage = this;
     }

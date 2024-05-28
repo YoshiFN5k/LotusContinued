@@ -89,7 +89,7 @@ public static class PlayerControlExtensions
         if (killer.AmOwner)
         {
             killer.ProtectPlayer(target, colorId);
-            killer.MurderPlayer(target);
+            killer.MurderPlayer(target, MurderResultFlags.DecisionByHost);
         }
 
         // Other Clients
@@ -129,7 +129,7 @@ public static class PlayerControlExtensions
     {
         if (target == null) target = killer;
         if (killer.AmOwner)
-            killer.MurderPlayer(target);
+            killer.MurderPlayer(target, MurderResultFlags.DecisionByHost);
         else
         {
             MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.None, killer.GetClientId());
@@ -140,7 +140,7 @@ public static class PlayerControlExtensions
 
     public static void RpcDesyncRepairSystem(this PlayerControl target, SystemTypes systemType, int amount)
     {
-        MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(ShipStatus.Instance.NetId, (byte)RpcCalls.RepairSystem, SendOption.Reliable, target.GetClientId());
+        MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(ShipStatus.Instance.NetId, (byte)RpcCalls.UpdateSystem, SendOption.Reliable, target.GetClientId());
         messageWriter.Write((byte)systemType);
         messageWriter.WriteNetObject(target);
         messageWriter.Write((byte)amount);
@@ -180,7 +180,8 @@ public static class PlayerControlExtensions
         Async.Schedule(() => pc.RpcDesyncRepairSystem(systemtypes, 128), 0f + delay);
         Async.Schedule(() => pc.RpcSpecificMurderPlayer(target), 0.2f + delay);
 
-        Async.Schedule(() => {
+        Async.Schedule(() =>
+        {
             pc.RpcDesyncRepairSystem(systemtypes, 16);
             if (ProjectLotus.NormalOptions.MapId == 4) //Airship用
                 pc.RpcDesyncRepairSystem(systemtypes, 17);

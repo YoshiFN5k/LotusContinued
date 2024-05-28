@@ -54,7 +54,8 @@ public abstract class LotusAddon
         roleDefinitions.ForEach(r =>
         {
             r.Addon = this;
-            ExportedDefinitions.GetOrCompute(r, () => new HashSet<IGameMode>()).AddAll(targetGameModes);
+            HashSet<IGameMode> iGameMode = ExportedDefinitions.GetOrCompute(r, () => new HashSet<IGameMode>());
+            targetGameModes.All(x => iGameMode.Add(x));
         });
     }
 

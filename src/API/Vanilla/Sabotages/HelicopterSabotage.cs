@@ -10,7 +10,7 @@ using VentLib.Utilities.Optionals;
 
 namespace Lotus.API.Vanilla.Sabotages;
 
-public class HelicopterSabotage: ISabotage
+public class HelicopterSabotage : ISabotage
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(HelicopterSabotage));
 
@@ -52,7 +52,7 @@ public class HelicopterSabotage: ISabotage
         RoleOperations.Current.TriggerForAll(LotusActionType.SabotageStarted, sabotageCaller, handle, this);
         if (handle.IsCanceled) return;
 
-        ShipStatus.Instance.RepairSystem(SabotageType().ToSystemType(), sabotageCaller, 128);
+        ShipStatus.Instance.UpdateSystem(SabotageType().ToSystemType(), sabotageCaller, 128);
         caller.OrElseSet(() => sabotageCaller);
         SabotagePatch.CurrentSabotage = this;
     }

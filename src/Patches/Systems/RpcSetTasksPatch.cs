@@ -78,7 +78,7 @@ public class RpcSetTasksPatch
         Shuffle(longTasks);
 
         Il2CppSystem.Collections.Generic.List<NormalPlayerTask> shortTasks = new();
-        foreach (var task in ShipStatus.Instance.NormalTasks)
+        foreach (var task in ShipStatus.Instance.ShortTasks)
             shortTasks.Add(task);
         Shuffle(shortTasks);
 

@@ -47,7 +47,7 @@ public static class RoleUtils
             angle = 360 + angle;
 
         int arrow = Mathf.RoundToInt(angle / 45);
-        return color == null ? Arrows[arrow < 8 ?  arrow : 0].ToString() : color.Value.Colorize(Arrows[arrow < 8 ? arrow : 0].ToString());
+        return color == null ? Arrows[arrow < 8 ? arrow : 0].ToString() : color.Value.Colorize(Arrows[arrow < 8 ? arrow : 0].ToString());
     }
 
     public static IEnumerable<PlayerControl> GetPlayersWithinDistance(PlayerControl source, float distance, bool sorted = false)
@@ -80,7 +80,7 @@ public static class RoleUtils
     {
         if (SabotagePatch.CurrentSabotage?.SabotageType() is SabotageType.Reactor) return;
         byte reactorId = GameOptionsManager.Instance.CurrentGameOptions.MapId == 2 ? (byte)21 : (byte)3;
-        RpcV3.Immediate(ShipStatus.Instance.NetId, RpcCalls.RepairSystem).Write(reactorId)
+        RpcV3.Immediate(ShipStatus.Instance.NetId, RpcCalls.UpdateSystem).Write(reactorId)
             .Write(player).Write((byte)128).Send(player.GetClientId());
     }
 
@@ -88,9 +88,9 @@ public static class RoleUtils
     {
         if (SabotagePatch.CurrentSabotage?.SabotageType() is SabotageType.Reactor) return;
         byte reactorId = GameOptionsManager.Instance.CurrentGameOptions.MapId == 2 ? (byte)21 : (byte)3;
-        RpcV3.Immediate(ShipStatus.Instance.NetId, RpcCalls.RepairSystem).Write(reactorId)
+        RpcV3.Immediate(ShipStatus.Instance.NetId, RpcCalls.UpdateSystem).Write(reactorId)
             .Write(player).Write((byte)16).Send(player.GetClientId());
-        RpcV3.Immediate(ShipStatus.Instance.NetId, RpcCalls.RepairSystem).Write(reactorId)
+        RpcV3.Immediate(ShipStatus.Instance.NetId, RpcCalls.UpdateSystem).Write(reactorId)
             .Write(player).Write((byte)17).Send(player.GetClientId());
     }
 
@@ -134,13 +134,14 @@ public static class RoleUtils
             return InteractionResult.Halt;
         }
         ActionHandle handle = ActionHandle.NoInit();
-        RoleOperations.Current.TriggerForAll(LotusActionType.Interaction, target, handle,player, interaction);
+        RoleOperations.Current.TriggerForAll(LotusActionType.Interaction, target, handle, player, interaction);
         if (handle.Cancellation is ActionHandle.CancelType.None or ActionHandle.CancelType.Soft || interaction.IsPromised) interaction.Intent.Action(player, target);
         else if (handle.Cancellation is ActionHandle.CancelType.Normal) interaction.Intent.Halted(player, target);
         return handle.IsCanceled && !interaction.IsPromised ? InteractionResult.Halt : InteractionResult.Proceed;
     }
 
-    public static void ShowGuardianShield(PlayerControl target) {
+    public static void ShowGuardianShield(PlayerControl target)
+    {
         PlayerControl? randomPlayer = Players.GetPlayers().FirstOrDefault(p => p.PlayerId != target.PlayerId);
         if (randomPlayer == null) return;
 

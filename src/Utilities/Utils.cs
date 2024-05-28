@@ -45,7 +45,7 @@ public static class Utils
 
     public static void Teleport(CustomNetworkTransform nt, Vector2 location)
     {
-        Vector2 currentLocation = nt.prevPosSent;
+        Vector2 currentLocation = nt.lastPosSent;
         Hooks.PlayerHooks.PlayerTeleportedHook.Propagate(new PlayerTeleportedHookEvent(nt.myPlayer, currentLocation, location));
         TeleportDeferred(nt, location).Send();
     }

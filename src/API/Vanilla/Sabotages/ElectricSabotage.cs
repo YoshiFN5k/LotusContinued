@@ -24,7 +24,8 @@ public class ElectricSabotage : ISabotage
 
     public SabotageType SabotageType() => Sabotages.SabotageType.Lights;
 
-    public bool Fix(PlayerControl? fixer = null) {
+    public bool Fix(PlayerControl? fixer = null)
+    {
         ActionHandle handle = ActionHandle.NoInit();
         RoleOperations.Current.TriggerForAll(LotusActionType.SabotageFixed, fixer == null ? PlayerControl.LocalPlayer : fixer, handle, this);
         if (handle.IsCanceled) return false;
@@ -57,7 +58,7 @@ public class ElectricSabotage : ISabotage
         RoleOperations.Current.TriggerForAll(LotusActionType.SabotageStarted, sabotageCaller, handle, this);
         if (handle.IsCanceled) return;
 
-        ShipStatus.Instance.RepairSystem(SabotageType().ToSystemType(), sabotageCaller, 128);
+        ShipStatus.Instance.UpdateSystem(SabotageType().ToSystemType(), sabotageCaller, 128);
         caller.OrElseSet(() => sabotageCaller);
         SabotagePatch.CurrentSabotage = this;
     }

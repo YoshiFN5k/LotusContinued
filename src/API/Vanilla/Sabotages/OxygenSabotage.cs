@@ -51,7 +51,7 @@ public class OxygenSabotage : ISabotage
         RoleOperations.Current.TriggerForAll(LotusActionType.SabotageStarted, sabotageCaller, handle, this);
         if (handle.IsCanceled) return;
 
-        ShipStatus.Instance.RepairSystem(SabotageType().ToSystemType(), sabotageCaller, 128);
+        ShipStatus.Instance.UpdateSystem(SabotageType().ToSystemType(), sabotageCaller, 128);
         caller.OrElseSet(() => sabotageCaller);
         SabotagePatch.CurrentSabotage = this;
     }

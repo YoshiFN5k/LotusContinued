@@ -20,7 +20,7 @@ using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.Builtins.Base;
 
-public abstract class TaskRoleBase: CustomRole, IOverridenTaskHolderRole
+public abstract class TaskRoleBase : CustomRole, IOverridenTaskHolderRole
 {
     public int TotalTasks => initialized ? tasks : taskSupplier?.Invoke() ?? 0;
     public int CompleteTasks => TasksComplete;
