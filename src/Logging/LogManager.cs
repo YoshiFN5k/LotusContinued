@@ -50,13 +50,32 @@ public class LogManager
             var appender = _sessionAppender.Get();
             appender.FileNamePattern = $"_game-{LogDirectory.GetLogs("_game-", _dailyDirectory).Count().ToString()}.txt";
             appender.LogFile = LogDirectory.CreateLog(appender.FileNamePattern, _dailyDirectory);
-            // appender.Clear();
-            appender.Flush(true);
+            appender.Clear();
         }
 
         _sessionAppender.Delete();
         _sessionAppender = GlobalLogAppenders.AddAppender(new FlushingMemoryAppender(directory, null!, LogLevel.Info) { AutoFlush = false }).Cast<FlushingMemoryAppender>();
         _logIndex = 0;
+    }
+
+    public static int GetLineCount(FileInfo file)
+    {
+        if (file == null)
+        {
+            StaticLogger.Warn("Nil fileinfo in LogManager.GetLineCount");
+            return 0;
+        }
+        using (StreamReader reader = file.OpenText())
+        {
+            int lineCount = 0;
+
+            // Read each line until the end of the file
+            while (reader.ReadLine() != null)
+            {
+                lineCount++;
+            }
+            return lineCount;
+        }
     }
 
     public static void WriteSessionLog(string logName)
@@ -73,7 +92,8 @@ public class LogManager
         log.High($"Dumping session logs as pattern: \"{logName}\".");
         appender.FileNamePattern = logName;
         FileInfo file = appender.CreateNewFile();
-        int logCount = appender.Flush(false, _logIndex);
+        int logCount = GetLineCount(appender.LogFile);
+        appender.Clear();
         _logIndex += logCount;
 
         StaticLogger.SendInGame($"Successfully saved {logCount} logs from current session. (Filename={file.Name})", LogLevel.High);

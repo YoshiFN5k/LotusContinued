@@ -79,15 +79,19 @@ public class GeneratingCIM
         Instances.Concat(fieldInformation.Values.SelectMany(v => v.Values))
             .Concat(propertyInformation.Values.SelectMany(v => v.Values))
             .Where(o => o != null)
-            .Distinct()
-            .Share(obj =>
+            .Distinct();
+
+
+        Instances.ForEach(obj =>
             {
                 if (obj is IUnifiedDefinitionAware unifiedDefinitionAware) unifiedDefinitionAware.SetUnifiedDefinition(unifiedRoleDefinition);
                 if (obj is IDefinitionAware definitionAware) definitionAware.SetRoleDefinition(unifiedRoleDefinition.RoleDefinition);
-            }).Share(obj =>
+            });
+        Instances.ForEach(obj =>
             {
                 if (obj is IComponentAware componentAware) componentAware.ReceiveComponents(Instances);
-            }).ForEach(obj =>
+            });
+        Instances.ForEach(obj =>
             {
                 if (obj is IPostLinkExecuter postLinkExecuter) postLinkExecuter.PostLinking();
             });
@@ -117,19 +121,21 @@ public class GeneratingCIM
         cloned.Instances.Concat(cloned.fieldInformation.Values.SelectMany(v => v.Values))
             .Concat(cloned.propertyInformation.Values.SelectMany(v => v.Values))
             .Where(o => o != null)
-            .Distinct()
-            .Share(obj =>
-            {
-                if (obj is IUnifiedDefinitionAware unifiedDefinitionAware) unifiedDefinitionAware.SetUnifiedDefinition(cloned.unifiedRoleDefinition);
-                if (obj is IDefinitionAware definitionAware) definitionAware.SetRoleDefinition(cloned.unifiedRoleDefinition.RoleDefinition);
-            })
-            .Share(obj =>
-            {
-                if (obj is IInstantiatedComponentAware componentAware) componentAware.ReceiveInstantiatedComponents(cloned.Instances);
-            }).ForEach(obj =>
-            {
-              if (obj is IPostInitializationAware postInitializationAware) postInitializationAware.PostInitialization();
-            });
+            .Distinct();
+
+        cloned.Instances.ForEach(obj =>
+        {
+            if (obj is IUnifiedDefinitionAware unifiedDefinitionAware) unifiedDefinitionAware.SetUnifiedDefinition(cloned.unifiedRoleDefinition);
+            if (obj is IDefinitionAware definitionAware) definitionAware.SetRoleDefinition(cloned.unifiedRoleDefinition.RoleDefinition);
+        });
+        cloned.Instances.ForEach(obj =>
+        {
+            if (obj is IInstantiatedComponentAware componentAware) componentAware.ReceiveInstantiatedComponents(cloned.Instances);
+        });
+        cloned.Instances.ForEach(obj =>
+        {
+            if (obj is IPostInitializationAware postInitializationAware) postInitializationAware.PostInitialization();
+        });
 
         return cloned;
     }
