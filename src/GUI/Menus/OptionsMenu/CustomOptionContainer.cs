@@ -17,7 +17,7 @@ namespace Lotus.GUI.Menus.OptionsMenu;
 
 [Localized("GUI")]
 [RegisterInIl2Cpp]
-public class CustomOptionContainer: MonoBehaviour
+public class CustomOptionContainer : Behaviour
 {
     [Localized(nameof(GeneralButton))] private static string GeneralButton = "General";
     [Localized(nameof(GraphicsButton))] private static string GraphicsButton = "Graphics";
@@ -53,7 +53,7 @@ public class CustomOptionContainer: MonoBehaviour
 
     private List<(PassiveButton, IBaseOptionMenuComponent)> boundButtons = new();
 
-    public CustomOptionContainer(IntPtr intPtr): base(intPtr)
+    public CustomOptionContainer(IntPtr intPtr) : base(intPtr)
     {
         transform.localPosition += new Vector3(1f, 0f);
         background = gameObject.AddComponent<SpriteRenderer>();
@@ -73,7 +73,9 @@ public class CustomOptionContainer: MonoBehaviour
         soundMenu.PassMenu(menuBehaviour);
         ventLibMenu.PassMenu(menuBehaviour);
 
-        Func<Sprite, string, PassiveButton> buttonFunc = CreateButton(menuBehaviour);
+        ButtonCreator buttonCreator = CreateButton(menuBehaviour);
+        Func<Sprite, string, PassiveButton> buttonFunc = (sprite, text) => buttonCreator(sprite, text);
+
         generalButton = buttonFunc(OptionMenuResources.GeneralButton, GeneralButton);
         generalButton.transform.localPosition += new Vector3(2.6f, 0f);
 
@@ -144,11 +146,40 @@ public class CustomOptionContainer: MonoBehaviour
 
 
 
-    private Func<Sprite, string, PassiveButton> CreateButton(OptionsMenuBehaviour menuBehaviour)
+    // private Func<Sprite, string, PassiveButton> CreateButton(OptionsMenuBehaviour menuBehaviour)
+    // {
+    //     return (sprite, text) =>
+    //     {
+
+    //         PassiveButton button = Instantiate(template ??= menuBehaviour.GetComponentsInChildren<PassiveButton>().Last(), transform);
+    //         TextMeshPro tmp = button.GetComponentInChildren<TextMeshPro>();
+    //         SpriteRenderer render = button.GetComponentInChildren<SpriteRenderer>();
+    //         render.sprite = sprite;
+    //         render.color = Color.white;
+
+    //         button.OnClick = new Button.ButtonClickedEvent();
+
+    //         var buttonTransform = button.transform;
+    //         buttonTransform.localScale -= new Vector3(0.33f, 0f, 0f);
+    //         buttonTransform.localPosition += new Vector3(-4.6f, 2.5f, 0f);
+
+    //         /*GameObject generalText = button.gameObject.CreateChild($"{text}_TextTMP", new Vector3(9.6f, -2.34f));
+    //         tmp = generalText.AddComponent<TextMeshPro>();*/
+    //         tmp.font = GetGeneralFont();
+    //         tmp.fontSize = 2.8f;
+    //         tmp.text = text;
+    //         tmp.color = Color.white;
+    //         tmp.transform.localPosition += new Vector3(0.13f, 0f);
+
+    //         return button;
+    //     };
+    // }
+    private delegate PassiveButton ButtonCreator(Sprite sprite, string text);
+
+    private ButtonCreator CreateButton(OptionsMenuBehaviour menuBehaviour)
     {
         return (sprite, text) =>
         {
-
             PassiveButton button = Instantiate(template ??= menuBehaviour.GetComponentsInChildren<PassiveButton>().Last(), transform);
             TextMeshPro tmp = button.GetComponentInChildren<TextMeshPro>();
             SpriteRenderer render = button.GetComponentInChildren<SpriteRenderer>();
@@ -161,8 +192,6 @@ public class CustomOptionContainer: MonoBehaviour
             buttonTransform.localScale -= new Vector3(0.33f, 0f, 0f);
             buttonTransform.localPosition += new Vector3(-4.6f, 2.5f, 0f);
 
-            /*GameObject generalText = button.gameObject.CreateChild($"{text}_TextTMP", new Vector3(9.6f, -2.34f));
-            tmp = generalText.AddComponent<TextMeshPro>();*/
             tmp.font = GetGeneralFont();
             tmp.fontSize = 2.8f;
             tmp.text = text;
@@ -172,6 +201,7 @@ public class CustomOptionContainer: MonoBehaviour
             return button;
         };
     }
+
 
     public static TMP_FontAsset GetGeneralFont()
     {

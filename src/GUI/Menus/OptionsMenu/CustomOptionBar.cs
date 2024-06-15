@@ -6,7 +6,7 @@ using VentLib.Utilities.Attributes;
 namespace Lotus.GUI.Menus.OptionsMenu;
 
 [RegisterInIl2Cpp]
-public class CustomOptionBar: MonoBehaviour
+public class CustomOptionBar : Behaviour
 {
     public PassiveButton GeneralSettings;
     public PassiveButton DisplaySettings;

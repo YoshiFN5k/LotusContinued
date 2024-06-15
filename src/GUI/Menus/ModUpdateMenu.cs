@@ -16,7 +16,7 @@ namespace Lotus.GUI.Menus;
 
 [Localized("GUI")]
 [RegisterInIl2Cpp]
-public class ModUpdateMenu: MonoBehaviour
+public class ModUpdateMenu : Behaviour
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(ModUpdateMenu));
 
@@ -118,7 +118,7 @@ public class ModUpdateMenu: MonoBehaviour
 
     public static void AddUpdateItem(string name, string? version, UpdateDelegate updateDelegate, bool autoStartUpdate = false)
     {
-        UpdateItem item = new() { Name = name, Version = version, AutoStartUpdate = autoStartUpdate};
+        UpdateItem item = new() { Name = name, Version = version, AutoStartUpdate = autoStartUpdate };
         _updateItems.Add(item.BindUpdateFunction(updateDelegate));
     }
 

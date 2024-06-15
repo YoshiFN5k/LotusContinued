@@ -1,6 +1,7 @@
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 using VentLib.Utilities.Attributes;
 using Action = System.Action;
@@ -8,7 +9,7 @@ using Action = System.Action;
 namespace Lotus.GUI.Menus.OptionsMenu.Components;
 
 [RegisterInIl2Cpp]
-public class MonoToggleButton: MonoBehaviour
+public class MonoToggleButton : Behaviour
 {
     private PassiveButton enabledButton;
     private SpriteRenderer enabledRender;
@@ -99,3 +100,4 @@ public class MonoToggleButton: MonoBehaviour
         toggleOnAction = () => SetOffState();
     }
 }
+

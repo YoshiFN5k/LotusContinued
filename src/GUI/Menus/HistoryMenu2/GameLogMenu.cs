@@ -7,12 +7,12 @@ using VentLib.Utilities.Attributes;
 namespace Lotus.GUI.Menus.HistoryMenu2;
 
 [RegisterInIl2Cpp]
-public class GameLogMenu : MonoBehaviour, IHistoryMenuChild
+public class GameLogMenu : Behaviour, IHistoryMenuChild
 {
     private GameObject tabIconObject;
     private PassiveButton tabButton = null!;
     private SpriteRenderer tabButtonRenderer = null!;
-    
+
     public GameLogMenu(IntPtr intPtr) : base(intPtr)
     {
     }

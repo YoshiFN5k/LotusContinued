@@ -107,25 +107,30 @@ public sealed class SetupHelper
 
         MethodInfo? cloneMethod = originalType.GetMethod("Clone", AccessFlags.InstanceAccessFlags, Array.Empty<Type>());
         if (originalValue == null || cloneMethod == null || !setupInjected.UseCloneIfPresent)
-            try {
+            try
+            {
                 injectedValue = AccessTools.CreateInstance(originalType);
                 return true;
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 log.Exception(e);
                 throw new ArgumentException($"Error during setup field-injection. Could not create instance with no-args constructor for type {originalType})");
             }
 
-        try {
+        try
+        {
             injectedValue = cloneMethod.Invoke(originalValue, null)!;
             return true;
         }
-        catch (Exception e) {
+        catch (Exception e)
+        {
             log.Exception(e);
             throw new ArgumentException($"Error during setup field-injection. Could not clone original instance for type {originalType})");
         }
     }
 
-    private class DictionaryAwarePropertyReflector: InstanceReflector
+    private class DictionaryAwarePropertyReflector : InstanceReflector
     {
         public override Type RepresentedType => property.PropertyType;
         public override string Name => property.Name;

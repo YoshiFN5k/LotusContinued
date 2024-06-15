@@ -11,7 +11,7 @@ using VentLib.Utilities.Extensions;
 namespace Lotus.GUI.Menus.OptionsMenu.Submenus;
 
 [RegisterInIl2Cpp]
-public class GeneralMenu : MonoBehaviour, IBaseOptionMenuComponent
+public class GeneralMenu : Behaviour, IBaseOptionMenuComponent
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(GeneralMenu));
 
@@ -199,7 +199,7 @@ public class GeneralMenu : MonoBehaviour, IBaseOptionMenuComponent
 
     public void Open()
     {
-        log.Fatal("Opening!!");
+        // log.Fatal("Opening!!");
         anchorObject.SetActive(true);
     }
 

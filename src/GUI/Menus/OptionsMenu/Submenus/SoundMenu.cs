@@ -9,7 +9,7 @@ using VentLib.Utilities.Attributes;
 namespace Lotus.GUI.Menus.OptionsMenu.Submenus;
 
 [RegisterInIl2Cpp]
-public class SoundMenu: MonoBehaviour, IBaseOptionMenuComponent
+public class SoundMenu : Behaviour, IBaseOptionMenuComponent
 {
     private TextMeshPro soundHeader;
     private SlideBar sfxSlider;

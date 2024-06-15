@@ -14,7 +14,7 @@ using VentLib.Utilities.Harmony.Attributes;
 namespace Lotus.GUI.Menus.HistoryMenu2;
 
 [RegisterInIl2Cpp]
-public class HM2: MonoBehaviour
+public class HM2 : Behaviour
 {
     private GameObject anchorObject;
     private GameObject buttonObject;

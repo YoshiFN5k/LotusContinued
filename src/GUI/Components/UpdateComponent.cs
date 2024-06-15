@@ -9,7 +9,7 @@ using VentLib.Utilities.Attributes;
 namespace Lotus.GUI.Components;
 
 [RegisterInIl2Cpp]
-public class UpdateComponent: MonoBehaviour
+public class UpdateComponent : Behaviour
 {
     public TextMeshPro UpdateText;
     public LazyProgressBar UpdateProgressBar;

@@ -91,7 +91,8 @@ public class ShowerPages
             {
                 UnifiedRoleDefinition? matchingRole = IRoleManager.Current.RoleDefinitions().FirstOrDefault(r =>
                 {
-                    try {
+                    try
+                    {
                         return r.OptionConsolidator.GetOption() == opt;
                     }
                     catch (Exception e)

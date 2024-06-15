@@ -15,7 +15,7 @@ using static Lotus.Utilities.GameObjectUtils;
 namespace Lotus.GUI.Menus.OptionsMenu.Submenus;
 
 [RegisterInIl2Cpp]
-public class GraphicsMenu: MonoBehaviour, IBaseOptionMenuComponent
+public class GraphicsMenu : Behaviour, IBaseOptionMenuComponent
 {
     private TextMeshPro graphicsTitle;
     private MonoToggleButton fullscreenButton;

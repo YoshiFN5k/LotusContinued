@@ -10,7 +10,7 @@ using IntPtr = System.IntPtr;
 namespace Lotus.Logging;
 
 [RegisterInIl2Cpp]
-public class LogUI: MonoBehaviour
+public class LogUI : Behaviour
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(LogUI));
     private FreeChatInputField chatInputField;
@@ -31,7 +31,7 @@ public class LogUI: MonoBehaviour
         int c = 200;
         bool truth = (int)c > (int)i;
 
-               chatInputField = Instantiate(hudManager.Chat.chatScreen.GetComponentInChildren<FreeChatInputField>(), anchorObject.transform);
+        chatInputField = Instantiate(hudManager.Chat.chatScreen.GetComponentInChildren<FreeChatInputField>(), anchorObject.transform);
         chatInputField.charCountText.transform.localPosition += new Vector3(0f, 100f, 0f);
         chatInputField.OnSubmitEvent = (Action)Submit;
         chatInputField.gameObject.transform.localPosition = new Vector3(-0.24f, -2.08f, -5f);
@@ -68,7 +68,9 @@ public class LogUI: MonoBehaviour
         chatInputField.Clear();
     }
 
-    public event TextSubmitEvent? OnTextSubmit;
+    public System.Action<string> OnTextSubmit { get; set; }
+
+    // public event TextSubmitEvent? OnTextSubmit
 
     public delegate void TextSubmitEvent(string text);
 }

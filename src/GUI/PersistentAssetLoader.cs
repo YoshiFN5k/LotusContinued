@@ -9,7 +9,7 @@ using VentLib.Utilities.Harmony.Attributes;
 namespace Lotus.GUI;
 
 [RegisterInIl2Cpp]
-internal class PersistentAssetLoader: MonoBehaviour
+internal class PersistentAssetLoader : Behaviour
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(PersistentAssetLoader));
 

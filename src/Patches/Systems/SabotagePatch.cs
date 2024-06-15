@@ -14,11 +14,12 @@ using Lotus.Roles;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles2.Operations;
 using VentLib.Utilities.Attributes;
+using Hazel;
 
 namespace Lotus.Patches.Systems;
 
 [LoadStatic]
-[HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.UpdateSystem))]
+[HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.UpdateSystem), typeof(SystemTypes), typeof(PlayerControl), typeof(byte))]
 public static class SabotagePatch
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(SabotagePatch));

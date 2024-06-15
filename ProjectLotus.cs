@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
-using BepInEx;
-using HarmonyLib;
-using AmongUs.GameOptions;
 using BepInEx.Unity.IL2CPP;
+using HarmonyLib;
+using BepInEx;
+using AmongUs.GameOptions;
 using Lotus;
 using Lotus.Addons;
 using Lotus.API;
@@ -27,12 +30,13 @@ using VentLib.Version.Git;
 using VentLib.Version.Updater;
 using VentLib.Version.Updater.Github;
 using Version = VentLib.Version.Version;
+using VentLib.Utilities.Debug.Profiling;
 
 [assembly: AssemblyVersion(ProjectLotus.CompileVersion)]
 namespace Lotus;
 
 [BepInPlugin(PluginGuid, "Lotus", $"{MajorVersion}.{MinorVersion}.{PatchVersion}")]
-[BepInDependency("com.tealeaf.VentLib")]
+[BepInDependency(Vents.Id)]
 [BepInProcess("Among Us.exe")]
 public class ProjectLotus : BasePlugin, IGitVersionEmitter
 {
@@ -56,15 +60,14 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 
     public static DefinitionUnifier DefinitionUnifier = new();
     public static bool DevVersion = false;
-    public static readonly string DevVersionStr = "Dev 28.05.2024";
+    public static readonly string DevVersionStr = "Dev 1.06.2024";
 
-    public Harmony Harmony { get; } = new(PluginGuid);
+    private static Harmony _harmony;
     public static string CredentialsText = null!;
 
     public static ModUpdater ModUpdater = null!;
 
     public static bool FinishedLoading;
-
 
     public ProjectLotus()
     {
@@ -73,7 +76,6 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
         RpcMonitor.Enable();
 #endif
         Instance = this;
-        // Vents.Initialize();
 
         VersionControl versionControl = ModVersion.VersionControl = VersionControl.For(this);
         versionControl.AddVersionReceiver(ReceiveVersion);
@@ -108,6 +110,8 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 
     public override void Load()
     {
+
+        _harmony = new Harmony("com.discussions.LotusContinued");
         //Profilers.Global.SetActive(false);
         log.Info($"{Application.version}", "AmongUs Version");
 
@@ -119,7 +123,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
         // Setup, order matters here
 
         /*StaticEditor.Register(Assembly.GetExecutingAssembly());*/
-        Harmony.PatchAll(Assembly.GetExecutingAssembly());
+        _harmony.PatchAll(Assembly.GetExecutingAssembly());
         DefinitionUnifier.RegisterRoleComponents(typeof(ProjectLotus).Assembly);
         AddonManager.ImportAddons();
 

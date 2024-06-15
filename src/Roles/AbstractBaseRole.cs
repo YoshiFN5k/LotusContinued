@@ -52,7 +52,8 @@ public abstract class AbstractBaseRole
     public string Description => Localizer.Translate($"Roles.{EnglishRoleName.RemoveHtmlTags()}.Description");
     public string Blurb => Localizer.Translate($"Roles.{EnglishRoleName.RemoveHtmlTags()}.Blurb");
 
-    public string RoleName {
+    public string RoleName
+    {
         get
         {
             if (RoleFlags.HasFlag(RoleFlag.DoNotTranslate)) return OverridenRoleName ?? EnglishRoleName;
@@ -71,7 +72,7 @@ public abstract class AbstractBaseRole
     public Color RoleColor = Color.white;
     public ColorGradient? RoleColorGradient = null;
 
-    public int Chance { get; private set;  }
+    public int Chance { get; private set; }
     public int Count { get; private set; }
     public int AdditionalChance { get; private set; }
     public bool BaseCanVent = true;
@@ -263,21 +264,29 @@ public abstract class AbstractBaseRole
 
         MethodInfo? cloneMethod = field.FieldType.GetMethod("Clone", AccessFlags.InstanceAccessFlags, Array.Empty<Type>());
         if (currentValue == null || cloneMethod == null || !setupRules.UseCloneIfPresent)
-            try {
+            try
+            {
                 newValue = AccessTools.CreateInstance(field.FieldType);
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 log.Exception(e);
                 throw new ArgumentException($"Error during \"{nameof(NewOnSetup)}\" processing. Could not create instance with no-args constructor for type {field.FieldType}. (Field={field}, Role={EnglishRoleName})");
             }
         else
-            try {
+            try
+            {
                 newValue = cloneMethod.Invoke(currentValue, null)!;
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 log.Exception(e);
                 throw new ArgumentException($"Error during \"{nameof(NewOnSetup)}\" processing. Could not clone original instance for type {field.FieldType}. (Field={field}, Role={EnglishRoleName})");
             }
-        field.SetValue(this, newValue);
+        if (newValue != null)
+        {
+            field.SetValue(this, newValue);
+        }
     }
 
     private void CreateCooldown(FieldInfo fieldInfo)
@@ -313,7 +322,7 @@ public abstract class AbstractBaseRole
     /// <param name="player">The player assigned to this role</param>
     protected virtual void Setup(PlayerControl player) { }
 
-    protected virtual void PostSetup() {}
+    protected virtual void PostSetup() { }
 
     /// <summary>
     /// Forced method that allows CustomRoles to provide unique definitions for themselves
@@ -327,18 +336,18 @@ public abstract class AbstractBaseRole
         GameOptionBuilder b = GetBaseBuilder();
         if (RoleFlags.HasFlag(RoleFlag.RemoveRoleMaximum)) return RegisterOptions(b);
 
-       b = b.SubOption(s => s.Name(RoleTranslations.MaximumText)
-                .Key("Maximum")
-                .AddIntRange(1, 15)
-                .Bind(val => this.Count = (int)val)
-                .ShowSubOptionPredicate(v => 1 < (int)v)
-                .SubOption(subsequent => subsequent
-                    .Name(RoleTranslations.SubsequentChanceText)
-                    .Key("Subsequent Chance")
-                    .AddIntRange(10, 100, 10, 0, "%")
-                    .BindInt(v => AdditionalChance = v)
-                    .Build())
-                .Build());
+        b = b.SubOption(s => s.Name(RoleTranslations.MaximumText)
+                 .Key("Maximum")
+                 .AddIntRange(1, 15)
+                 .Bind(val => this.Count = (int)val)
+                 .ShowSubOptionPredicate(v => 1 < (int)v)
+                 .SubOption(subsequent => subsequent
+                     .Name(RoleTranslations.SubsequentChanceText)
+                     .Key("Subsequent Chance")
+                     .AddIntRange(10, 100, 10, 0, "%")
+                     .BindInt(v => AdditionalChance = v)
+                     .Build())
+                 .Build());
 
         return RegisterOptions(b);
     }
