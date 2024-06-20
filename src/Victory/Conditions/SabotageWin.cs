@@ -13,7 +13,7 @@ using VentLib.Utilities.Extensions;
 
 namespace Lotus.Victory.Conditions;
 
-public class SabotageWin: IWinCondition
+public class SabotageWin : IWinCondition
 {
     [Localized($"{ModConstants.Localization.WinConditions}.{nameof(SabotagedWin)}")]
     public static string SabotagedWin = "Sabotage Win";
@@ -25,7 +25,8 @@ public class SabotageWin: IWinCondition
         ISabotage sabotage = SabotagePatch.CurrentSabotage;
         if (sabotage.SabotageType() is SabotageType.Lights or SabotageType.Communications or SabotageType.Door) return false;
 
-        List<PlayerControl> eligiblePlayers = Players.GetPlayers().Where(p => p.PrimaryRole().CanSabotage()).ToList();
+        // List<PlayerControl> eligiblePlayers = Players.GetPlayers().Where(p => p.PrimaryRole().CanSabotage()).ToList();
+        List<PlayerControl> eligiblePlayers = Players.GetPlayers().Where(p => p.PrimaryRole() is Roles.RoleGroups.Vanilla.Impostor i && i.CanSabotage()).ToList();
         List<PlayerControl> impostors = eligiblePlayers.Where(p => p.PrimaryRole().Faction is ImpostorFaction).ToList();
         List<PlayerControl> others = eligiblePlayers.Except(impostors).ToList();
 

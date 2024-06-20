@@ -120,8 +120,6 @@ public class GameStartRandomMap
         if (map.HasFlag(AuMap.Polus)) randomMaps.Add(2);
         if (map.HasFlag(AuMap.Airship)) randomMaps.Add(4);
 
-
-
         if (randomMaps.Count == 0) return true;
 
         AUSettings.StaticOptions.SetByte(ByteOptionNames.MapId, randomMaps.GetRandom());

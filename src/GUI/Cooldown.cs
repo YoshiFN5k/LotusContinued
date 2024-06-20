@@ -2,14 +2,14 @@ using System;
 using System.Globalization;
 using Lotus.Managers;
 using Lotus.Roles.Internals.Interfaces;
-using Lotus.Roles2.Attributes;
-using Lotus.Roles2.Interfaces;
+using Lotus.Roles.Attributes;
+using Lotus.Roles.Interfaces;
 using UnityEngine;
 
 namespace Lotus.GUI;
 
 [SetupInjected(useCloneIfPresent: true), InstantiateOnSetup(true)]
-public class Cooldown: ICloneOnSetup<Cooldown>
+public class Cooldown : ICloneOnSetup<Cooldown>
 {
     public float Duration;
     public bool IsCoroutine;
@@ -17,7 +17,7 @@ public class Cooldown: ICloneOnSetup<Cooldown>
     private DateTime lastTick = DateTime.Now;
     private Action? action;
 
-    public Cooldown() {}
+    public Cooldown() { }
 
     public Cooldown(float duration, bool isCoroutine = false)
     {

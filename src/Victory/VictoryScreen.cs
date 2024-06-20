@@ -26,7 +26,7 @@ public static class VictoryScreen
         HashSet<byte> winningPlayerIds = winners.Select(p => p.PlayerId).ToHashSet();
         List<FrozenPlayer> winnerRoles = Game.MatchData.GameHistory.LastWinners = winners.Select(w => Game.MatchData.FrozenPlayers[w.GetGameID()]).Distinct().ToList();
         Game.MatchData.GameHistory.AdditionalWinners = winDelegate.GetAdditionalWinners().Select(w => Game.MatchData.FrozenPlayers[w.GetGameID()]).Distinct().ToList();
-        log.Info($"Setting Up Win Screen | Winners: {winnerRoles.Select(fp => $"{fp.Name} ({fp.PrimaryRoleDefinition.Name})").Fuse()}");
+        log.Info($"Setting Up Win Screen | Winners: {winnerRoles.Select(fp => $"{fp.Name} ({fp.MainRole.RoleName})").Fuse()}");
 
         bool impostorsWin = IsImpostorsWin(reason);
 
@@ -36,7 +36,7 @@ public static class VictoryScreen
             RoleTypes roleType = winningPlayerIds.Contains(p.PlayerId) ^ !impostorsWin ? RoleTypes.ImpostorGhost : RoleTypes.CrewmateGhost;
             DevLogger.Log($"Setting PLayer: {p.name} => {roleType}");
             p.CRpcSetRole(roleType);
-            p.SetRole(roleType);
+            p.CoSetRole(roleType, true);
             p.Data.PlayerName = p.name;
             p.Data.IsDead = !wasAlive;
         });

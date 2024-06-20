@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Lotus.Roles;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Enums;
 using VentLib.Utilities.Debug.Profiling;
@@ -30,6 +31,16 @@ public class LotusAction
         Profiler.Sample sample1 = Profilers.Global.Sampler.Sampled($"Action::{ActionType}");
         Profiler.Sample sample2 = Profilers.Global.Sampler.Sampled((Method.ReflectedType?.FullName ?? "") + "." + Method.Name);
         Method.InvokeAligned(Executer, args);
+        sample1.Stop();
+        sample2.Stop();
+    }
+
+    public virtual void Execute(AbstractBaseRole role, object[] args)
+    {
+        log.Trace($"RoleAction(type={ActionType}, executer={Executer ?? role}, priority={Priority}, method={Method}))", "RoleAction::Execute");
+        Profiler.Sample sample1 = Profilers.Global.Sampler.Sampled($"Action::{ActionType}");
+        Profiler.Sample sample2 = Profilers.Global.Sampler.Sampled((Method.ReflectedType?.FullName ?? "") + "." + Method.Name);
+        Method.InvokeAligned(Executer ?? role, args);
         sample1.Stop();
         sample2.Stop();
     }

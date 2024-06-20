@@ -15,7 +15,7 @@ using Lotus.Managers.Templates.Models.Backing;
 using Lotus.Managers.Templates.Models.Units.Actions;
 using Lotus.Roles;
 using Lotus.Roles.Interfaces;
-using Lotus.Roles2;
+using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Utilities;
 using VentLib.Options;
 using VentLib.Options.Game;
@@ -66,7 +66,7 @@ public class TemplateUnit
         { "Host", _ => DataManager.Player.Customization.name },
         { "AUVersion", _ => UnityEngine.Application.version },
         { "ModName" , _ => ProjectLotus.ModName },
-        { "ModVersion", _ => ProjectLotus.PluginVersion + (ProjectLotus.DevVersion ? " " + ProjectLotus.DevVersionStr : "") },
+        { "ModVersion", _ => ProjectLotus.DevVersion ? ProjectLotus.DevVersionStr : ProjectLotus.PluginVersion },
         { "Map", _ => Constants.MapNames[GameOptionsManager.Instance.CurrentGameOptions.MapId] },
         { "GameMode", _ => Game.CurrentGameMode.Name },
         { "Date", _ => DateTime.Now.ToShortDateString() },
@@ -106,7 +106,7 @@ public class TemplateUnit
         { "Status", player => Optional<FrozenPlayer>.Of(Game.MatchData.GetFrozenPlayer((PlayerControl)player)).Map(StatusCommand.GetPlayerStatus).OrElse("")},
         { "Death", player => Game.MatchData.GameHistory.GetCauseOfDeath(((PlayerControl)player).PlayerId).Map(c => c.SimpleName()).OrElse("Unknown") },
         { "Killer", player => Game.MatchData.GameHistory.GetCauseOfDeath(((PlayerControl)player).PlayerId).FlatMap(c => c.Instigator()).Map(p => p.Name).OrElse("Unknown") },
-        { "Options", player => OptionUtils.OptionText(((PlayerControl) player).PrimaryRole().OptionConsolidator.GetOption()) },
+        { "Options", player => OptionUtils.OptionText(((PlayerControl) player).PrimaryRole().RoleOptions) },
         { "Faction", player =>
             {
                 IFaction faction = ((PlayerControl)player).PrimaryRole().Faction;
@@ -117,9 +117,9 @@ public class TemplateUnit
         { "Mods", ShowModifiers },
         { "ModsDescriptive", ModifierText },
         { "MyRole", player => MyRoleCommand.GenerateMyRoleText(((PlayerControl)player).PrimaryRole()) },
-        { "TasksComplete", QW(p => (GetTaskContainer(p).TasksComplete).ToString() )},
-        { "TotalTasks", QW(p => (GetTaskContainer(p).TotalTasks).ToString() )},
-        { "TasksRemaining", QW(p => (GetTaskContainer(p).TotalTasks - GetTaskContainer(p).TasksComplete).ToString())},
+        { "TasksComplete", QW(p => (GetTaskHolderRole(p) != null ? GetTaskHolderRole(p).CompleteTasks : 0).ToString() )},
+        { "TotalTasks", QW(p => (GetTaskHolderRole(p) != null ? GetTaskHolderRole(p).TotalTasks : 0).ToString() )},
+        { "TasksRemaining", QW(p => (GetTaskHolderRole(p) != null ? GetTaskHolderRole(p).TotalTasks - GetTaskHolderRole(p).CompleteTasks : 0).ToString())},
 
         { "Role_Name", role => ((CustomRole) role).RoleName },
         { "Role_Description", role => ((CustomRole) role).Description },
@@ -134,11 +134,11 @@ public class TemplateUnit
         {"Arguments", _ => Arguments.Fuse(" ")}
     };
 
-    private static TaskContainer GetTaskContainer(PlayerControl player) => player.PrimaryRole().Metadata.GetOrDefault(TaskContainer.Key, TaskContainer.None);
+    private static ITaskHolderRole? GetTaskHolderRole(PlayerControl player) => player.PrimaryRole() is ITaskHolderRole tr ? tr : null;
 
     private static string ShowModifiers(object obj)
     {
-        return ((PlayerControl) obj).SecondaryRoles().OrderBy(r => r.Name).Select(r => r.ColoredRoleName()).Fuse();
+        return ((PlayerControl)obj).GetSubroles().OrderBy(r => r.RoleName).Select(r => r.ColoredRoleName()).Fuse();
     }
 
     public static readonly Dictionary<string, TFormat> VariableValues = new()
@@ -174,14 +174,14 @@ public class TemplateUnit
     private static string ModifierText(object obj)
     {
         PlayerControl player = (PlayerControl)obj;
-        IEnumerable<UnifiedRoleDefinition> subroles = player.SecondaryRoles().OrderBy(r => r.Name);
+        IEnumerable<CustomRole> subroles = player.SecondaryRoles().OrderBy(r => r.RoleName);
         if (PluginDataManager.TemplateManager.HasTemplate("modifier-info"))
             return subroles.Select(sr => !PluginDataManager.TemplateManager.TryFormat(sr, "modifier-info", out string text) ? "" : text).Fuse("\n\n");
 
         return subroles.Select(sr =>
         {
             string symbol = sr.Metadata.GetOrEmpty(LotusKeys.ModifierSymbol).Map(s => sr.RoleColor.Colorize(s) + " ").OrElse("");
-            return $"{symbol}{sr.RoleColor.Colorize(sr.Name)}\n{sr.Description}";
+            return $"{symbol}{sr.RoleColor.Colorize(sr.RoleName)}\n{sr.Description}";
         }).Fuse("\n\n");
     }
 

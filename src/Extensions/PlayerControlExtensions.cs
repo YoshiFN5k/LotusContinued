@@ -15,15 +15,14 @@ using Lotus.Roles;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Overrides;
-using Lotus.Roles2;
-using Lotus.Roles2.Manager;
-using Lotus.Roles2.Operations;
+using Lotus.Roles.Operations;
 using UnityEngine;
 using VentLib.Utilities.Extensions;
 using VentLib.Networking.RPC;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Optionals;
+using Lotus.Roles.Managers.Interfaces;
 
 namespace Lotus.Extensions;
 
@@ -33,7 +32,7 @@ public static class PlayerControlExtensions
 
     public static UniquePlayerId UniquePlayerId(this PlayerControl player) => API.Player.UniquePlayerId.From(player);
 
-    public static UnifiedRoleDefinition PrimaryRole(this PlayerControl player)
+    public static CustomRole PrimaryRole(this PlayerControl player)
     {
         if (player == null)
         {
@@ -42,25 +41,31 @@ public static class PlayerControlExtensions
             string callerMethodName = callerMethod.Name;
             string? callerClassName = callerMethod.DeclaringType.FullName;
             log.Warn(callerClassName + "." + callerMethodName + " Invalid Custom Role", "GetCustomRole");
-            return ProjectLotus.GameModeManager.CurrentGameMode.RoleManager.DefaultDefinition;
+            return ProjectLotus.GameModeManager.CurrentGameMode.RoleManager.FallbackRole;
         }
-        UnifiedRoleDefinition? role = Game.MatchData.Roles.PrimaryRoleDefinitions.GetValueOrDefault(player.PlayerId);
-        return role ?? IRoleManager.Current.DefaultDefinition;
+        CustomRole? role = Game.MatchData.Roles.PrimaryRoleDefinitions.GetValueOrDefault(player.PlayerId);
+        return role ?? IRoleManager.Current.FallbackRole;
     }
 
-    public static UnifiedRoleDefinition? GetCustomRoleSafe(this PlayerControl player)
+    public static CustomRole? GetCustomRoleSafe(this PlayerControl player)
     {
         return player == null ? null : Game.MatchData.Roles.PrimaryRoleDefinitions.GetValueOrDefault(player.PlayerId);
     }
 
-    public static CustomRole? GetSubrole(this PlayerControl player)
+    public static CustomRole GetSubrole(this PlayerControl player)
     {
         List<CustomRole>? role = Game.MatchData.Roles.SubRoles.GetValueOrDefault(player.PlayerId);
         if (role == null || role.Count == 0) return null;
         return role[0];
     }
+    public static List<CustomRole> GetSubroles(this PlayerControl player)
+    {
+        List<CustomRole>? roleList = Game.MatchData.Roles.SubRoles.GetValueOrDefault(player.PlayerId);
+        if (roleList == null || roleList.Count == 0) return new List<CustomRole>();
+        return roleList;
+    }
 
-    public static List<UnifiedRoleDefinition> SecondaryRoles(this PlayerControl player) => Game.MatchData.Roles.GetSecondaryRoles(player.PlayerId);
+    public static List<CustomRole> SecondaryRoles(this PlayerControl player) => Game.MatchData.Roles.GetSubroles(player.PlayerId);
 
     public static void SyncAll(this PlayerControl player)
     {
@@ -73,11 +78,11 @@ public static class PlayerControlExtensions
         if (player == null) return;
         if (AmongUsClient.Instance.ClientId == clientId)
         {
-            player.SetRole(role);
+            player.CoSetRole(role, true);
             return;
         }
 
-        RpcV3.Immediate(player.NetId, RpcCalls.SetRole).Write((ushort)role).Send(clientId);
+        RpcV3.Immediate(player.NetId, RpcCalls.SetRole).Write((ushort)role).Write(true).Send(clientId);
     }
 
     public static void RpcMark(this PlayerControl killer, PlayerControl? target = null, int colorId = 0)
@@ -101,6 +106,15 @@ public static class PlayerControlExtensions
             .Send(killer.GetClientId());
     }
 
+    public static T? PrimaryRole<T>(this PlayerControl player) where T : CustomRole
+    {
+        return (player.PrimaryRole() as T) ?? player.GetSubrole<T>();
+    }
+    public static T? GetSubrole<T>(this PlayerControl player) where T : CustomRole
+    {
+        return player.GetSubrole() as T;
+    }
+
     public static void SetKillCooldown(this PlayerControl player, float time)
     {
         if (player.AmOwner)
@@ -113,7 +127,7 @@ public static class PlayerControlExtensions
         {
             // IMPORTANT: This could be a possible "issue" area
             // Maybe implement Consumable Coroutine?
-            UnifiedRoleDefinition roleDefinition = player.PrimaryRole();
+            CustomRole roleDefinition = player.PrimaryRole();
             IRemote remote = Game.CurrentGameMode.AddOverride(player.PlayerId, new GameOptionOverride(Override.KillCooldown, time * 2));
             roleDefinition.SyncOptions();
 
@@ -151,8 +165,8 @@ public static class PlayerControlExtensions
     public static string? GetAllRoleName(this PlayerControl player)
     {
         if (!player) return null;
-        var text = player.PrimaryRole().Name;
-        List<UnifiedRoleDefinition> subroles = player.SecondaryRoles();
+        var text = player.PrimaryRole().RoleName;
+        List<CustomRole> subroles = player.SecondaryRoles();
         if (subroles.Count == 0) return text;
 
         text += subroles.StrJoin().Replace("[", " (").Replace("]", ")");

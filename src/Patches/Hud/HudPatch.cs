@@ -39,12 +39,12 @@ class HudManagerPatch
 
         if (Game.State is GameState.InLobby)
         {
-            __instance.GameSettings.text = OptionShower.GetOptionShower().GetPage();
+            // __instance.GameSettings.text = OptionShower.GetOptionShower().GetPage();
         }
 
         if (Game.State is not (GameState.Roaming or GameState.InMeeting)) return;
 
-        player.GetAllRoleDefinitions().ForEach(rd => rd.RoleDefinition.GUIProvider.Update());
+        // player.GetAllRoleDefinitions().ForEach(rd => rd.RoleDefinition.GUIProvider.Update());
     }
 }
 

@@ -13,12 +13,12 @@ using Lotus.Utilities;
 using Lotus.Extensions;
 using Lotus.GUI.Name;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2.Operations;
 using UnityEngine;
 using VentLib.Networking.RPC;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using Random = UnityEngine.Random;
+using Lotus.Roles.Operations;
 
 namespace Lotus.Roles;
 

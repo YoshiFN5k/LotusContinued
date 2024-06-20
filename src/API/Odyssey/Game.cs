@@ -9,6 +9,11 @@ using Lotus.GUI.Name.Interfaces;
 using Lotus.Victory;
 using Lotus.Extensions;
 using VentLib.Utilities.Extensions;
+using System.Linq;
+using Lotus.Roles;
+using Lotus.Roles.Interfaces;
+using Lotus.Factions.Impostors;
+using Lotus.Managers;
 
 namespace Lotus.API.Odyssey;
 
@@ -39,7 +44,7 @@ public static class Game
 
     public static ulong NextMatchID() => MatchData.MatchID++;
 
-    public static GameState[] IgnStates => new[] { GameState.Roaming, GameState.InMeeting };
+    public static GameState[] InGameStates => new[] { GameState.Roaming, GameState.InMeeting };
 
     public static INameModel NameModel(this PlayerControl playerControl) => NameModels.GetOrCompute(playerControl.PlayerId, () => new SimpleNameModel(playerControl));
 

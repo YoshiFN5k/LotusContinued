@@ -7,8 +7,9 @@ using Lotus.Managers;
 using Lotus.Managers.Hotkeys;
 using Lotus.Managers.Templates.Models.Backing;
 using Lotus.Roles;
-using Lotus.Roles2;
-using Lotus.Roles2.Manager;
+using Lotus.Roles.Managers.Interfaces;
+using Lotus.Roles.Properties;
+using Lotus.Roles.Subroles;
 using VentLib.Commands;
 using VentLib.Commands.Attributes;
 using VentLib.Localization;
@@ -23,10 +24,10 @@ public class RoleCommand
     [Command("mod", "modifier", "mods")]
     public static void Modifiers(PlayerControl source)
     {
-        string message = IRoleManager.Current.RoleDefinitions().Where(RoleProperties.IsModifier).OrderBy(r => r.Name).DistinctBy(r => r.Name).Select(m =>
+        string message = IRoleManager.Current.AllCustomRoles().Where(RoleProperties.IsModifier).OrderBy(r => r.RoleName).DistinctBy(r => r.RoleName).Select(m =>
         {
             string symbol = m.Metadata.GetOrEmpty(LotusKeys.ModifierSymbol).Map(s => m.RoleColor.Colorize(s) + " ").OrElse("");
-            return $"{symbol}{m.RoleColor.Colorize(m.Name)}\n{m.Description}";
+            return $"{symbol}{m.RoleColor.Colorize(m.RoleName)}\n{m.Description}";
         }).Fuse("\n\n");
 
         SendSpecial(source, message);
@@ -40,15 +41,15 @@ public class RoleCommand
         else
         {
             string roleName = context.Args.Join(delimiter: " ").ToLower().Trim().Replace("[", "").Replace("]", "").ToLowerInvariant();
-            UnifiedRoleDefinition? roleDefinition = IRoleManager.Current.RoleDefinitions().FirstOrDefault(r => r.Name.ToLowerInvariant().Contains(roleName));
+            CustomRole? roleDefinition = IRoleManager.Current.AllCustomRoles().FirstOrDefault(r => r.RoleName.ToLowerInvariant().Contains(roleName));
             if (roleDefinition != null) ShowRole(source, roleDefinition);
         }
     }
 
-    private static void ShowRole(PlayerControl source, UnifiedRoleDefinition role)
+    private static void ShowRole(PlayerControl source, CustomRole role)
     {
         if (!PluginDataManager.TemplateManager.TryFormat(role, "help-role", out string formatted))
-            formatted = $"{role.Name} ({role.Faction.Name()})\n{role.Blurb}\n{role.Description}\n\nOptions:\n{OptionUtils.OptionText(role.OptionConsolidator.GetOption())}";
+            formatted = $"{role.RoleName} ({role.Faction.Name()})\n{role.Blurb}\n{role.Description}\n\nOptions:\n{OptionUtils.OptionText(role.RoleOptions)}";
 
         SendSpecial(source, formatted);
     }

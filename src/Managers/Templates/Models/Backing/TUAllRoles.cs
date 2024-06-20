@@ -7,9 +7,9 @@ using Lotus.Roles.Builtins;
 using Lotus.Roles.Builtins.Base;
 using Lotus.Roles.Debugger;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2;
-using Lotus.Roles2.Definitions;
-using Lotus.Roles2.Manager;
+using Lotus.Roles.Managers.Interfaces;
+using Lotus.Roles.Properties;
+using Lotus.Roles.Subroles;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 
@@ -22,9 +22,9 @@ internal class TUAllRoles
     {
         string? factionName = null;
 
-        OrderedDictionary<string, List<UnifiedRoleDefinition>> rolesByFaction = new();
+        OrderedDictionary<string, List<CustomRole>> rolesByFaction = new();
 
-        string FactionName(UnifiedRoleDefinition roleDefinition)
+        string FactionName(CustomRole roleDefinition)
         {
             if (roleDefinition.Metadata.GetOrEmpty(RoleProperties.Key).Compare(r => r.HasProperty(RoleProperty.IsModifier))) return "Modifiers";
             if (roleDefinition.Faction is not Neutral) return roleDefinition.Faction.Name();
@@ -34,17 +34,17 @@ internal class TUAllRoles
             return specialType is SpecialType.NeutralKilling ? "Neutral Killers" : "Neutral";
         }
 
-        bool Condition(UnifiedRoleDefinition role)
+        bool Condition(CustomRole role)
         {
-            if (role is NoOpDefinition) return false;
-            if (onlyModifiers && RoleProperties.IsModifier(role)) return true;
+            if (role is EmptyRole) return false;
+            if (onlyModifiers && role is Subrole) return true;
             if (onlyModifiers) return false;
             if (allowSubroles) return true;
-            return !RoleProperties.IsModifier(role);
+            return role is not Subrole;
         }
 
 
-        IRoleManager.Current.RoleDefinitions().ForEach(r => rolesByFaction.GetOrCompute(FactionName(r), () => new List<UnifiedRoleDefinition>()).Add(r));
+        IRoleManager.Current.AllCustomRoles().ForEach(r => rolesByFaction.GetOrCompute(FactionName(r), () => new List<CustomRole>()).Add(r));
 
         string text = "";
 
@@ -61,7 +61,7 @@ internal class TUAllRoles
                 factionName = fName;
             }
 
-            roleNames.Add(r.Name);
+            roleNames.Add(r.RoleName);
         });
 
         text += roleNames.Fuse();

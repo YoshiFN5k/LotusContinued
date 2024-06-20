@@ -7,7 +7,6 @@ using Lotus.Roles;
 using Lotus.Extensions;
 using Lotus.GameModes;
 using Lotus.GameModes.Standard;
-using Lotus.Roles2;
 using VentLib.Utilities.Extensions;
 using Version = VentLib.Version.Version;
 
@@ -17,9 +16,10 @@ public abstract class LotusAddon
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(LotusAddon));
 
-    internal Dictionary<RoleDefinition, HashSet<IGameMode>> ExportedDefinitions { get; } = new();
+    internal Dictionary<AbstractBaseRole, HashSet<IGameMode>> ExportedDefinitions { get; } = new();
 
     internal readonly List<IFaction> Factions = new();
+    internal readonly List<IGameMode> Gamemodes = new();
 
     internal readonly Assembly BundledAssembly = Assembly.GetCallingAssembly();
     internal readonly ulong UUID;
@@ -42,13 +42,13 @@ public abstract class LotusAddon
     {
     }
 
-    public void ExportRoleDefinitions(IEnumerable<RoleDefinition> roleDefinitions, params Type[] baseGameModes)
+    public void ExportRoleDefinitions(IEnumerable<AbstractBaseRole> roleDefinitions, params Type[] baseGameModes)
     {
         if (baseGameModes.Length == 0) ExportRoleDefinitions(roleDefinitions, StandardGameMode.Instance);
         else ExportRoleDefinitions(roleDefinitions, baseGameModes.Select(gm => ProjectLotus.GameModeManager.GetGameMode(gm) ?? StandardGameMode.Instance).ToArray());
     }
 
-    public void ExportRoleDefinitions(IEnumerable<RoleDefinition> roleDefinitions, params IGameMode[] baseGameModes)
+    public void ExportRoleDefinitions(IEnumerable<AbstractBaseRole> roleDefinitions, params IGameMode[] baseGameModes)
     {
         IGameMode[] targetGameModes = ProjectLotus.GameModeManager.GameModes.Where(gm => baseGameModes.Any(bgm => bgm.GetType().IsInstanceOfType(gm))).ToArray();
         roleDefinitions.ForEach(r =>

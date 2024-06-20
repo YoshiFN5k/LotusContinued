@@ -33,6 +33,16 @@ public enum Override
 
     EngVentCooldown,
     EngVentDuration,
+
+    TrackerCooldown,
+    TrackerDuration,
+    TrackerDelay,
+
+    NoiseImpGetAlert,
+    NoiseAlertDuration,
+
+    PhantomVanishDuration,
+    PhantomVanishCooldown,
 }
 
 public static class OverrideExtensions
@@ -59,6 +69,13 @@ public static class OverrideExtensions
             Override.EngVentDuration => gameOptions.GetFloat(FloatOptionNames.EngineerInVentMaxTime),
             Override.VitalsCooldown => gameOptions.GetFloat(FloatOptionNames.ScientistCooldown),
             Override.VitalsBatteryCharge => gameOptions.GetFloat(FloatOptionNames.ScientistBatteryCharge),
+            Override.TrackerCooldown => gameOptions.GetFloat(FloatOptionNames.TrackerCooldown),
+            Override.TrackerDuration => gameOptions.GetFloat(FloatOptionNames.TrackerDuration),
+            Override.TrackerDelay => gameOptions.GetFloat(FloatOptionNames.TrackerDelay),
+            Override.NoiseImpGetAlert => gameOptions.GetBool(BoolOptionNames.NoisemakerImpostorAlert),
+            Override.NoiseAlertDuration => gameOptions.GetFloat(FloatOptionNames.NoisemakerAlertDuration),
+            Override.PhantomVanishDuration => gameOptions.GetFloat(FloatOptionNames.PhantomDuration),
+            Override.PhantomVanishCooldown => gameOptions.GetFloat(FloatOptionNames.PhantomCooldown),
             _ => throw new ArgumentOutOfRangeException(nameof(__override), __override, null)
         };
     }
@@ -105,6 +122,13 @@ public static class OverrideExtensions
             Override.EngVentDuration => SetFloatOption(FloatOptionNames.EngineerInVentMaxTime),
             Override.VitalsCooldown => SetFloatOption(FloatOptionNames.ScientistCooldown),
             Override.VitalsBatteryCharge => SetFloatOption(FloatOptionNames.ScientistBatteryCharge),
+            Override.TrackerCooldown => SetFloatOption(FloatOptionNames.TrackerCooldown),
+            Override.TrackerDuration => SetFloatOption(FloatOptionNames.TrackerDuration),
+            Override.TrackerDelay => SetFloatOption(FloatOptionNames.TrackerDelay),
+            Override.NoiseImpGetAlert => SetBoolOption(BoolOptionNames.NoisemakerImpostorAlert),
+            Override.NoiseAlertDuration => SetFloatOption(FloatOptionNames.NoisemakerAlertDuration),
+            Override.PhantomVanishDuration => SetFloatOption(FloatOptionNames.PhantomDuration),
+            Override.PhantomVanishCooldown => SetFloatOption(FloatOptionNames.PhantomCooldown),
             _ => throw new ArgumentOutOfRangeException(nameof(__override), __override, null)
         };
     }

@@ -7,16 +7,18 @@ using HarmonyLib;
 using Lotus.API.Odyssey;
 using Lotus.API.Reactive.Actions;
 using Lotus.Managers;
+using Lotus.Roles;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2.Manager;
+using Lotus.Roles.Operations;
 using Lotus.Victory;
+using Lotus.Roles.Managers.Interfaces;
 using VentLib.Options.Game.Tabs;
 using VentLib.Utilities;
 
 namespace Lotus.GameModes;
 
-public abstract class GameMode: IGameMode
+public abstract class GameMode : IGameMode
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(GameMode));
 
@@ -29,18 +31,21 @@ public abstract class GameMode: IGameMode
 
     public abstract string Name { get; set; }
 
-    public CoroutineManager CoroutineManager { get; } = new();
-    public IRoleManager RoleManager { get; } = new LotusRoleManager2();
     public MatchData MatchData { get; set; } = new();
+    public CoroutineManager CoroutineManager { get; } = new();
+    public RoleOperations RoleOperations { get; }
+    public Roles.Managers.RoleManager RoleManager { get; }
     public abstract IEnumerable<GameOptionTab> EnabledTabs();
 
-    public virtual void Activate() {}
+    public virtual void Activate() { }
 
-    public virtual void Deactivate() {}
+    public virtual void Deactivate() { }
 
     public virtual void FixedUpdate() { }
 
     public abstract void Setup();
+
+    public abstract void Assign(PlayerControl player, CustomRole role);
 
     public abstract void AssignRoles(List<PlayerControl> players);
 
@@ -77,7 +82,7 @@ public abstract class GameMode: IGameMode
         log.Log(LogLevel.All, $"Registering Action {action.ActionType} => {action.Method.Name} (from: \"{action.Method.DeclaringType}\")", "RegisterAction");
         if (action.ActionType is LotusActionType.FixedUpdate &&
             currentActions.Count > 0)
-            throw new ConstraintException("RoleActionType.FixedUpdate is limited to one per class. If you're inheriting a class that uses FixedUpdate you can add Override=METHOD_NAME to your annotation to override its Update method.");
+            throw new ConstraintException("LotusActionType.FixedUpdate is limited to one per class. If you're inheriting a class that uses FixedUpdate you can add Override=METHOD_NAME to your annotation to override its Update method.");
 
         if (action.Attribute.Subclassing || action.Method.DeclaringType == this.GetType())
             currentActions.Add(action);

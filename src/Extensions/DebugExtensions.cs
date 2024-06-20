@@ -7,6 +7,7 @@ using UnityEngine;
 using VentLib.Utilities.Extensions;
 using Component = UnityEngine.Component;
 using Object = UnityEngine.Object;
+using Lotus.Managers.Hotkeys;
 
 namespace Lotus.Extensions;
 
@@ -14,10 +15,15 @@ public static class DebugExtensions
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(DebugExtensions));
 
+    public static void Start()
+    {
+        if (!ProjectLotus.DevVersion) return;
+    }
+
     public static void DebugLog(this object obj, string prefixText = "", string tag = "DebugLog", ConsoleColor color = ConsoleColor.DarkGray)
     {
         LogLevel tempLevel = new("OBJ", 0, color);
-        log.Log(tempLevel,$"{prefixText}{obj}", tag);
+        log.Log(tempLevel, $"{prefixText}{obj}", tag);
     }
 
     public static void Debug(this IEnumerable<Component> components)
@@ -36,7 +42,7 @@ public static class DebugExtensions
         else monoBehaviour.GetComponentsInChildren<Component>(includeInactive).Debug();
     }
 
-    public static void Debug(this GameObject gameObject, bool noChildren = false,  bool includeInactive = false)
+    public static void Debug(this GameObject gameObject, bool noChildren = false, bool includeInactive = false)
     {
         if (noChildren) gameObject.GetComponents<Component>().Debug();
         else gameObject.GetComponentsInChildren<Component>(includeInactive).Debug();

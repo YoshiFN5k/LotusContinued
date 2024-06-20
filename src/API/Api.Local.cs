@@ -21,11 +21,11 @@ public partial class Api
                 return;
             }
 
-            GameData.PlayerInfo playerData = player.Data;
+            NetworkedPlayerInfo playerData = player.Data;
 
             if (playerData != null)
             {
-                GameData.PlayerOutfit defaultOutfit = playerData.DefaultOutfit;
+                NetworkedPlayerInfo.PlayerOutfit defaultOutfit = playerData.DefaultOutfit;
                 string outfitName = state is GameState.InMeeting ? name : player.name;
                 defaultOutfit.PlayerName = outfitName;
                 AmongUsClient.Instance.GetClientFromCharacter(playerData.Object)?.UpdatePlayerName(outfitName);

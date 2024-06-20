@@ -25,10 +25,8 @@ using Lotus.Extensions;
 using Lotus.Logging;
 using Lotus.Roles.Builtins;
 using Lotus.Roles.Builtins.Base;
-using Lotus.Roles.Builtins.Vanilla;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Interfaces;
-using Lotus.Roles2.Definitions.Impostors;
 using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization;
@@ -39,10 +37,14 @@ using VentLib.Utilities;
 using VentLib.Utilities.Debug.Profiling;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
+using Lotus.Roles.RoleGroups.Vanilla;
+using Lotus.API;
+using Lotus.Addons;
 
 namespace Lotus.Roles;
 
-// Some people hate using "Base" and "Abstract" in class names but I used both so now I'm a war-criminal :)
+// Some people hate using "Base" and "Abstract" in class names but I used both so now I'm a war-criminal :) -Tealeaf
+// yes and I am one of them. especially the I thing too -Discussions
 public abstract class AbstractBaseRole
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(AbstractBaseRole));
@@ -81,6 +83,8 @@ public abstract class AbstractBaseRole
     public RoleAbilityFlag RoleAbilityFlags;
     public RoleFlag RoleFlags;
     public readonly List<CustomRole> LinkedRoles = new();
+    internal Assembly Assembly => this.GetType().Assembly;
+    internal LotusAddon? Addon;
 
     internal virtual LotusRoleType LotusRoleType { get; set; } = LotusRoleType.Unknown;
     internal GameOption RoleOptions;
@@ -88,12 +92,20 @@ public abstract class AbstractBaseRole
 
     public virtual List<Statistic> Statistics() => new();
     public virtual HashSet<Type> BannedModifiers() => new();
+    public RoleMetadata Metadata;
 
     public string EnglishRoleName { get; internal set; }
     internal Dictionary<LotusActionType, List<RoleAction>> RoleActions = new();
 
     protected List<GameOptionOverride> RoleSpecificGameOptionOverrides = new();
 
+    public RoleEditor? Editor { get; internal set; }
+    public static List<RoleEditor> _editors = new();
+
+    /// <summary>
+    /// Represents an ID for the role that should be unique to THE defining assembly
+    /// </summary>
+    public virtual ulong RoleID => this.GetType().SemiConsistentHash();
     protected AbstractBaseRole()
     {
         DeclaringAssembly = this.GetType().Assembly;
@@ -101,8 +113,15 @@ public abstract class AbstractBaseRole
         this.EnglishRoleName = this.GetType().Name.Replace("CRole", "").Replace("Role", "");
         log.Debug($"Role Name: {EnglishRoleName}");
         CreateInstanceBasedVariables();
+        RoleModifier _;
+        try
+        {
+            _ = _editors.Aggregate(Modify(new RoleModifier(this)), (current, editor) => editor.HookModifier(current));
+        }
+        catch { }
         //LinkedRoles.ForEach(ProjectLotus.RoleManager.AddRole);
         SetupRoleActions();
+        Metadata = new RoleMetadata();
     }
 
     internal virtual void Solidify()
@@ -159,14 +178,14 @@ public abstract class AbstractBaseRole
             .Do(AddRoleAction);
     }
 
-    private void AddRoleAction(RoleAction action)
+    public void AddRoleAction(RoleAction action)
     {
         List<RoleAction> currentActions = this.RoleActions.GetValueOrDefault(action.ActionType, new List<RoleAction>());
 
         log.Log(LogLevel.All, $"Registering Action {action.ActionType} => {action.Method.Name} (from: \"{action.Method.DeclaringType}\")", "RegisterAction");
         if (action.ActionType is LotusActionType.FixedUpdate &&
             currentActions.Count > 0)
-            throw new ConstraintException("RoleActionType.FixedUpdate is limited to one per class. If you're inheriting a class that uses FixedUpdate you can add Override=METHOD_NAME to your annotation to override its Update method.");
+            throw new ConstraintException("LotusActionType.FixedUpdate is limited to one per class. If you're inheriting a class that uses FixedUpdate you can add Override=METHOD_NAME to your annotation to override its Update method.");
 
         if (action.Attribute.Subclassing || action.Method.DeclaringType == this.GetType())
             currentActions.Add(action);

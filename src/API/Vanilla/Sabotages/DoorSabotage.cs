@@ -4,7 +4,7 @@ using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2.Operations;
+using Lotus.Roles.Operations;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 
@@ -35,8 +35,10 @@ public class DoorSabotage : ISabotage
 
         Hooks.SabotageHooks.SabotageFixedHook.Propagate(new SabotageFixHookEvent(fixer, this));
 
-        return doorIndex.Transform(index => {
-            if (index >= ShipStatus.Instance.AllDoors.Length) {
+        return doorIndex.Transform(index =>
+        {
+            if (index >= ShipStatus.Instance.AllDoors.Length)
+            {
                 log.Warn($"Targeted door was out of range ({index})", "FixDoor");
                 return false;
             }

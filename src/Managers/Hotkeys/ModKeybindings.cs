@@ -36,7 +36,7 @@ public class ModKeybindings
 
         // Kill Player (Suicide)
         Bind(KeyCode.LeftShift, KeyCode.D, KeyCode.Return)
-            .If(p => p.HostOnly().State(Game.IgnStates))
+            .If(p => p.HostOnly().State(Game.InGameStates))
             .Do(Suicide);
 
         // Close Meeting

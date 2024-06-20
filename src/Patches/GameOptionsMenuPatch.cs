@@ -3,7 +3,7 @@ using HarmonyLib;
 namespace Lotus.Patches;
 
 // This patch allows host to have bigger range when setting options
-[HarmonyPatch(typeof(GameOptionsMenu), nameof(GameOptionsMenu.Start))]
+[HarmonyPatch(typeof(GameOptionsMenu), nameof(GameOptionsMenu.CreateSettings))]
 public class GameOptionsMenuPatch
 {
     public static void Postfix(GameOptionsMenu __instance)

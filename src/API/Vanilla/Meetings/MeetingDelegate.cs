@@ -5,7 +5,7 @@ using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
 using Lotus.Managers;
 using Lotus.Extensions;
-using Lotus.Roles2;
+using Lotus.Roles;
 using VentLib.Localization.Attributes;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
@@ -29,7 +29,7 @@ public class MeetingDelegate
     public static string NoImpostorsText = "No impostors remaining.";
 
     public static MeetingDelegate Instance = null!;
-    public GameData.PlayerInfo? ExiledPlayer { get; set; }
+    public NetworkedPlayerInfo? ExiledPlayer { get; set; }
     public HashSet<byte> TiedPlayers = new();
 
     public bool IsTie { get; set; }
@@ -83,7 +83,7 @@ public class MeetingDelegate
 
     public void EndVoting() => isForceEnd = true;
 
-    public void EndVoting(GameData.PlayerInfo? exiledPlayer, bool isTie = false)
+    public void EndVoting(NetworkedPlayerInfo? exiledPlayer, bool isTie = false)
     {
         List<VoterState> voterStates = new();
         CurrentVoteCount().ForEach(t =>
@@ -95,7 +95,7 @@ public class MeetingDelegate
         EndVoting(voterStates.ToArray(), exiledPlayer, isTie);
     }
 
-    public void EndVoting(VoterState[] voterStates, GameData.PlayerInfo? exiledPlayer, bool isTie = false)
+    public void EndVoting(VoterState[] voterStates, NetworkedPlayerInfo? exiledPlayer, bool isTie = false)
     {
         this.isForceEnd = true;
         this.ExiledPlayer = exiledPlayer;
@@ -150,8 +150,8 @@ public class MeetingDelegate
 
         int impostors = Players.GetPlayers(PlayerFilter.Impostor | PlayerFilter.Alive).Count();
 
-        UnifiedRoleDefinition roleDefinition = player.PrimaryRole();
-        string textFormatting = "<size=0><size=2.5>" + RoleRevealText.Formatted(player.name, roleDefinition.RoleColor.Colorize(roleDefinition.Name));
+        CustomRole roleDefinition = player.PrimaryRole();
+        string textFormatting = "<size=0><size=2.5>" + RoleRevealText.Formatted(player.name, roleDefinition.RoleColor.Colorize(roleDefinition.RoleName));
         textFormatting += "\n" + (impostors == 0 ? NoImpostorsText : RemainingImpostorsText.Formatted(impostors)) + "</size>";
 
         player.RpcSetName(textFormatting);

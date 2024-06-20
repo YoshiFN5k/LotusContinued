@@ -12,9 +12,9 @@ using Lotus.API.Vanilla.Meetings;
 using Lotus.Extensions;
 using Lotus.Roles;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2.Operations;
 using VentLib.Utilities.Attributes;
 using Hazel;
+using Lotus.Roles.Operations;
 
 namespace Lotus.Patches.Systems;
 
@@ -43,8 +43,9 @@ public static class SabotagePatch
         switch (systemType)
         {
             case SystemTypes.Sabotage:
-                if (!player.PrimaryRole().CanSabotage()) return false;
-                /*if (player.GetCustomRole().RoleAbilityFlags.HasFlag(RoleAbilityFlag.CannotSabotage)) return false;*/
+                // if (ProjectLotus.GameModeManager.CurrentGameMode.IgnoredActions().HasFlag(GameAction.CallSabotage)) return false;
+                if (player.PrimaryRole() is not ISabotagerRole sabotager || !sabotager.CanSabotage()) return false;
+                if (player.PrimaryRole().RoleAbilityFlags.HasFlag(RoleAbilityFlag.CannotSabotage)) return false;
                 if (MeetingPrep.Prepped) return false;
 
                 SabotageCountdown = -1;
@@ -172,5 +173,19 @@ public static class SabotagePatch
 
         Game.SyncAll();
         return !handle.IsCanceled;
+    }
+}
+
+
+[HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.UpdateSystem), typeof(SystemTypes), typeof(PlayerControl), typeof(MessageReader))]
+class WriterSabotagePatch
+{
+
+    internal static bool Prefix(ShipStatus __instance,
+        [HarmonyArgument(0)] SystemTypes systemType,
+        [HarmonyArgument(1)] PlayerControl player,
+        [HarmonyArgument(2)] MessageReader reader)
+    {
+        return SabotagePatch.Prefix(__instance, systemType, player, reader.ReadByte());
     }
 }

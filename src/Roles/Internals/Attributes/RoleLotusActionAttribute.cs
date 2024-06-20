@@ -13,7 +13,7 @@ namespace Lotus.Roles.Internals.Attributes;
 [UsedImplicitly]
 [MeansImplicitUse]
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)] // Inherited = false because inheritance is managed through Subclassing, DO NOT WORRY!
-public class RoleActionAttribute: LotusActionAttribute
+public class RoleActionAttribute : LotusActionAttribute
 {
     public ActionFlag ActionFlags { get; }
     public bool WorksAfterDeath { get; }
@@ -23,7 +23,7 @@ public class RoleActionAttribute: LotusActionAttribute
     /// </summary>
     public String? Override;
 
-    public RoleActionAttribute(LotusActionType actionType, ActionFlag actionFlags = ActionFlag.None, Priority priority = Priority.Normal): base(actionType, priority)
+    public RoleActionAttribute(LotusActionType actionType, ActionFlag actionFlags = ActionFlag.None, Priority priority = Priority.Normal) : base(actionType, priority)
     {
         this.ActionFlags = actionFlags;
         this.WorksAfterDeath = actionFlags.HasFlag(ActionFlag.WorksAfterDeath) || actionType is LotusActionType.PlayerDeath or LotusActionType.Exiled;
@@ -33,7 +33,7 @@ public class RoleActionAttribute: LotusActionAttribute
     public override string ToString() => $"RoleAction(type={ActionType}, Priority={Priority}, Blockable={Blockable}, Subclassing={Subclassing}, Override={Override})";
 }
 
-public static class RoleActionTypeMethods
+public static class LotusActionTypeMethods
 {
     // ReSharper disable once CollectionNeverUpdated.Global
     public static readonly HashSet<LotusActionType> PlayerActions = new();

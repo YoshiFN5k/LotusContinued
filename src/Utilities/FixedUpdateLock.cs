@@ -1,20 +1,18 @@
 using System;
-using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Internals.Interfaces;
-using Lotus.Roles2.Attributes;
-using Lotus.Roles2.Interfaces;
+using Lotus.Roles.Attributes;
 using VentLib.Utilities.Debug.Profiling;
 
 namespace Lotus.Utilities;
 
 [SetupInjected(useCloneIfPresent: true)]
-public class FixedUpdateLock: ICloneOnSetup<FixedUpdateLock>
+public class FixedUpdateLock : ICloneOnSetup<FixedUpdateLock>
 {
     public double LockDuration;
     public TimeUnit TimeUnit;
     private DateTime lastAcquire = DateTime.Now;
 
-    public FixedUpdateLock(bool beginUnlocked = true): this(ModConstants.RoleFixedUpdateCooldown, beginUnlocked: beginUnlocked)
+    public FixedUpdateLock(bool beginUnlocked = true) : this(ModConstants.RoleFixedUpdateCooldown, beginUnlocked: beginUnlocked)
     {
     }
 

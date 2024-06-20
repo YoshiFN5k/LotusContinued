@@ -5,7 +5,6 @@ using Lotus.API.Odyssey;
 using Lotus.API.Stats;
 using Lotus.Managers.History;
 using Lotus.Roles;
-using Lotus.Roles2;
 using Lotus.Utilities;
 using TMPro;
 using UnityEngine;
@@ -82,7 +81,7 @@ public class ResultsMenu : Behaviour, IHistoryMenuChild
         for (int index = 0; index < allPlayers.Count; index++)
         {
             PlayerHistory playerHistory = allPlayers[index];
-            UnifiedRoleDefinition role = playerHistory.PrimaryRoleDefinition;
+            CustomRole role = playerHistory.MainRole;
             PoolablePlayer newPlayer = Instantiate(playerPrefab, anchor.transform);
             newPlayer.enabled = true;
             newPlayer.cosmetics.initialized = false;
@@ -93,9 +92,9 @@ public class ResultsMenu : Behaviour, IHistoryMenuChild
             newPlayer.transform.localPosition += new Vector3(1.65f * (index - (row * 5)), -row * 1.35f, 0);
 
 
-            string statText = playerHistory.PrimaryRoleDefinition.Statistics.FirstOrOptional().Map(t => $" <size=1.5>[{t.Name()}: {t.GetGenericValue(playerHistory.UniquePlayerId)}]</size>").OrElse("");
+            string statText = playerHistory.MainRole.Statistics().FirstOrOptional().Map(t => $" <size=1.5>[{t.Name()}: {t.GetGenericValue(playerHistory.UniquePlayerId)}]</size>").OrElse("");
 
-            string historyName = $"{playerHistory.Name}\n{role.RoleColor.Colorize(role.Name)}\n<size=1.4>{statText}</size>";
+            string historyName = $"{playerHistory.Name}\n{role.RoleColor.Colorize(role.RoleName)}\n<size=1.4>{statText}</size>";
             newPlayer.SetName(historyName);
 
             TextMeshPro aboveNameTmp = Instantiate(newPlayer.cosmetics.nameText, newPlayer.transform);

@@ -4,7 +4,6 @@ using Lotus.API.Player;
 using Lotus.Managers.History.Events;
 using Lotus.Roles;
 using Lotus.Extensions;
-using Lotus.Roles2;
 using VentLib.Utilities.Extensions;
 
 namespace Lotus.Managers.History;
@@ -15,10 +14,10 @@ public class PlayerHistory
     public UniquePlayerId UniquePlayerId;
     public string Name;
     public string ColorName;
-    public UnifiedRoleDefinition PrimaryRoleDefinition;
-    public List<UnifiedRoleDefinition> SecondaryRoledefinitions;
+    public CustomRole MainRole;
+    public List<CustomRole> Subroles;
     public uint Level;
-    public GameData.PlayerOutfit Outfit;
+    public NetworkedPlayerInfo.PlayerOutfit Outfit;
     public ulong GameID;
     public IDeathEvent? CauseOfDeath;
     public PlayerStatus Status;
@@ -28,8 +27,8 @@ public class PlayerHistory
         PlayerId = frozenPlayer.PlayerId;
         Name = frozenPlayer.Name;
         ColorName = frozenPlayer.ColorName;
-        PrimaryRoleDefinition = frozenPlayer.PrimaryRoleDefinition;
-        SecondaryRoledefinitions = frozenPlayer.SecondaryRoleDefinitions;
+        MainRole = frozenPlayer.MainRole;
+        Subroles = frozenPlayer.Subroles;
         UniquePlayerId = UniquePlayerId.FromFriendCode(frozenPlayer.FriendCode);
         Level = frozenPlayer.Level;
         Outfit = frozenPlayer.Outfit;

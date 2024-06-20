@@ -1,12 +1,12 @@
 ﻿namespace Lotus.API.Reactive.HookEvents;
 
-public class PlayerShapeshiftHookEvent: IHookEvent
+public class PlayerShapeshiftHookEvent : IHookEvent
 {
     public PlayerControl Player;
-    public GameData.PlayerInfo Target;
+    public NetworkedPlayerInfo Target;
     public bool Reverted;
 
-    public PlayerShapeshiftHookEvent(PlayerControl player, GameData.PlayerInfo target, bool reverted)
+    public PlayerShapeshiftHookEvent(PlayerControl player, NetworkedPlayerInfo target, bool reverted)
     {
         Player = player;
         Target = target;

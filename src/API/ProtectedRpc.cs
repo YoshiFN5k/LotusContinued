@@ -14,7 +14,7 @@ public class ProtectedRpc
         log.Trace("Protected Check Murder", "ProtectedRpc::CheckMurder");
         if (AmongUsClient.Instance.IsGameOver || !AmongUsClient.Instance.AmHost) return;
         if (target == null) return;
-        GameData.PlayerInfo data = target.Data;
+        NetworkedPlayerInfo data = target.Data;
         if (data == null) return;
         if (!MurderPatches.Lock(killer.PlayerId)) return;
 

@@ -8,8 +8,8 @@ using Lotus.Roles.Internals;
 using Lotus.Extensions;
 using Lotus.Logging;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2.Operations;
 using VentLib.Utilities.Optionals;
+using Lotus.Roles.Operations;
 
 namespace Lotus.Roles.Interactions;
 

@@ -9,7 +9,7 @@ using Lotus.Roles.Internals;
 using Lotus.Extensions;
 using Lotus.Managers.History.Events;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2.Operations;
+using Lotus.Roles.Operations;
 
 namespace Lotus.Patches;
 
@@ -26,7 +26,8 @@ static class ExileControllerWrapUpPatch
             {
                 WrapUpPostfix(__instance.exiled);
             }
-            finally {
+            finally
+            {
                 WrapUpFinalizer();
             }
         }
@@ -37,15 +38,17 @@ static class ExileControllerWrapUpPatch
     {
         public static void Postfix(AirshipExileController __instance)
         {
-            try {
+            try
+            {
                 WrapUpPostfix(__instance.exiled);
             }
-            finally {
+            finally
+            {
                 WrapUpFinalizer();
             }
         }
     }
-    static void WrapUpPostfix(GameData.PlayerInfo? exiled)
+    static void WrapUpPostfix(NetworkedPlayerInfo? exiled)
     {
         if (!AmongUsClient.Instance.AmHost) return; //ホスト以外はこれ以降の処理を実行しません;
         FallFromLadder.Reset();

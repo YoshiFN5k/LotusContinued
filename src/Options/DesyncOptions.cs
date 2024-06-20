@@ -26,10 +26,12 @@ public static class DesyncOptions
         if (player == null) return;
         if (!player.AmOwner)
         {
-            try {
+            try
+            {
                 SyncToClient(options, player.GetClientId());
             }
-            catch (Exception exception) {
+            catch (Exception exception)
+            {
                 log.Exception("Error syncing game options to client.", exception);
             }
             return;
@@ -37,7 +39,7 @@ public static class DesyncOptions
 
         GameOptionsManager.Instance.currentGameOptions = options;
 
-        var normalOptions = options.TryCast<NormalGameOptionsV07>();
+        var normalOptions = options.TryCast<NormalGameOptionsV08>();
         if (normalOptions != null) GameManager.Instance.LogicOptions.Cast<LogicOptionsNormal>().GameOptions = normalOptions;
         GameOptionsManager.Instance.currentGameOptions = options;
     }

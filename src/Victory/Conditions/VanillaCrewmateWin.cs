@@ -7,13 +7,12 @@ using Lotus.Factions.Interfaces;
 using Lotus.Roles;
 using Lotus.Roles.Interfaces;
 using Lotus.Extensions;
-using Lotus.Roles2;
 using VentLib.Localization.Attributes;
 
 namespace Lotus.Victory.Conditions;
 
 
-public class VanillaCrewmateWin: IFactionWinCondition
+public class VanillaCrewmateWin : IFactionWinCondition
 {
     [Localized($"{ModConstants.Localization.WinConditions}.{nameof(TaskWin)}")]
     public static string TaskWin = "Task Win";
@@ -37,10 +36,9 @@ public class VanillaCrewmateWin: IFactionWinCondition
 
         bool hasAliveEnemy = false;
         bool hasOneTaskDoer = false;
-        foreach (UnifiedRoleDefinition role in Players.GetPlayers().Select(p => p.PrimaryRole()))
+        foreach (CustomRole role in Players.GetAllPlayers().Select(p => p.PrimaryRole()))
         {
-            TaskContainer taskContainer = role.Metadata.GetOrDefault(TaskContainer.Key, TaskContainer.None);
-            if (taskContainer is { TasksApplyToTotal: true, HasTasks: true }) hasOneTaskDoer = true;
+            if (role is ITaskHolderRole taskHolder && taskHolder.TasksApplyToTotal() && taskHolder.HasTasks()) hasOneTaskDoer = true;
             if (IsEligibleEnemy(role)) hasAliveEnemy = true;
             if (hasOneTaskDoer && hasAliveEnemy) break;
         }
@@ -52,12 +50,12 @@ public class VanillaCrewmateWin: IFactionWinCondition
     }
 
     // Determines if the given role is an "enemy role"
-    private static bool IsEligibleEnemy(UnifiedRoleDefinition roleDefinition)
+    private static bool IsEligibleEnemy(AbstractBaseRole role)
     {
-        PlayerControl player = roleDefinition.MyPlayer;
+        PlayerControl player = role.MyPlayer;
         if (!player.IsAlive()) return false;
-        if (roleDefinition.Faction.Relationship(FactionInstances.Crewmates) is not Relation.None) return false;
-        return (player.GetVanillaRole().IsImpostor() || RoleProperties.IsAbleToKill(roleDefinition)) && !RoleProperties.CannotWinAlone(roleDefinition);
+        if (role.Faction.Relationship(FactionInstances.Crewmates) is not Relation.None) return false;
+        return (player.GetVanillaRole().IsImpostor() || role.RoleAbilityFlags.HasFlag(RoleAbilityFlag.IsAbleToKill)) && !role.RoleFlags.HasFlag(RoleFlag.CannotWinAlone);
     }
 
     private static bool CheckTaskCompletion()

@@ -9,14 +9,14 @@ using Lotus.Extensions;
 using Lotus.Managers.History;
 using Lotus.Options;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2.Manager;
-using Lotus.Roles2.Operations;
+using Lotus.Roles.Operations;
 using Lotus.Server;
 using Lotus.Utilities;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Harmony.Attributes;
 using VentLib.Utilities.Optionals;
+using Lotus.Roles.Managers.Interfaces;
 
 namespace Lotus.Patches.Actions;
 

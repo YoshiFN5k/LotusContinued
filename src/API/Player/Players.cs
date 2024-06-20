@@ -7,9 +7,9 @@ using Lotus.Extensions;
 using Lotus.Factions.Crew;
 using Lotus.Factions.Impostors;
 using Lotus.GUI.Name.Interfaces;
+using Lotus.Roles;
 using Lotus.Roles.Interfaces;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2;
 using Lotus.Utilities;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
@@ -22,17 +22,25 @@ public static class Players
     public static IEnumerable<PlayerControl> GetPlayers(PlayerFilter filter = PlayerFilter.None)
     {
         IEnumerable<PlayerControl> players = PlayerControl.AllPlayerControls.ToArray();
-        if (filter.HasFlag(PlayerFilter.NonPhantom)) players = players.Where(p => RoleProperties.IsApparition(p.PrimaryRole()));
+        if (filter.HasFlag(PlayerFilter.NonPhantom)) players = players.Where(p =>
+        {
+            if (p.PrimaryRole() is IPhantomRole)
+            {
+                IPhantomRole pr = p.PrimaryRole() as IPhantomRole;
+                return pr.IsCountedAsPlayer();
+            }
+            else return true;
+        });
         if (filter.HasFlag(PlayerFilter.Alive)) players = players.Where(p => p.IsAlive());
         if (filter.HasFlag(PlayerFilter.Dead)) players = players.Where(p => !p.IsAlive());
-        if (filter.HasFlag(PlayerFilter.Impostor)) players = players.Where(p => p.PrimaryRole().RoleDefinition.Faction.GetType() == typeof(ImpostorFaction));
-        if (filter.HasFlag(PlayerFilter.Crewmate)) players = players.Where(p => p.PrimaryRole().RoleDefinition.Faction is Crewmates);
+        if (filter.HasFlag(PlayerFilter.Impostor)) players = players.Where(p => p.PrimaryRole().Faction.GetType() == typeof(ImpostorFaction));
+        if (filter.HasFlag(PlayerFilter.Crewmate)) players = players.Where(p => p.PrimaryRole().Faction is Crewmates);
         if (filter.HasFlag(PlayerFilter.Neutral)) players = players.Where(p => p.PrimaryRole().Metadata.Get(LotusKeys.AuxiliaryRoleType) is SpecialType.Neutral);
         if (filter.HasFlag(PlayerFilter.NeutralKilling)) players = players.Where(p => p.PrimaryRole().Metadata.Get(LotusKeys.AuxiliaryRoleType) is SpecialType.NeutralKilling);
         return players;
     }
 
-    public static void SendPlayerData(GameData.PlayerInfo playerInfo, int clientId = -1, bool autoSetName = true)
+    public static void SendPlayerData(NetworkedPlayerInfo playerInfo, int clientId = -1, bool autoSetName = true)
     {
         INameModel? nameModel = playerInfo.Object != null ? playerInfo.Object.NameModel() : null;
         GetPlayers().ForEach(p =>
@@ -45,13 +53,13 @@ public static class Players
             messageWriter.Write(AmongUsClient.Instance.GameId);
             messageWriter.WritePacked(playerClientId);
             messageWriter.StartMessage(1);
-            messageWriter.WritePacked(GameData.Instance.NetId);
+            messageWriter.WritePacked(GameData.Instance.PlayerInfoPrefab.NetId);
 
             string name = playerInfo.PlayerName;
             if (autoSetName) playerInfo.PlayerName = nameModel?.RenderFor(p, sendToPlayer: false, force: true) ?? name;
 
             messageWriter.StartMessage(playerInfo.PlayerId);
-            playerInfo.Serialize(messageWriter);
+            playerInfo.Serialize(messageWriter, false);
             messageWriter.EndMessage();
 
             if (autoSetName) playerInfo.PlayerName = name;
@@ -65,6 +73,22 @@ public static class Players
 
     public static PlayerControl? FindPlayerById(byte playerId) => Utils.GetPlayerById(playerId);
     public static Optional<PlayerControl> PlayerById(byte playerId) => Utils.PlayerById(playerId);
+
+
+    public static IEnumerable<PlayerControl> GetAllPlayers() => GetPlayers();
+    public static IEnumerable<PlayerControl> GetAlivePlayers() => GetPlayers();
+    public static IEnumerable<CustomRole> GetAliveRoles(bool includePhantomRoles = false) => GetPlayers(includePhantomRoles ? (PlayerFilter.NonPhantom | PlayerFilter.Alive) : PlayerFilter.Alive).Select(p => p.PrimaryRole());
+
+
+    public static IEnumerable<PlayerControl> GetDeadPlayers(bool disconnected = false) => GetAllPlayers().Where(p => p.Data.IsDead || (disconnected && p.Data.Disconnected));
+    public static List<PlayerControl> GetAliveImpostors()
+    {
+        return GetAlivePlayers().Where(p => p.PrimaryRole().Faction is ImpostorFaction).ToList();
+    }
+
+    public static IEnumerable<PlayerControl> FindAlivePlayersWithRole(params CustomRole[] roles) =>
+        GetAllPlayers()
+            .Where(p => roles.Any(r => r.GetType() == p.PrimaryRole().GetType()) || p.GetSubroles().Any(s => s.GetType() == roles.GetType()));
 
     public static void SyncAll() => GetPlayers().ForEach(p => p.SyncAll());
 }

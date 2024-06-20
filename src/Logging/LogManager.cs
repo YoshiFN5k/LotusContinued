@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using Lotus.API.Odyssey;
 using Lotus.API.Reactive;
+using Lotus.Utilities;
+using UnityEngine;
 using VentLib.Logging.Appenders;
 using VentLib.Utilities;
 using VentLib.Utilities.Attributes;
@@ -45,7 +47,12 @@ public class LogManager
     public static void SendInGame(string message, params object[] args)
     {
         StaticLogger.Debug($"Sending In Game: {message}", args);
-        if (DestroyableSingleton<HudManager>.Instance) DestroyableSingleton<HudManager>.Instance.Notifier.AddItem(message);
+        if (DestroyableSingleton<HudManager>.Instance)
+        {
+            LobbyNotificationMessage notifMessage = new();
+            notifMessage.SetUp(message, AssetLoader.LoadSprite("Lotus.assets.Lotus_Icon.png", 700f), Color.red, null);
+            DestroyableSingleton<HudManager>.Instance.Notifier.AddMessageToQueue(notifMessage);
+        }
     }
     public static void BeginGameLogSession(bool isNewGame)
     {

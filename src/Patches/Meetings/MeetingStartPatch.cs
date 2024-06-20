@@ -12,7 +12,7 @@ using Lotus.Managers;
 using Lotus.Options.LotusImpl;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2.Operations;
+using Lotus.Roles.Operations;
 using Lotus.Utilities;
 using LotusTrigger.Options;
 using VentLib.Utilities.Attributes;

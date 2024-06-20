@@ -37,7 +37,7 @@ public static class CheckedRpc
     public static void CRpcSetRole(this PlayerControl player, RoleTypes role)
     {
         if (!AmongUsClient.Instance.AmHost) return;
-        if (player.IsHost()) player.SetRole(role);
-        RpcV3.Immediate(player.NetId, RpcCalls.SetRole).Write((ushort)role).Send();
+        if (player.IsHost()) player.CoSetRole(role, true);
+        RpcV3.Immediate(player.NetId, RpcCalls.SetRole).Write((ushort)role).Write(true).Send();
     }
 }

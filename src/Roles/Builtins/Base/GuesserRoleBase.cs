@@ -12,8 +12,7 @@ using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Trackers;
-using Lotus.Roles2;
-using Lotus.Roles2.Manager;
+using Lotus.Roles.Managers.Interfaces;
 using Lotus.Victory;
 using UnityEngine;
 using VentLib.Localization.Attributes;
@@ -24,7 +23,7 @@ using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.Builtins.Base;
 
-public abstract class GuesserRoleBase: CustomRole
+public abstract class GuesserRoleBase : CustomRole
 {
     private static Color guesserColor = new(0.83f, 1f, 0.42f);
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(GuesserRoleBase));
@@ -35,7 +34,7 @@ public abstract class GuesserRoleBase: CustomRole
     private bool hasMadeGuess;
     private byte guessingPlayer = byte.MaxValue;
     private bool skippedVote;
-    private UnifiedRoleDefinition? guessedRole;
+    private CustomRole? guessedRole;
     private int guessesThisMeeting;
 
     protected int CorrectGuesses;
@@ -77,7 +76,8 @@ public abstract class GuesserRoleBase: CustomRole
                     log.Trace($"Confirmed selection, but no guessed role, resetting guess", "GuesserSelect");
                     voteSelector.Reset();
                     voteSelector.CastVote(player);
-                } else hasMadeGuess = true;
+                }
+                else hasMadeGuess = true;
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -102,7 +102,7 @@ public abstract class GuesserRoleBase: CustomRole
         PlayerControl dyingPlayer = MyPlayer;
         if (guessed.PrimaryRole().GetType() == guessedRole.GetType())
         {
-            MyPlayer.InteractWith(guessed, new UnblockedInteraction(new FatalIntent(), (RoleDefinition)null));
+            MyPlayer.InteractWith(guessed, new UnblockedInteraction(new FatalIntent(), (CustomRole)null));
             GuesserHandler(Translations.GuessAnnouncementMessage.Formatted(guessed.name)).Send();
             CorrectGuesses++;
             dyingPlayer = guessed;
@@ -121,7 +121,7 @@ public abstract class GuesserRoleBase: CustomRole
 
     protected virtual void HandleBadGuess()
     {
-        MyPlayer.InteractWith(MyPlayer, new UnblockedInteraction(new FatalIntent(), (RoleDefinition)null));
+        MyPlayer.InteractWith(MyPlayer, new UnblockedInteraction(new FatalIntent(), (CustomRole)null));
         GuesserHandler(Translations.GuessAnnouncementMessage.Formatted(MyPlayer.name)).Send();
     }
 
@@ -141,8 +141,8 @@ public abstract class GuesserRoleBase: CustomRole
         }
 
         string roleName = split[1..].Fuse(" ");
-        UnifiedRoleDefinition? role = IRoleManager.Current.RoleDefinitions().FirstOrOptional(r => string.Equals(r.Name, roleName, StringComparison.CurrentCultureIgnoreCase))
-            .CoalesceEmpty(() => IRoleManager.Current.RoleDefinitions().FirstOrOptional(r => r.Name.ToLower().Contains(roleName.ToLower())))
+        CustomRole? role = IRoleManager.Current.AllCustomRoles().FirstOrOptional(r => string.Equals(r.RoleName, roleName, StringComparison.CurrentCultureIgnoreCase))
+            .CoalesceEmpty(() => IRoleManager.Current.AllCustomRoles().FirstOrOptional(r => r.RoleName.ToLower().Contains(roleName.ToLower())))
             .OrElse(null!);
         if (role == null!)
         {
@@ -152,7 +152,7 @@ public abstract class GuesserRoleBase: CustomRole
 
         guessedRole = role;
 
-        GuesserHandler(Translations.PickedRoleText.Formatted(Players.FindPlayerById(guessingPlayer)?.name, guessedRole.Name)).Send(MyPlayer);
+        GuesserHandler(Translations.PickedRoleText.Formatted(Players.FindPlayerById(guessingPlayer)?.name, guessedRole.RoleName)).Send(MyPlayer);
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>

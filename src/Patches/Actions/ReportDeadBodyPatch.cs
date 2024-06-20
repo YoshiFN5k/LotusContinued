@@ -4,7 +4,7 @@ using Lotus.API.Vanilla.Meetings;
 using Lotus.Roles.Internals;
 using Lotus.Extensions;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2.Operations;
+using Lotus.Roles.Operations;
 using Lotus.Utilities;
 
 namespace Lotus.Patches.Actions;
@@ -14,7 +14,7 @@ public class ReportDeadBodyPatch
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(ReportDeadBodyPatch));
 
-    public static bool Prefix(PlayerControl __instance, [HarmonyArgument(0)] GameData.PlayerInfo? target)
+    public static bool Prefix(PlayerControl __instance, [HarmonyArgument(0)] NetworkedPlayerInfo? target)
     {
         log.Trace($"{__instance.GetNameWithRole()} => {target?.GetNameWithRole() ?? "null"}", "ReportDeadBody");
         if (!AmongUsClient.Instance.AmHost) return true;

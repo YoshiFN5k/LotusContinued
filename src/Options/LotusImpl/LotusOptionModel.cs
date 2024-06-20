@@ -3,7 +3,12 @@ using VentLib.Options.Game;
 
 namespace Lotus.Options.LotusImpl;
 
-public class LotusOptionModel
+public partial class LotusOptionModel
 {
     public List<GameOption> AllOptions = new();
+
+    public void Start()
+    {
+
+    }
 }

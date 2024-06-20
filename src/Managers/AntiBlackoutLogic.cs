@@ -22,21 +22,21 @@ public static class AntiBlackoutLogic
 
         HashSet<byte> unpatchable = new();
 
-        PlayerInfo[] allPlayers = Instance.AllPlayers.ToArray();
+        NetworkedPlayerInfo[] allPlayers = Instance.AllPlayers.ToArray();
 
         foreach (PlayerControl player in players)
         {
             if (player.IsHost() || player.IsModded()) continue;
-            log.Trace($"Patching For: {player.name} ({player.PrimaryRole().Name})", "AntiBlackout");
+            log.Trace($"Patching For: {player.name} ({player.PrimaryRole().RoleName})", "AntiBlackout");
             ReviveEveryone(exiledPlayer);
 
             bool wasImpostor = roleTracker.GetAllImpostorIds(player.PlayerId).Contains(0);
             HashSet<byte> impostorIds = roleTracker.GetAllImpostorIds(player.PlayerId).Where(id => exiledPlayer != id && id != 0).ToHashSet();
-            PlayerInfo[] impostorInfo = allPlayers.Where(info => impostorIds.Contains(info.PlayerId)).ToArray();
+            NetworkedPlayerInfo[] impostorInfo = allPlayers.Where(info => impostorIds.Contains(info.PlayerId)).ToArray();
             log.Trace($"Impostors: {impostorInfo.Select(i => i.Object).Where(o => o != null).Select(o => o.name).Fuse()}");
 
             HashSet<byte> crewIds = roleTracker.GetAllCrewmateIds(player.PlayerId).Where(id => exiledPlayer != id).ToHashSet();
-            PlayerInfo[] crewInfo = allPlayers.Where(info => crewIds.Contains(info.PlayerId)).ToArray();
+            NetworkedPlayerInfo[] crewInfo = allPlayers.Where(info => crewIds.Contains(info.PlayerId)).ToArray();
             log.Trace($"Crew: {crewInfo.Select(i => i.Object).Where(o => o != null).Select(o => o.name).Fuse()}");
 
             int aliveImpostorCount = impostorInfo.Length;
@@ -63,7 +63,7 @@ public static class AntiBlackoutLogic
             while (!IsFailure() && index < impostorInfo.Length)
             {
                 if (aliveCrewCount > aliveImpostorCount) break;
-                PlayerInfo info = impostorInfo[index++];
+                NetworkedPlayerInfo info = impostorInfo[index++];
                 if (info.Object != null) log.Trace($"Set {info.Object.name} => Disconnect = true | Impostors: {aliveImpostorCount - 1} | Crew: {aliveCrewCount}");
                 info.Disconnected = true;
                 aliveImpostorCount--;
@@ -79,7 +79,8 @@ public static class AntiBlackoutLogic
         return unpatchable;
     }
 
-    private static void ReviveEveryone(byte exiledPlayer) {
+    private static void ReviveEveryone(byte exiledPlayer)
+    {
         foreach (var info in Instance.AllPlayers)
         {
             info.IsDead = false;

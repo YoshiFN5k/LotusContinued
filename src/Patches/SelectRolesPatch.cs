@@ -5,12 +5,13 @@ using HarmonyLib;
 using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.Extensions;
+using Lotus.GameModes.Standard;
+using Lotus.Logging;
 using Lotus.Managers;
-using Lotus.Roles2.Manager;
 using LotusTrigger.Options;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
-using GameMaster = Lotus.Roles2.Definitions.GameMaster;
+using GameMaster = Lotus.Roles.Builtins.GameMaster;
 
 namespace Lotus.Patches;
 
@@ -19,7 +20,6 @@ class SelectRolesPatch
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(SelectRolesPatch));
     private static bool encounteredError;
-
     public static void Prefix()
     {
         encounteredError = false;
@@ -29,7 +29,7 @@ class SelectRolesPatch
             List<PlayerControl> unassignedPlayers = Players.GetPlayers().ToList();
             if (GeneralOptions.AdminOptions.HostGM)
             {
-                MatchData.AssignRole(PlayerControl.LocalPlayer, IRoleManager.Current.GetRole<GameMaster>(), true);
+                MatchData.AssignRole(PlayerControl.LocalPlayer, (StandardGameMode.Instance.RoleManager.RoleHolder as StandardRoles).Special.GM, true);
                 unassignedPlayers.RemoveAll(p => p.PlayerId == PlayerControl.LocalPlayer.PlayerId);
             }
 
@@ -51,7 +51,7 @@ class SelectRolesPatch
         TextTable textTable = new("ID", "Color", "Player", "Role", "SubRoles");
         Players.GetPlayers().Where(p => p != null).ForEach(p =>
         {
-            textTable.AddEntry((object)p.PlayerId, ModConstants.ColorNames[p.cosmetics.ColorId], p.name, p.PrimaryRole().Name, p.SecondaryRoles().Fuse());
+            textTable.AddEntry((object)p.PlayerId, ModConstants.ColorNames[p.cosmetics.ColorId], p.name, p.PrimaryRole().RoleName, p.SecondaryRoles().Fuse());
         });
         log.Debug($"Role Assignments\n{textTable}", "RoleManager::SelectRoles~Postfix");
         Game.RenderAllForAll(state: GameState.InIntro);

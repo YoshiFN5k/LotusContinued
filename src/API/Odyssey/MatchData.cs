@@ -7,10 +7,8 @@ using Lotus.API.Reactive.HookEvents;
 using Lotus.Extensions;
 using Lotus.Managers.History;
 using Lotus.Roles;
+using Lotus.Roles.Exceptions;
 using Lotus.Roles.Overrides;
-using Lotus.Roles2;
-using Lotus.Roles2.Manager;
-using Lotus.Roles2.Operations;
 using Lotus.RPC;
 using Lotus.Server;
 using Lotus.Statuses;
@@ -37,7 +35,7 @@ public class MatchData
     public int EmergencyButtonsUsed;
 
     private static readonly Func<RemoteList<GameOptionOverride>> OptionOverrideListSupplier = GetGlobalOptions;
-
+    public static GameState[] InGameStates => new[] { GameState.Roaming, GameState.InMeeting };
 
     public RoleData Roles = new();
 
@@ -54,8 +52,8 @@ public class MatchData
 
     public class RoleData
     {
-        public Dictionary<byte, UnifiedRoleDefinition> PrimaryRoleDefinitions { get; } = new();
-        public Dictionary<byte, List<UnifiedRoleDefinition>> SecondaryRoleDefinitions { get; } = new();
+        public Dictionary<byte, CustomRole> PrimaryRoleDefinitions { get; } = new();
+        public Dictionary<byte, List<CustomRole>> SecondaryRoleDefinitions { get; } = new();
 
 
         public Dictionary<byte, CustomRole> MainRoles = new();
@@ -74,35 +72,35 @@ public class MatchData
             return rolePersistentOverrides.GetOrCompute(playerId, OptionOverrideListSupplier);
         }
 
-        public IEnumerable<UnifiedRoleDefinition> GetRoleDefinitions(byte playerId)
+        public IEnumerable<CustomRole> GetRoleDefinitions(byte playerId)
         {
-            UnifiedRoleDefinition primaryRoleDefinition = GetPrimaryRole(playerId);
-            return new List<UnifiedRoleDefinition> { primaryRoleDefinition }.Concat(SecondaryRoleDefinitions.GetOrCompute(playerId, () => new List<UnifiedRoleDefinition>()));
+            CustomRole primaryRoleDefinition = GetMainRole(playerId);
+            return new List<CustomRole> { primaryRoleDefinition }.Concat(SecondaryRoleDefinitions.GetOrCompute(playerId, () => new List<CustomRole>()));
         }
 
-        public UnifiedRoleDefinition SetPrimaryRoleDefinition(byte playerId, UnifiedRoleDefinition roleDefinition) => PrimaryRoleDefinitions[playerId] = roleDefinition;
-        public void AddSecondaryRoleDefinition(byte playerId, UnifiedRoleDefinition secondaryRoleDefinition) => SecondaryRoleDefinitions.GetOrCompute(playerId, () => new List<UnifiedRoleDefinition>()).Add(secondaryRoleDefinition);
+        public CustomRole SetMainRole(byte playerId, CustomRole roleDefinition) => PrimaryRoleDefinitions[playerId] = roleDefinition;
+        public void AddSubrole(byte playerId, CustomRole secondaryRoleDefinition) => SecondaryRoleDefinitions.GetOrCompute(playerId, () => new List<CustomRole>()).Add(secondaryRoleDefinition);
 
-        public UnifiedRoleDefinition GetPrimaryRole(byte playerId) => PrimaryRoleDefinitions.GetOptional(playerId).OrElseGet(() => throw new NoSuchRoleException($"Player ID ({playerId}) does not have a primary role."));
-        public List<UnifiedRoleDefinition> GetSecondaryRoles(byte playerId) => SecondaryRoleDefinitions.GetOrCompute(playerId, () => new List<UnifiedRoleDefinition>());
+        public CustomRole GetMainRole(byte playerId) => PrimaryRoleDefinitions.GetOptional(playerId).OrElseGet(() => throw new NoSuchRoleException($"Player ID ({playerId}) does not have a primary role."));
+        public List<CustomRole> GetSubroles(byte playerId) => SecondaryRoleDefinitions.GetOrCompute(playerId, () => new List<CustomRole>());
     }
 
 
     [ModRPC(ModCalls.SetPrimaryRole, RpcActors.Host, RpcActors.NonHosts, MethodInvocation.ExecuteBefore)]
-    public static void AssignRole(PlayerControl player, UnifiedRoleDefinition roleDefinition, bool sendToClient = false)
+    public static void AssignRole(PlayerControl player, CustomRole roleDefinition, bool sendToClient = false)
     {
-        UnifiedRoleDefinition assigned = Game.MatchData.Roles.SetPrimaryRoleDefinition(player.PlayerId, roleDefinition = roleDefinition.Instantiate(player));
-        Game.MatchData.FrozenPlayers.GetOptional(player.GetGameID()).IfPresent(fp => fp.PrimaryRoleDefinition = assigned);
-        if (Game.State is GameState.InLobby or GameState.InIntro) player.GetTeamInfo().MyRole = roleDefinition.RoleDefinition.Role;
-        if (sendToClient) RoleOperations.Current.Assign(roleDefinition, player);
+        CustomRole assigned = Game.MatchData.Roles.SetMainRole(player.PlayerId, roleDefinition = roleDefinition.Instantiate(player));
+        Game.MatchData.FrozenPlayers.GetOptional(player.GetGameID()).IfPresent(fp => fp.MainRole = assigned);
+        if (Game.State is GameState.InLobby or GameState.InIntro) player.GetTeamInfo().MyRole = roleDefinition.RealRole;
+        if (sendToClient) ProjectLotus.GameModeManager.CurrentGameMode.Assign(player, roleDefinition);
     }
 
     [ModRPC(ModCalls.SetSecondaryRole, RpcActors.Host, RpcActors.NonHosts, MethodInvocation.ExecuteBefore)]
-    public static void AssignSecondaryRole(PlayerControl player, UnifiedRoleDefinition role, bool sendToClient = false)
+    public static void AssignSubRole(PlayerControl player, CustomRole role, bool sendToClient = false)
     {
-        UnifiedRoleDefinition instantiated = role.Instantiate(player);
-        Game.MatchData.Roles.AddSecondaryRoleDefinition(player.PlayerId, instantiated);
-        if (sendToClient) RoleOperations.Current.Assign(role, player);
+        CustomRole instantiated = role.Instantiate(player);
+        Game.MatchData.Roles.AddSubrole(player.PlayerId, instantiated);
+        if (sendToClient) ProjectLotus.GameModeManager.CurrentGameMode.Assign(player, role);
     }
 
     public static RemoteList<IStatus>? GetStatuses(PlayerControl player)

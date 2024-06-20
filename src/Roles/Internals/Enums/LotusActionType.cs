@@ -89,7 +89,7 @@ public enum LotusActionType
     /// <param name="delegate"><see cref="MeetingDelegate"/> the meeting delegate for the current meeting</param>
     Vote,
     /// <summary>
-    /// Triggers whenever another player interacts with THIS role
+    /// Triggers whenever another player interacts with THIS role. (Use GlobalDetector for any interaction)
     /// </summary>
     /// <param name="target"><b>(GLOBAL ONLY)</b> <see cref="PlayerControl"/> the player being interacted with</param>
     /// <param name="interactor"><see cref="PlayerControl"/> the player starting the interaction</param>

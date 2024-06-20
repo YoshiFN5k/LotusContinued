@@ -1,4 +1,5 @@
 using HarmonyLib;
+using Lotus.Victory;
 using Lotus.API.Odyssey;
 using LotusTrigger.Options;
 

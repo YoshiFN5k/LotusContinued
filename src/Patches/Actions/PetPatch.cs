@@ -6,10 +6,10 @@ using Lotus.API.Odyssey;
 using Lotus.Roles.Internals;
 using Lotus.Extensions;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2.Operations;
 using VentLib.Networking.RPC;
 using VentLib.Utilities;
 using VentLib.Utilities.Harmony.Attributes;
+using Lotus.Roles.Operations;
 
 namespace Lotus.Patches.Actions;
 
@@ -50,7 +50,6 @@ public class PetPatch
         Async.Schedule(() => ClearPetHold(player, timesPet), NetUtils.DeriveDelay(0.5f, 0.005f));
 
         log.Trace($"{player.name} => Pet", "PetPatch");
-        RoleOperations.Current.Trigger(LotusActionType.OnPet, player, __instance);
         RoleOperations.Current.Trigger(LotusActionType.OnHoldPet, player, __instance, timesPet);
     }
 

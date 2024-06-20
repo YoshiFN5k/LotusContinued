@@ -14,7 +14,7 @@ using VentLib.Utilities.Optionals;
 namespace Lotus.Chat.Commands;
 
 [Command("death", "mydeath", "md")]
-public class DeathCommand: CommandTranslations, ICommandReceiver
+public class DeathCommand : CommandTranslations, ICommandReceiver
 {
     public void Receive(PlayerControl source, CommandContext context)
     {
@@ -46,7 +46,7 @@ public class DeathCommand: CommandTranslations, ICommandReceiver
         }
 
         string death = deathEvent.InstigatorRole()
-            .Transform(r => Translations.DirectDeathString.Formatted(frozenPlayer.Name, $"{deathEvent.Instigator().Map(p => p.Name).OrElse("Unknown")} ({r.Name})", deathEvent.SimpleName()),
+            .Transform(r => Translations.DirectDeathString.Formatted(frozenPlayer.Name, $"{deathEvent.Instigator().Map(p => p.Name).OrElse("Unknown")} ({r.RoleName})", deathEvent.SimpleName()),
                 () => Translations.IndirectDeathString.Formatted(frozenPlayer.Name, deathEvent.SimpleName()));
         CHandler(death).Send(UnityOptional<PlayerControl>.Of(source));
     }

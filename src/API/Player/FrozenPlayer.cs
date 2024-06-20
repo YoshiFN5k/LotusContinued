@@ -5,12 +5,11 @@ using Lotus.Extensions;
 using Lotus.Managers.History;
 using Lotus.Managers.History.Events;
 using Lotus.Roles;
-using Lotus.Roles2;
 using Lotus.Statuses;
 using Lotus.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
-using static GameData;
+using static NetworkedPlayerInfo;
 
 namespace Lotus.API.Player;
 
@@ -20,8 +19,8 @@ public class FrozenPlayer
     public string FriendCode;
     public string Name;
     public string ColorName;
-    public UnifiedRoleDefinition PrimaryRoleDefinition;
-    public List<UnifiedRoleDefinition> SecondaryRoleDefinitions;
+    public CustomRole MainRole;
+    public List<CustomRole> Subroles;
     public RemoteList<IStatus> Statuses = new();
     public uint Level;
     public PlayerOutfit Outfit;
@@ -41,8 +40,8 @@ public class FrozenPlayer
         FriendCode = player.FriendCode;
         PlayerId = player.PlayerId;
         Outfit = player.CurrentOutfit;
-        PrimaryRoleDefinition = player.PrimaryRole();
-        SecondaryRoleDefinitions = player.SecondaryRoles();
+        MainRole = player.PrimaryRole();
+        Subroles = player.SecondaryRoles();
         GameID = player.GetGameID();
 
         Hooks.PlayerHooks.PlayerDeathHook.Bind($"{nameof(FrozenPlayer)}-{PlayerId}", pd =>

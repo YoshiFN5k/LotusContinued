@@ -6,7 +6,6 @@ using Lotus.API.Odyssey;
 using Lotus.API.Stats;
 using Lotus.Managers.History;
 using Lotus.Roles;
-using Lotus.Roles2;
 using TMPro;
 using UnityEngine;
 using VentLib.Utilities;
@@ -44,14 +43,14 @@ public class WinnersMenu
             p.cosmetics.nameText.transform.localScale += new Vector3(1f, 1f);
         });
 
-        HudManager.Instance.GameSettings.sortingOrder = -1;
+        // HudManager.Instance.GameSettings.sortingOrder = -1;
         chatParent.backgroundImage.sortingOrder = -1;
 
         textMeshProPrefab = UnityOptional<TextMeshPro>.Of(Object.Instantiate(chatParent.freeChatField.textArea.outputText, gameObject.transform));
         textMeshProPrefab.IfPresent(text =>
         {
 
-            text.font = GameStartManager.Instance.startLabelText.font;
+            text.font = GameStartManager.Instance.GameStartText.font;
             text.color = Color.white;
             text.m_fontSizeMin = 8f;
             text.transform.localPosition += new Vector3(-0.85f, 2f);
@@ -96,7 +95,7 @@ public class WinnersMenu
         for (int index = 0; index < allPlayers.Count; index++)
         {
             PlayerHistory playerHistory = allPlayers[index];
-            UnifiedRoleDefinition role = playerHistory.PrimaryRoleDefinition;
+            CustomRole role = playerHistory.MainRole;
             PoolablePlayer newPlayer = prefabPlayer;//Object.Instantiate(prefabPlayer, prefabPlayer.transform.parent);
             newPlayer.gameObject.SetActive(true);
             newPlayer.UpdateFromPlayerOutfit(playerHistory.Outfit, PlayerMaterial.MaskType.ComplexUI, false, false);
@@ -113,7 +112,7 @@ public class WinnersMenu
                 .Map(stat => $"{stat.Name()}: {stat.GetGenericValue(playerHistory.UniquePlayerId)}")
                 .OrElse("");
 
-            string name = playerHistory.Name + "\n" + role.RoleColor.Colorize(role.Name) + "\n" + bestStat;
+            string name = playerHistory.Name + "\n" + role.RoleColor.Colorize(role.RoleName) + "\n" + bestStat;
             newPlayer.SetName(name);
 
             TextMeshPro aboveNameTmp = Object.Instantiate(newPlayer.cosmetics.nameText, newPlayer.transform);

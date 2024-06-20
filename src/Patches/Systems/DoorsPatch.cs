@@ -5,7 +5,7 @@ using Lotus.API.Reactive.HookEvents;
 using Lotus.API.Vanilla.Sabotages;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2.Operations;
+using Lotus.Roles.Operations;
 
 namespace Lotus.Patches.Systems;
 

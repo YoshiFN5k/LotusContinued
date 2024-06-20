@@ -73,12 +73,12 @@ class SplashPatch
         __instance.mainMenuUI.FindChild<SpriteRenderer>("WindowShine").transform.gameObject.SetActive(false);
         __instance.mainMenuUI.FindChild<Transform>("ScreenCover").gameObject.SetActive(false);
 
-        GameObject leftPanel =__instance.mainMenuUI.FindChild<Transform>("LeftPanel").gameObject;
-        GameObject rightPanel =__instance.mainMenuUI.FindChild<Transform>("RightPanel").gameObject;
+        GameObject leftPanel = __instance.mainMenuUI.FindChild<Transform>("LeftPanel").gameObject;
+        GameObject rightPanel = __instance.mainMenuUI.FindChild<Transform>("RightPanel").gameObject;
         rightPanel.gameObject.GetComponent<SpriteRenderer>().enabled = false;
         GameObject maskedBlackScreen = rightPanel.FindChild<Transform>("MaskedBlackScreen").gameObject;
         maskedBlackScreen.GetComponent<SpriteRenderer>().enabled = false;
-        Transform accountButtons =  maskedBlackScreen.FindChild<Transform>("AccountButtons", true);
+        Transform accountButtons = maskedBlackScreen.FindChild<Transform>("AccountButtons", true);
         accountButtons.gameObject.FindChild<Transform>("Divider", true).localPosition += new Vector3(1000f, 0f);
         accountButtons.gameObject.FindChild<Transform>("Header", true).localPosition += new Vector3(1000f, 0f);
         maskedBlackScreen.transform.localPosition = new Vector3(-3.345f, -2.05f);
@@ -88,7 +88,7 @@ class SplashPatch
         leftPanel.gameObject.FindChild<SpriteRenderer>("Divider").enabled = false;
         leftPanel.GetComponentsInChildren<SpriteRenderer>(true).Where(r => r.name == "Shine").ForEach(r => r.enabled = false);
 
-        PassiveButton inventoryButton = MakeIconButton(__instance.inventoryButton,new Vector3(0.25f, 1.15f, 1f), sprite: AssetLoader.LoadLotusSprite("main_menu.InventoryIconRedone.png", 100));
+        PassiveButton inventoryButton = MakeIconButton(__instance.inventoryButton, new Vector3(0.25f, 1.15f, 1f), sprite: AssetLoader.LoadLotusSprite("main_menu.InventoryIconRedone.png", 100));
         inventoryButton.transform.localPosition = new Vector3(5.6f, -1.96f, 0f);
 
         PassiveButton discordButton = Object.Instantiate(inventoryButton, __instance.transform);
@@ -126,7 +126,6 @@ class SplashPatch
         playLocalButton.OnClick = __instance.playLocalButton.OnClick;
         Async.Schedule(() => playLocalButton.buttonText.text = "Play Local", 0.001f);
 
-
         __instance.myAccountButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(0.95f, 0f, 1f);
         __instance.myAccountButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.85f);
         __instance.myAccountButton.activeTextColor = Color.white;
@@ -147,8 +146,12 @@ class SplashPatch
         PlayerParticles particles = Object.FindObjectOfType<PlayerParticles>();
         particles.gameObject.SetActive(false);
 
-        ModUpdateMenu = __instance.gameObject.AddComponent<ModUpdateMenu>();
-        ModUpdateMenu.AnchorObject.transform.localPosition += new Vector3(0f, 0f, -9f);
+        DevLogger.Log("Skipping mod update menu as it breaks the game.");
+
+        // ModUpdateMenu = __instance.gameObject.AddComponent<ModUpdateMenu>();
+        // ModUpdateMenu.AnchorObject.transform.localPosition += new Vector3(0f, 0f, -9f);
+
+        DevLogger.Log("?????c");
 
         /*GameObject updateButton = Object.Instantiate(playLocalButton, __instance.transform);*/
         /*Async.Schedule(() =>

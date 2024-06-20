@@ -17,8 +17,6 @@ using Lotus.GUI.Menus;
 using Lotus.GUI.Patches;
 using Lotus.Managers;
 using Lotus.Options;
-using Lotus.Roles2;
-using Lotus.Roles2.Definitions.JanitorRole;
 using UnityEngine;
 using VentLib;
 using VentLib.Networking.Handshake;
@@ -31,11 +29,12 @@ using VentLib.Version.Updater;
 using VentLib.Version.Updater.Github;
 using Version = VentLib.Version.Version;
 using VentLib.Utilities.Debug.Profiling;
+using Lotus.Extensions;
 
 [assembly: AssemblyVersion(ProjectLotus.CompileVersion)]
 namespace Lotus;
 
-[BepInPlugin(PluginGuid, "Lotus", $"{MajorVersion}.{MinorVersion}.{PatchVersion}")]
+[BepInPlugin(PluginGuid, "Lotus", VisibleVersion)]
 [BepInDependency(Vents.Id)]
 [BepInProcess("Among Us.exe")]
 public class ProjectLotus : BasePlugin, IGitVersionEmitter
@@ -44,6 +43,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
     private const string Id = "com.discussions.LotusContinued";
 
     public const string PluginGuid = Id;
+    public const string VisibleVersion = $"{MajorVersion}.{MinorVersion}.{PatchVersion}";
     public const string CompileVersion = $"{MajorVersion}.{MinorVersion}.{PatchVersion}.{BuildNumber}";
 
     public const string MajorVersion = "1";
@@ -57,10 +57,8 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 
     public static readonly string ModName = "Project Lotus";
     public static readonly string ModColor = "#4FF918";
-
-    public static DefinitionUnifier DefinitionUnifier = new();
     public static bool DevVersion = false;
-    public static readonly string DevVersionStr = "Dev 1.06.2024";
+    public static readonly string DevVersionStr = "Dev 18.06.2024";
 
     private static Harmony _harmony;
     public static string CredentialsText = null!;
@@ -85,6 +83,8 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
         ModUpdater.EstablishConnection();
         ModUpdater.RegisterReleaseCallback(BeginUpdate, true);
 
+        DebugExtensions.Start();
+
 #if !DEBUG
         Profilers.Global.SetActive(false);
 #endif
@@ -100,11 +100,10 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
             ModUpdateMenu.AddUpdateItem("VentFramework", null, ex => ModUpdater.Update(ventAssembly, ex)!);
     }
 
-    public static NormalGameOptionsV07 NormalOptions => GameOptionsManager.Instance.currentNormalGameOptions;
+    public static NormalGameOptionsV08 NormalOptions => GameOptionsManager.Instance.currentNormalGameOptions;
 
 
     public static List<byte> ResetCamPlayerList = null!;
-
     public static GameModeManager GameModeManager;
     public static ProjectLotus Instance = null!;
 
@@ -124,15 +123,11 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 
         /*StaticEditor.Register(Assembly.GetExecutingAssembly());*/
         _harmony.PatchAll(Assembly.GetExecutingAssembly());
-        DefinitionUnifier.RegisterRoleComponents(typeof(ProjectLotus).Assembly);
         AddonManager.ImportAddons();
 
-        DefinitionUnifier unifier = new();
-        unifier.RegisterRoleComponents(this.GetType().Assembly);
-        UnifiedRoleDefinition unifiedRoleDefinition = unifier.Unify(new JanitorNew());
-
         GameModeManager.Setup();
-        ShowerPages.InitPages();
+        GlobalRoleManager.Instance = new GlobalRoleManager();
+        // ShowerPages.InitPages();
 
         FinishedLoading = true;
         log.High("Finished Initializing Project Lotus. Sending Post-Initialization Event");

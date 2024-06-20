@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Lotus.API.Odyssey;
 using Lotus.API.Reactive;
+using Lotus.GameModes.Standard;
 using Lotus.Victory;
 using VentLib.Options;
 using VentLib.Options.Game;
@@ -57,6 +58,13 @@ public class GameModeManager
             .IsHeader(true)
             .Tab(VanillaMainTab.Instance)
             .BindInt(SetGameMode);
+
+        GameModes.AddRange(new List<IGameMode>()
+        {
+            new StandardGameMode()
+        });
+
+        SetGameMode(0);
 
         for (int i = 0; i < GameModes.Count; i++)
         {

@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using Lotus.API.Odyssey;
 using Lotus.Managers;
+using Lotus.Roles;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Enums;
+using Lotus.Roles.Operations;
 using Lotus.Roles.Overrides;
-using Lotus.Roles2.Manager;
 using Lotus.Victory;
+using Lotus.Roles.Managers.Interfaces;
 using VentLib.Options.Game;
 using VentLib.Options.Game.Tabs;
 using VentLib.Utilities.Collections;
@@ -17,11 +19,13 @@ public interface IGameMode
 {
     public string Name { get; set; }
     public CoroutineManager CoroutineManager { get; }
-    public IRoleManager RoleManager { get; }
     public MatchData MatchData { get; protected internal set; }
+    public RoleOperations RoleOperations { get; }
+    public Roles.Managers.RoleManager RoleManager { get; }
 
     IEnumerable<GameOptionTab> EnabledTabs();
 
+    void Assign(PlayerControl player, CustomRole role);
     void AssignRoles(List<PlayerControl> players);
 
     protected internal void Activate();

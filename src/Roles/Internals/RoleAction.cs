@@ -6,7 +6,7 @@ using Lotus.Roles.Internals.Attributes;
 
 namespace Lotus.Roles.Internals;
 
-public class RoleAction: LotusAction
+public class RoleAction : LotusAction
 {
     public ActionFlag Flags { get; }
     public bool TriggerWhenDead { get; }
@@ -20,7 +20,7 @@ public class RoleAction: LotusAction
         this.Flags = attribute.ActionFlags;
     }
 
-    public RoleAction(RoleActionAttribute attribute, MethodInfo method, object executer): base(attribute, method)
+    public RoleAction(RoleActionAttribute attribute, MethodInfo method, object executer) : base(attribute, method)
     {
         DevLogger.Log($"Registered new action wth executer: {executer}");
         this.Executer = executer;
@@ -40,6 +40,5 @@ public class RoleAction: LotusAction
     {
         return (RoleAction)this.MemberwiseClone();
     }
-
     public override string ToString() => $"RoleAction(type={ActionType}, executer={Executer}, priority={Priority}, method={Method}))";
 }

@@ -29,6 +29,7 @@ using VentLib.Networking.RPC;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
+using Lotus.API;
 
 namespace Lotus.Roles;
 
@@ -37,6 +38,7 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(CustomRole));
 
+    public string GlobalRoleID => $"${(Metadata.GetOrDefault(LotusKeys.GloballyManagedRole, false) ? "G" : "")}{Addon?.UUID ?? 0}~{RoleID}";
     protected HashSet<Type> RelatedRoles = new();
 
     static CustomRole()
@@ -106,7 +108,7 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
     /// <param name="optionOverride">Override to apply whenever SyncOptions is called</param>
     public Remote<GameOptionOverride> AddOverride(GameOptionOverride optionOverride) => currentOverrides.Add(optionOverride);
 
-    public GameOptionOverride? GetOverride(Override overrideType) => CurrentRoleOverrides().LastOrDefault(o => o.Option == overrideType);
+    public GameOptionOverride? GetOverride(Override overrideType) => GetRoleOverrides().LastOrDefault(o => o.Option == overrideType);
     /// <summary>
     /// Removes a continuous GameOverride
     /// </summary>
@@ -118,7 +120,7 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
     /// <param name="override">Override type to remove</param>
     protected void RemoveOverride(Override @override) => currentOverrides.RemoveAll(o => o.Option == @override);
 
-    public List<GameOptionOverride> CurrentRoleOverrides(IEnumerable<GameOptionOverride>? newOverrides = null)
+    public List<GameOptionOverride> GetRoleOverrides(IEnumerable<GameOptionOverride>? newOverrides = null)
     {
         DevLogger.Log($"My player: {MyPlayer}");
         List<GameOptionOverride> thisList = new(this.RoleSpecificGameOptionOverrides);
@@ -141,7 +143,7 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
         if (MyPlayer == null || !AmongUsClient.Instance.AmHost) return;
 
         IEnumerable<GameOptionOverride>? overrides = newOverrides;
-        if (!parameterOverridesAreAbsolute || overrides == null) overrides = CurrentRoleOverrides(newOverrides);
+        if (!parameterOverridesAreAbsolute || overrides == null) overrides = GetRoleOverrides(newOverrides);
 
         IGameOptions modifiedOptions = DesyncOptions.GetModifiedOptions(overrides);
         if (official) RpcV3.Immediate(PlayerControl.LocalPlayer.NetId, RpcCalls.SyncSettings).Write(modifiedOptions).Send(MyPlayer.GetClientId());
@@ -159,7 +161,7 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
         if (RealRole.IsCrewmate())
         {
             DevLogger.Log($"Real Role: {RealRole}");
-            MyPlayer.RpcSetRole(RealRole);
+            MyPlayer.RpcSetRole(RealRole, true);
 
             if (!isStartOfGame) goto finishAssignment;
 
@@ -170,8 +172,8 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
 
 
         log.Trace($"Setting {MyPlayer.name} Role => {RealRole} | IsStartGame = {isStartOfGame}", "CustomRole::Assign");
-        if (MyPlayer.IsHost()) MyPlayer.SetRole(RealRole);
-        else RpcV3.Immediate(MyPlayer.NetId, RpcCalls.SetRole).Write((ushort)RealRole).Send(MyPlayer.GetClientId());
+        if (MyPlayer.IsHost()) MyPlayer.CoSetRole(RealRole, true);
+        else RpcV3.Immediate(MyPlayer.NetId, RpcCalls.SetRole).Write((ushort)RealRole).Write(true).Send(MyPlayer.GetClientId());
 
         log.Debug($"Player {MyPlayer.GetNameWithRole()} Allies: [{alliedPlayers.Select(p => p.name).Fuse()}]");
         HashSet<byte> alliedPlayerIds = alliedPlayers.Where(p => Faction.CanSeeRole(p)).Select(p => p.PlayerId).ToHashSet();
@@ -189,15 +191,15 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
         int[] nonAlliedImpostorClientIds = nonAlliedImpostors.Select(p => p.GetClientId()).ToArray();
         log.Trace($"Non Allied Impostors: [{nonAlliedImpostors.Select(p => p.name).Fuse()}]");
 
-        RpcV3.Immediate(MyPlayer.NetId, RpcCalls.SetRole).Write((ushort)RealRole).SendInclusive(alliedPlayerClientIds);
+        RpcV3.Immediate(MyPlayer.NetId, RpcCalls.SetRole).Write((ushort)RealRole).Write(true).SendInclusive(alliedPlayerClientIds);
         if (isStartOfGame) alliedPlayers.ForEach(p => p.GetTeamInfo().AddPlayer(MyPlayer.PlayerId, RealRole.IsImpostor()));
 
-        RpcV3.Immediate(MyPlayer.NetId, RpcCalls.SetRole).Write((ushort)RoleTypes.Crewmate).SendInclusive(nonAlliedImpostorClientIds);
+        RpcV3.Immediate(MyPlayer.NetId, RpcCalls.SetRole).Write((ushort)RoleTypes.Crewmate).Write(true).SendInclusive(nonAlliedImpostorClientIds);
         if (isStartOfGame) nonAlliedImpostors.ForEach(p => p.GetTeamInfo().AddVanillaCrewmate(MyPlayer.PlayerId));
 
         // This code exists to hopefully better split up the roles to cause less blackscreens
         RoleTypes splitRole = Faction is ImpostorFaction ? RoleTypes.Impostor : RoleTypes.Crewmate;
-        RpcV3.Immediate(MyPlayer.NetId, RpcCalls.SetRole).Write((ushort)splitRole).SendInclusive(crewmateClientIds);
+        RpcV3.Immediate(MyPlayer.NetId, RpcCalls.SetRole).Write((ushort)splitRole).Write(true).SendInclusive(crewmateClientIds);
         if (isStartOfGame) crewmates.ForEach(p =>
         {
             if (splitRole is RoleTypes.Impostor) p.GetTeamInfo().AddVanillaImpostor(MyPlayer.PlayerId);
@@ -209,8 +211,8 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
         ShowRoleToTeammates(alliedPlayers);
 
         // This is for host
-        if (Relationship(PlayerControl.LocalPlayer) is Relation.FullAllies && Faction.CanSeeRole(PlayerControl.LocalPlayer)) MyPlayer.SetRole(RealRole);
-        else MyPlayer.SetRole(PlayerControl.LocalPlayer.GetVanillaRole().IsImpostor() ? RoleTypes.Crewmate : RoleTypes.Impostor);
+        if (Relationship(PlayerControl.LocalPlayer) is Relation.FullAllies && Faction.CanSeeRole(PlayerControl.LocalPlayer)) MyPlayer.CoSetRole(RealRole, true);
+        else MyPlayer.CoSetRole(PlayerControl.LocalPlayer.GetVanillaRole().IsImpostor() ? RoleTypes.Crewmate : RoleTypes.Impostor, true);
 
         SyncOptions(new GameOptionOverride[] { new(Override.KillCooldown, 0.1f) }, true);
         HudManager.Instance.SetHudActive(true);

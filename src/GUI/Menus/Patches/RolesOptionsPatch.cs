@@ -9,7 +9,7 @@ public static class RolesSettingsMenuPatch
 {
     public static void Postfix(RolesSettingsMenu __instance)
     {
-        foreach (var ob in __instance.Children)
+        foreach (var ob in __instance.advancedSettingChildren.ToArray())
         {
             switch (ob.Title)
             {
@@ -23,10 +23,10 @@ public static class RolesSettingsMenuPatch
         }
     }
 }
-[HarmonyPatch(typeof(NormalGameOptionsV07), nameof(NormalGameOptionsV07.SetRecommendations))]
+[HarmonyPatch(typeof(NormalGameOptionsV08), nameof(NormalGameOptionsV08.SetRecommendations), typeof(int), typeof(bool), typeof(RulesPresets))]
 public static class SetRecommendationsPatch
 {
-    public static bool Prefix(NormalGameOptionsV07 __instance, int numPlayers, bool isOnline)
+    public static bool Prefix(NormalGameOptionsV08 __instance, int numPlayers, bool isOnline, RulesPresets rulesPresets)
     {
         numPlayers = Mathf.Clamp(numPlayers, 4, 15);
         __instance.PlayerSpeedMod = __instance.MapId == 4 ? 1.25f : 1f; //AirShipなら1.25、それ以外は1
@@ -38,7 +38,7 @@ public static class SetRecommendationsPatch
         __instance.NumShortTasks = 6;
         __instance.NumEmergencyMeetings = 1;
         if (!isOnline)
-            __instance.NumImpostors = NormalGameOptionsV07.RecommendedImpostors[numPlayers];
+            __instance.NumImpostors = NormalGameOptionsV08.RecommendedImpostors[numPlayers];
         __instance.KillDistance = 0;
         __instance.DiscussionTime = 0;
         __instance.VotingTime = 150;
@@ -78,5 +78,14 @@ public static class SetRecommendationsPatch
             __instance.KillCooldown = 10f;
         }*/
         return false;
+    }
+}
+
+[HarmonyPatch(typeof(NormalGameOptionsV08), nameof(NormalGameOptionsV08.SetRecommendations), typeof(int), typeof(bool))]
+class NoRulesRecommendationPatch
+{
+    public static bool Prefix(NormalGameOptionsV08 __instance, int numPlayers, bool isOnline)
+    {
+        return SetRecommendationsPatch.Prefix(__instance, numPlayers, isOnline, RulesPresets.Standard);
     }
 }

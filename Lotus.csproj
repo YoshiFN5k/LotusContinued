@@ -21,20 +21,20 @@
 
   <PropertyGroup>
 		<GamePlatform Condition="'$(GamePlatform)' == ''">Steam</GamePlatform>
-		<GameVersion Condition="'$(GamePlatform)' == 'Steam'">2024.3.5</GameVersion>
-		<GameVersion Condition="'$(GamePlatform)' == 'Itch'">2024.3.5</GameVersion>
+		<GameVersion Condition="'$(GamePlatform)' == 'Steam'">2024.6.18</GameVersion>
+		<GameVersion Condition="'$(GamePlatform)' == 'Itch'">2024.6.18</GameVersion>
 
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 	</PropertyGroup>
 
   <ItemGroup>
-        <PackageReference Include="AmongUs.GameLibs.Steam" Version="2024.3.5" PrivateAssets="all" />
+    <PackageReference Include="AmongUs.GameLibs.Steam" Version="2024.6.18" PrivateAssets="all" />
 		<PackageReference Include="BepInEx.IL2CPP.MSBuild" Version="2.1.0-rc.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.674" Private="false" ExcludeAssets="runtime;native" />
-		<PackageReference Include="VentFrameworkContinued" Version="1.0.0" />
+		<PackageReference Include="VentFrameworkContinued" Version="1.0.21" />
 	</ItemGroup>
   
   <ItemGroup>

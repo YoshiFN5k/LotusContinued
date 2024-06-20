@@ -11,13 +11,14 @@ using Lotus.Roles.Interfaces;
 using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
 using Lotus.Extensions;
-using Lotus.Roles2;
 using UnityEngine;
 using VentLib.Networking.RPC;
 using VentLib.Networking.RPC.Interfaces;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
+using Lotus.Roles;
+using Lotus.Roles.RoleGroups.Vanilla;
 
 namespace Lotus.Utilities;
 
@@ -25,7 +26,7 @@ public static class Utils
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Utils));
 
-    public static string GetNameWithRole(this GameData.PlayerInfo player)
+    public static string GetNameWithRole(this NetworkedPlayerInfo player)
     {
         return GetPlayerById(player.PlayerId)?.GetNameWithRole() ?? "";
     }
@@ -36,11 +37,11 @@ public static class Utils
         return c;
     }
 
-    public static bool HasTasks(GameData.PlayerInfo p)
+    public static bool HasTasks(NetworkedPlayerInfo p)
     {
-        if (p.GetPrimaryRole()?.RoleDefinition.Role.IsImpostor() ?? true) return false;
-        UnifiedRoleDefinition? primaryDefinition = p.GetPrimaryRole();
-        return primaryDefinition != null && primaryDefinition.Metadata.GetOrEmpty(TaskContainer.Key).Compare(t => t.HasTasks);
+        if (p.GetPrimaryRole()?.RealRole.IsImpostor() ?? true) return false;
+        CustomRole? primaryDefinition = p.GetPrimaryRole();
+        return primaryDefinition != null && primaryDefinition is Crewmate;
     }
 
     public static void Teleport(CustomNetworkTransform nt, Vector2 location)

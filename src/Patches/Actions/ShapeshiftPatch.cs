@@ -8,7 +8,7 @@ using Lotus.Roles.Internals;
 using Lotus.Extensions;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Overrides;
-using Lotus.Roles2.Operations;
+using Lotus.Roles.Operations;
 using Lotus.RPC;
 using VentLib.Utilities;
 using Priority = HarmonyLib.Priority;

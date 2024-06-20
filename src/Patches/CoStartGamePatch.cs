@@ -5,7 +5,7 @@ using Lotus.API;
 using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.Managers;
-using Lotus.Roles2.Manager;
+using Lotus.Roles.Managers.Interfaces;
 using LotusTrigger.Options;
 using VentLib.Utilities.Extensions;
 
@@ -37,7 +37,7 @@ class CoStartGamePatch
         try
         {
             Game.State = GameState.InIntro;
-            Players.GetPlayers().Do(p => Game.MatchData.Roles.PrimaryRoleDefinitions[p.PlayerId] = IRoleManager.Current.DefaultDefinition);
+            Players.GetPlayers().Do(p => Game.MatchData.Roles.PrimaryRoleDefinitions[p.PlayerId] = IRoleManager.Current.FallbackRole);
             Game.CurrentGameMode.Setup();
         }
         catch (Exception exception)

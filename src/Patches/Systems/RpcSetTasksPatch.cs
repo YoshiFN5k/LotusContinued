@@ -8,20 +8,19 @@ using Lotus.Roles.Interfaces;
 using Lotus.Utilities;
 using Lotus.Extensions;
 using Lotus.Logging;
-using Lotus.Roles2;
 
 namespace Lotus.Patches.Systems;
 
-[HarmonyPatch(typeof(GameData), nameof(GameData.RpcSetTasks))]
+[HarmonyPatch(typeof(NetworkedPlayerInfo), nameof(GameData.Instance.PlayerInfoPrefab.RpcSetTasks))]
 public class RpcSetTasksPatch
 {
     internal static readonly Queue<TasksOverride> TaskQueue = new();
 
-    public static bool Prefix(GameData __instance, byte playerId, ref Il2CppStructArray<byte> taskTypeIds)
+    public static bool Prefix(NetworkedPlayerInfo __instance, ref Il2CppStructArray<byte> taskTypeIds)
     {
         if (!AmongUsClient.Instance.AmHost) return true;
 
-        UnifiedRoleDefinition? role = Utils.GetPlayerById(playerId)?.PrimaryRole();
+        CustomRole? role = Utils.GetPlayerById(__instance.PlayerId)?.PrimaryRole();
         // This function mostly deals with override, so if not overriding immediately exit
 
         TasksOverride? tasksOverride = TaskQueue.Count == 0 ? null : TaskQueue.Dequeue();
@@ -31,16 +30,24 @@ public class RpcSetTasksPatch
         bool overrideTasks = false;
         bool hasCommonTasks = false;
 
-        TaskContainer taskContainer = role?.Metadata.GetOrDefault(TaskContainer.Key, TaskContainer.None) ?? TaskContainer.None;
-        if (!taskContainer.HasTasks) return true;
+        bool hasTasks = tasksOverride != null;
 
-        if (taskContainer.TasksOverrideDefaults)
+        switch (role)
         {
-            hasCommonTasks = taskContainer.HasCommonTasks;
-            shortTaskCount = taskContainer.ShortTasks;
-            longTaskCount = taskContainer.LongTasks;
-            overrideTasks = true;
+            case IOverridenTaskHolderRole overridenTaskRole:
+                hasCommonTasks = overridenTaskRole.AssignCommonTasks();
+                shortTaskCount = overridenTaskRole.ShortTaskAmount();
+                longTaskCount = overridenTaskRole.LongTaskAmount();
+                overrideTasks = overridenTaskRole.OverrideTasks();
+                hasTasks = overridenTaskRole.HasTasks();
+                break;
+            case ITaskHolderRole holderRole:
+                hasTasks = holderRole.HasTasks();
+                break;
         }
+
+        DevLogger.Log("Hello!!!");
+        if (!hasTasks) return true;
 
 
         if (shortTaskCount == -1 || !overrideTasks) shortTaskCount = AUSettings.NumShortTasks();

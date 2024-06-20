@@ -14,7 +14,7 @@ using Lotus.Extensions;
 using Lotus.Logging;
 using Lotus.Options.LotusImpl;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2.Operations;
+using Lotus.Roles.Operations;
 using LotusTrigger.Options;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Harmony.Attributes;
@@ -100,7 +100,7 @@ public class CheckForEndVotingPatch
             kv.Value.ForEach(voted =>
             {
                 string votedName = voted.FlatMap(b => Utils.PlayerById(b)).Map(p => p.GetNameWithRole()).OrElse("No One");
-                player.IfPresent(p => log.Log(LogLevel.All,$"{p.GetNameWithRole()} voted for {votedName}"));
+                player.IfPresent(p => log.Log(LogLevel.All, $"{p.GetNameWithRole()} voted for {votedName}"));
                 votingStates.Add(new VoterState
                 {
                     VoterId = playerId,
@@ -112,7 +112,7 @@ public class CheckForEndVotingPatch
     }
 
     [QuickPrefix(typeof(MeetingHud), nameof(MeetingHud.VotingComplete))]
-    public static void VotingCompletePatch(MeetingHud __instance, [HarmonyArgument(1)] GameData.PlayerInfo? playerInfo)
+    public static void VotingCompletePatch(MeetingHud __instance, [HarmonyArgument(1)] NetworkedPlayerInfo? playerInfo)
     {
         if (!AmongUsClient.Instance.AmHost) return;
 
@@ -120,7 +120,7 @@ public class CheckForEndVotingPatch
         meetingDelegate.ExiledPlayer = playerInfo;
 
         RoleOperations.Current.Trigger(LotusActionType.MeetingEnd, null,
-            Optional<GameData.PlayerInfo>.Of(playerInfo), meetingDelegate.IsTie,
+            Optional<NetworkedPlayerInfo>.Of(playerInfo), meetingDelegate.IsTie,
             new Dictionary<byte, int>(meetingDelegate.CurrentVoteCount()),
             new Dictionary<byte, List<Optional<byte>>>(meetingDelegate.CurrentVotes()));
         DevLogger.GameInfo();

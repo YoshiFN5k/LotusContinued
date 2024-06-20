@@ -10,8 +10,8 @@ using Lotus.Managers;
 using Lotus.Roles;
 using Lotus.Roles.Interfaces;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2;
-using Lotus.Roles2.Manager;
+using Lotus.Roles.Managers.Interfaces;
+using Lotus.Roles.Subroles;
 using UnityEngine;
 using VentLib.Commands;
 using VentLib.Commands.Attributes;
@@ -23,7 +23,7 @@ using VentLib.Utilities.Extensions;
 namespace Lotus.Chat.Commands;
 
 [Localized("Commands")]
-public class BasicCommands: CommandTranslations
+public class BasicCommands : CommandTranslations
 {
     [Localized(nameof(Winners))] public static string Winners = "Winners";
     [Localized("Dump.Success")] public static string DumpSuccess = "Successfully dumped log. Check your logs folder for a \"dump.log!\"";
@@ -35,19 +35,19 @@ public class BasicCommands: CommandTranslations
         string? factionName = null;
         string text = $"{HostOptionTranslations.CurrentRoles}:\n";
 
-        OrderedDictionary<string, List<UnifiedRoleDefinition>> defsByFactions = new();
+        OrderedDictionary<string, List<CustomRole>> defsByFactions = new();
 
-        string FactionName(UnifiedRoleDefinition roleDefinition)
+        string FactionName(CustomRole role)
         {
-            if (roleDefinition.Metadata.GetOrEmpty(RoleProperties.Key).Compare(r => r.HasProperty(RoleProperty.IsModifier))) return "Modifiers";
-            if (roleDefinition.Faction is not Neutral) return roleDefinition.Faction.Name();
+            if (role is Subrole) return "Modifiers";
+            if (role.Faction is not Neutral) return role.Faction.Name();
 
-            SpecialType specialType = roleDefinition.Metadata.GetOrDefault(LotusKeys.AuxiliaryRoleType, SpecialType.None);
+            SpecialType specialType = role.Metadata.GetOrDefault(LotusKeys.AuxiliaryRoleType, SpecialType.None);
 
             return specialType is SpecialType.NeutralKilling ? "Neutral Killers" : "Neutral";
         }
 
-        IRoleManager.Current.RoleDefinitions().ForEach(r => defsByFactions.GetOrCompute(FactionName(r), () => new List<UnifiedRoleDefinition>()).Add(r));
+        IRoleManager.Current.AllCustomRoles().ForEach(r => defsByFactions.GetOrCompute(FactionName(r), () => new List<CustomRole>()).Add(r));
 
         defsByFactions.GetValues().SelectMany(s => s).ForEach(r =>
         {
@@ -63,7 +63,7 @@ public class BasicCommands: CommandTranslations
             }
 
 
-            text += $"{r.Name}: {r.Count} × {r.Chance}%";
+            text += $"{r.RoleName}: {r.Count} × {r.Chance}%";
             if (r.Count > 1) text += $" (+ {r.AdditionalChance}%)\n";
             else text += "\n";
         });
@@ -88,7 +88,7 @@ public class BasicCommands: CommandTranslations
             .Send(source);
         else
         {
-            string winnerText = Game.MatchData.GameHistory.LastWinners.Select(w => $"• {w.Name} ({w.PrimaryRoleDefinition.Name})").Fuse("\n");
+            string winnerText = Game.MatchData.GameHistory.LastWinners.Select(w => $"• {w.Name} ({w.MainRole.RoleName})").Fuse("\n");
             ChatHandler.Of(winnerText, ModConstants.Palette.WinnerColor.Colorize(Winners)).LeftAlign().Send(source);
         }
 

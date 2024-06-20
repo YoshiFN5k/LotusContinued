@@ -9,7 +9,7 @@ using Lotus.Roles.Internals;
 using Lotus.Utilities;
 using Lotus.Extensions;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2.Operations;
+using Lotus.Roles.Operations;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;

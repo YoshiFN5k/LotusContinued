@@ -29,7 +29,7 @@ public class CheckEndGamePatch
     static CheckEndGamePatch()
     {
         HotkeyManager.Bind(KeyCode.LeftShift, KeyCode.L, KeyCode.Return)
-            .If(p => p.HostOnly().State(Game.IgnStates))
+            .If(p => p.HostOnly().State(Game.InGameStates))
             .Do(() =>
             {
                 Deferred = false;

@@ -196,7 +196,7 @@ public class VanillaStatistics
                 switch (type)
                 {
                     case SabotageType.Lights:
-                        LightsSabotaged.Update(caller.PlayerId, i => i  + 1);
+                        LightsSabotaged.Update(caller.PlayerId, i => i + 1);
                         break;
                     case SabotageType.Reactor:
                         ReactorSabotaged.Update(caller.PlayerId, i => i + 1);
@@ -228,7 +228,7 @@ public class VanillaStatistics
         // =================
         Hooks.MeetingHooks.MeetingCalledHook.Bind(StatisticsHookKey, meetingEvent =>
         {
-            GameData.PlayerInfo? reported = meetingEvent.Reported;
+            NetworkedPlayerInfo? reported = meetingEvent.Reported;
             if (reported == null) MeetingsCalled.Update(meetingEvent.Caller.UniquePlayerId(), i => i + 1);
             else BodiesReported.Update(meetingEvent.Caller.UniquePlayerId(), i => i + 1);
         });

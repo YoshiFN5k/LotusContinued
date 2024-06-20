@@ -7,8 +7,7 @@ using Lotus.Roles.Internals;
 using Lotus.API.Stats;
 using Lotus.Extensions;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2;
-using Lotus.Roles2.Operations;
+using Lotus.Roles.Operations;
 using UnityEngine;
 using VentLib.Networking.RPC;
 using VentLib.Utilities;
@@ -26,7 +25,7 @@ class EnterVentPatch
     {
         if (!AmongUsClient.Instance.AmHost) return;
         log.Trace($"{pc.GetNameWithRole()} Entered Vent (ID: {__instance.Id})", "CoEnterVent");
-        UnifiedRoleDefinition role = pc.PrimaryRole();
+        CustomRole role = pc.PrimaryRole();
         ActionHandle vented = ActionHandle.NoInit();
 
         if (!role.CanVent())
@@ -36,7 +35,8 @@ class EnterVentPatch
             return;
         }
 
-        if (vented.IsCanceled) {
+        if (vented.IsCanceled)
+        {
             log.Trace($"{pc.GetNameWithRole()} vent action got canceled. Booting.");
             Async.Schedule(() => pc.MyPhysics.RpcBootFromVent(__instance.Id), 0.4f);
             return;

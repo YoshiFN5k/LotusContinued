@@ -7,7 +7,7 @@ using System.Reflection;
 using HarmonyLib;
 using Lotus.RPC;
 using Lotus.Extensions;
-using Lotus.Roles2;
+using Lotus.Roles;
 using VentLib;
 using VentLib.Networking.RPC.Attributes;
 using VentLib.Utilities;
@@ -32,12 +32,8 @@ public class AddonManager
         {
             log.Log(AddonLL, $"Calling Post Initialize for {addon.Name}");
             addon.PostInitialize(new List<LotusAddon>(Addons));
-        });
-
-        Addons.ForEach(addon =>
-        {
-            log.Info($"Found and registering {addon.ExportedDefinitions.Count} role definitions from {addon.Name}");
-            addon.ExportedDefinitions.ForEach(kvp => kvp.Value.ForEach(gm => gm.RoleManager.RegisterRole(ProjectLotus.DefinitionUnifier.Unify(kvp.Key))));
+            //addon.Factions.Do(f => FactionConstraintValidator.ValidateAndAdd(f, file.Name));
+            ProjectLotus.GameModeManager.GameModes.AddRange(addon.Gamemodes);
         });
     }
 
@@ -51,12 +47,11 @@ public class AddonManager
                 throw new ConstraintException($"Lotus Addons requires ONE class file that extends {nameof(LotusAddon)}");
             LotusAddon addon = (LotusAddon)AccessTools.Constructor(lotusType).Invoke(Array.Empty<object>());
 
-            log.Log(AddonLL,$"Loading Addon [{addon.Name} {addon.Version}]", "AddonManager");
+            log.Log(AddonLL, $"Loading Addon [{addon.Name} {addon.Version}]", "AddonManager");
             Vents.Register(assembly);
 
             Addons.Add(addon);
             addon.Initialize();
-            ProjectLotus.DefinitionUnifier.RegisterRoleComponents(assembly);
         }
         catch (Exception e)
         {
@@ -107,12 +102,13 @@ public class AddonManager
         log.Exception(" Error Validating Addons. All CustomRPCs between the host and this client have been disabled.", "VerifyAddons");
         log.Exception(" -=-=-=-=-=-=-=-=-=[Errored Addons]=-=-=-=-=-=-=-=-=-", "VerifyAddons");
         foreach (var rejectReason in addons.Where(info => info.Mismatches is not Mismatch.None).Select(addonInfo => (addonInfo.Mismatches)
-             switch {
-                 Mismatch.Version => $" {addonInfo.Name}:{addonInfo.Version} => Local version is not compatible with the host version of the addon",
-                 Mismatch.ClientMissingAddon => $" {addonInfo.Name}:{addonInfo.Version} => Client Missing Addon ",
-                 Mismatch.HostMissingAddon => $" {addonInfo.Name}:{addonInfo.Version} => Host Missing Addon ",
-                 _ => throw new ArgumentOutOfRangeException()
-             }))
+             switch
+        {
+            Mismatch.Version => $" {addonInfo.Name}:{addonInfo.Version} => Local version is not compatible with the host version of the addon",
+            Mismatch.ClientMissingAddon => $" {addonInfo.Name}:{addonInfo.Version} => Client Missing Addon ",
+            Mismatch.HostMissingAddon => $" {addonInfo.Name}:{addonInfo.Version} => Host Missing Addon ",
+            _ => throw new ArgumentOutOfRangeException()
+        }))
             log.Exception(rejectReason, "VerifyAddons");
     }
 }

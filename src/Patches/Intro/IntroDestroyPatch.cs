@@ -12,8 +12,7 @@ using Lotus.Roles;
 using Lotus.Roles.Interfaces;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Enums;
-using Lotus.Roles2;
-using Lotus.Roles2.Operations;
+using Lotus.Roles.Operations;
 using Lotus.RPC;
 using Lotus.Server;
 using LotusTrigger.Options;
@@ -79,11 +78,11 @@ class IntroDestroyPatch
         yield return new WaitForSeconds(0.15f);
         if (player == null) yield break;
 
-        GameData.PlayerInfo playerData = player.Data;
+        NetworkedPlayerInfo playerData = player.Data;
         if (playerData == null) yield break;
 
-        UnifiedRoleDefinition role = player.PrimaryRole();
-        if (!role.Metadata.GetOrEmpty(TaskContainer.Key).Compare(r => r.TasksApplyToTotal))
+        CustomRole role = player.PrimaryRole();
+        if (role is not ITaskHolderRole taskHolder || !taskHolder.TasksApplyToTotal())
         {
             log.Trace($"Clearing Tasks For: {player.name}", "SyncTasks");
             playerData.Tasks?.Clear();

@@ -1,11 +1,9 @@
-using Lotus.Roles2;
-
 namespace Lotus.Roles.Interactions.Interfaces;
 
 // ReSharper disable once InconsistentNaming
 public interface Interaction
 {
-    public UnifiedRoleDefinition Emitter();
+    public CustomRole Emitter();
 
     public Intent Intent { get; protected set; }
     /// <summary>
