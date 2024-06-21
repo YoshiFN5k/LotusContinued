@@ -70,7 +70,7 @@ public static class PlayerControlExtensions
     public static void SyncAll(this PlayerControl player)
     {
         if (player == null) return;
-        IRoleManager.Current.RoleOperations.SyncOptions(player);
+        RoleOperations.Current.SyncOptions(player);
     }
 
     public static void RpcSetRoleDesync(this PlayerControl player, RoleTypes role, int clientId)

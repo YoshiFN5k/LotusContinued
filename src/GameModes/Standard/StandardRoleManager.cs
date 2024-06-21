@@ -20,8 +20,7 @@ public class StandardRoleManager : Roles.Managers.RoleManager
 
     protected OrderedDictionary<string, CustomRole> OrderedCustomRoles { get; } = new();
     public CustomRole DefaultDefinition => EmptyRole.Instance;
-    public RoleOperations RoleOperations { get; }
-    public StandardRoles RoleHolder { get; }
+    public new StandardRoles RoleHolder { get; }
     internal virtual bool IsGlobal => false;
     public override IEnumerable<CustomRole> AllCustomRoles() => OrderedCustomRoles.GetValues().Concat(GlobalRoleManager.Instance.AllCustomRoles());
 

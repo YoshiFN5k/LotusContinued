@@ -24,6 +24,7 @@ using VentLib.Options.Game;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using static Lotus.Roles.RoleGroups.Crew.Investigator.Translations.Options;
+using Lotus.Logging;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -61,7 +62,7 @@ public class Investigator : Crewmate
 
     public Investigator()
     {
-        ProjectLotus.GameModeManager.CurrentGameMode?.RoleManager.RoleHolder.AddOnFinishCall(PopulateInvestigatorOptions);
+        ProjectLotus.GameModeManager.CurrentGameMode?.RoleManager?.RoleHolder?.AddOnFinishCall(PopulateInvestigatorOptions);
     }
 
     [RoleAction(LotusActionType.OnPet)]
@@ -105,6 +106,7 @@ public class Investigator : Crewmate
 
     private void PopulateInvestigatorOptions()
     {
+        DevLogger.Log("investigator test...");
         ProjectLotus.GameModeManager.CurrentGameMode.RoleManager.RoleHolder.AllRoles.OrderBy(r => r.EnglishRoleName).ForEach(r =>
         {
             RoleTypeBuilders.FirstOrOptional(b => b.predicate(r)).Map(i => i.builder)

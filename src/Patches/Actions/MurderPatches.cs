@@ -93,7 +93,7 @@ public static class MurderPatches
         Game.MatchData.GameHistory.SetCauseOfDeath(target.PlayerId, deathEvent);
 
 
-        IRoleManager.Current.RoleOperations.TriggerForAll(LotusActionType.PlayerDeath, target, __instance, deathEvent.Instigator(), deathEvent);
+        RoleOperations.Current.TriggerForAll(LotusActionType.PlayerDeath, target, __instance, deathEvent.Instigator(), deathEvent);
 
         PlayerControl killer = deathEvent.Instigator().FlatMap(k => new UnityOptional<PlayerControl>(k.MyPlayer)).OrElse(__instance);
         PlayerMurderHookEvent playerMurderHookEvent = new(killer, target, deathEvent);

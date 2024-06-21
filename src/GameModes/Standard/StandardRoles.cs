@@ -31,13 +31,13 @@ public class StandardRoles : RoleHolder
 {
     public override List<Action> FinishedCallbacks() => Callbacks;
 
-    public List<CustomRole> MainRoles { get; set; }
+    public new List<CustomRole> MainRoles { get; set; }
 
-    public List<CustomRole> ModifierRoles { get; set; }
+    public new List<CustomRole> ModifierRoles { get; set; }
 
-    public List<CustomRole> SpecialRoles { get; set; }
+    public new List<CustomRole> SpecialRoles { get; set; }
 
-    public List<CustomRole> AllRoles { get; set; }
+    public new List<CustomRole> AllRoles { get; set; }
 
     public List<Action> Callbacks { get; set; } = new List<Action>();
 
@@ -81,158 +81,158 @@ public class StandardRoles : RoleHolder
     {
         //Impostors
 
-        public CustomRole LOAD_IMPOSTOR_OPTIONS = new EnforceFunctionOrderingRole(RoleOptions.ImpostorOptions.Start);
+        // public CustomRole LOAD_IMPOSTOR_OPTIONS = new EnforceFunctionOrderingRole(RoleOptions.ImpostorOptions.Start);
         //assassin
         //bomber
-        public Assassin Assassin = new Assassin();
-        public Blackmailer Blackmailer = new Blackmailer();
-        public BountyHunter BountyHunter = new BountyHunter();
-        public Camouflager Camouflager = new Camouflager();
-        public Consort Consort = new Consort();
-        public Creeper Creeper = new Creeper();
-        public Disperser Disperser = new Disperser();
-        public Escapist Escapist = new Escapist();
-        public FireWorks FireWorks = new FireWorks();
-        public Freezer Freezer = new Freezer();
-        public Grenadier Grenadier = new Grenadier();
-        public IdentityThief IdentityThief = new IdentityThief();
-        public Impostor Impostor = new Impostor();
-        public Janitor Janitor = new Janitor();
-        public Mafioso Mafioso = new Mafioso();
-        public Mare Mare = new Mare();
-        public Mastermind Mastermind = new Mastermind();
-        public Miner Miner = new Miner();
-        public Morphling Morphling = new Morphling();
-        public Ninja Ninja = new Ninja();
-        public PickPocket PickPocket = new PickPocket();
-        public Puppeteer Puppeteer = new Puppeteer();
+        public Assassin Assassin = new();
+        public Blackmailer Blackmailer = new();
+        public BountyHunter BountyHunter = new();
+        public Camouflager Camouflager = new();
+        public Consort Consort = new();
+        public Creeper Creeper = new();
+        public Disperser Disperser = new();
+        public Escapist Escapist = new();
+        public FireWorks FireWorks = new();
+        public Freezer Freezer = new();
+        public Grenadier Grenadier = new();
+        public IdentityThief IdentityThief = new();
+        public Impostor Impostor = new();
+        public Janitor Janitor = new();
+        public Mafioso Mafioso = new();
+        public Mare Mare = new();
+        public Mastermind Mastermind = new();
+        public Miner Miner = new();
+        public Morphling Morphling = new();
+        public Ninja Ninja = new();
+        public PickPocket PickPocket = new();
+        public Puppeteer Puppeteer = new();
         //sidekick madmate
         //silencer
-        public SerialKiller SerialKiller = new SerialKiller();
-        public Sniper Sniper = new Sniper();
-        public Swooper Swooper = new Swooper();
-        public TimeThief TimeThief = new TimeThief();
+        public SerialKiller SerialKiller = new();
+        public Sniper Sniper = new();
+        public Swooper Swooper = new();
+        public TimeThief TimeThief = new();
         //traitor
-        public Vampire Vampire = new Vampire();
-        public Warlock Warlock = new Warlock();
-        public Witch Witch = new Witch();
-        public YinYanger YinYanger = new YinYanger();
+        public Vampire Vampire = new();
+        public Warlock Warlock = new();
+        public Witch Witch = new();
+        public YinYanger YinYanger = new();
 
-        public CustomRole MADMATE_TITLE = new EnforceFunctionOrderingRole(RoleOptions.MadmateOptions.Start);
+        // public CustomRole MADMATE_TITLE = new EnforceFunctionOrderingRole(RoleOptions.MadmateOptions.Start);
 
-        public CrewPostor CrewPostor = new CrewPostor();
-        public Madmate Madmate = new Madmate();
-        public MadGuardian MadGuardian = new MadGuardian();
-        public MadSnitch MadSnitch = new MadSnitch();
-        public Parasite Parasite = new Parasite();
+        public CrewPostor CrewPostor = new();
+        public Madmate Madmate = new();
+        public MadGuardian MadGuardian = new();
+        public MadSnitch MadSnitch = new();
+        public Parasite Parasite = new();
 
         //Crewmates
-        public CustomRole LOAD_CREW_OPTIONS = new EnforceFunctionOrderingRole(RoleOptions.CrewmateOptions.Start);
+        // public CustomRole LOAD_CREW_OPTIONS = new EnforceFunctionOrderingRole(RoleOptions.CrewmateOptions.Start);
 
-        public Alchemist Alchemist = new Alchemist();
-        public Bastion Bastion = new Bastion();
-        public Bodyguard Bodyguard = new Bodyguard();
-        public Chameleon Chameleon = new Chameleon();
-        public Charmer Charmer = new Charmer();
-        public Crewmate Crewmate = new Crewmate();
-        public Crusader Crusader = new Crusader();
-        public Demolitionist Demolitionist = new Demolitionist();
-        public Dictator Dictator = new Dictator();
-        public Doctor Doctor = new Doctor();
+        public Alchemist Alchemist = new();
+        public Bastion Bastion = new();
+        public Bodyguard Bodyguard = new();
+        public Chameleon Chameleon = new();
+        public Charmer Charmer = new();
+        public Crewmate Crewmate = new();
+        public Crusader Crusader = new();
+        public Demolitionist Demolitionist = new();
+        public Dictator Dictator = new();
+        public Doctor Doctor = new();
 
-        public Escort Escort = new Escort();
-        public ExConvict ExConvict = new ExConvict();
-        public Herbalist Herbalist = new Herbalist();
-        public Investigator Investigator = new Investigator();
-        public Mayor Mayor = new Mayor();
-        public Mechanic Mechanic = new Mechanic();
-        public Medic Medic = new Medic();
-        public Medium Medium = new Roles.RoleGroups.Crew.Medium();
-        public Mystic Mystic = new Mystic();
-        public Observer Observer = new Observer();
-        public Oracle Oracle = new Oracle();
-        public Physicist Physicist = new Physicist();
-        public Psychic Psychic = new Psychic();
-        public Repairman Repairman = new Repairman();
-        public Sheriff Sheriff = new Sheriff();
-        public Snitch Snitch = new Snitch();
-        public Speedrunner Speedrunner = new Speedrunner();
-        public Swapper Swapper = new Swapper();
-        public Roles.RoleGroups.Crew.Tracker Tracker = new Roles.RoleGroups.Crew.Tracker();
-        public Transporter Transporter = new Transporter();
-        public Trapster Trapster = new Trapster();
-        public Veteran Veteran = new Veteran();
-        public Vigilante Vigilante = new Vigilante();
+        public Escort Escort = new();
+        public ExConvict ExConvict = new();
+        public Herbalist Herbalist = new();
+        public Investigator Investigator = new();
+        public Mayor Mayor = new();
+        public Mechanic Mechanic = new();
+        public Medic Medic = new();
+        public Medium Medium = new();
+        public Mystic Mystic = new();
+        public Observer Observer = new();
+        public Oracle Oracle = new();
+        public Physicist Physicist = new();
+        public Psychic Psychic = new();
+        public Repairman Repairman = new();
+        public Sheriff Sheriff = new();
+        public Snitch Snitch = new();
+        public Speedrunner Speedrunner = new();
+        public Swapper Swapper = new();
+        public Roles.RoleGroups.Crew.Tracker Tracker = new();
+        public Transporter Transporter = new();
+        public Trapster Trapster = new();
+        public Veteran Veteran = new();
+        public Vigilante Vigilante = new();
 
 
         //Neutrals
 
         // ReSharper disable once InconsistentNaming
-        public CustomRole LOAD_NEUTRAL_OPTIONS = new EnforceFunctionOrderingRole(RoleOptions.NeutralOptions.Start);
+        // public CustomRole LOAD_NEUTRAL_OPTIONS = new EnforceFunctionOrderingRole(RoleOptions.NeutralOptions.Start);
 
-        public CustomRole NEUTRAL_KILLING_TITLE = new EnforceFunctionOrderingRole(() => new GameOptionTitleBuilder().Title("<size=2.3>★ Neutral Killing ★</size>").Color(ModConstants.Palette.KillingColor).Tab(DefaultTabs.NeutralTab).Build());
+        // public CustomRole NEUTRAL_KILLING_TITLE = new EnforceFunctionOrderingRole(() => new GameOptionTitleBuilder().Title("<size=2.3>★ Neutral Killing ★</size>").Color(ModConstants.Palette.KillingColor).Tab(DefaultTabs.NeutralTab).Build());
 
-        public AgiTater AgiTater = new AgiTater();
-        public Arsonist Arsonist = new Arsonist();
-        public BloodKnight BloodKnight = new BloodKnight();
-        public Demon Demon = new Demon();
-        public Egoist Egoist = new Egoist();
-        public Hitman Hitman = new Hitman();
-        public Jackal Jackal = new Jackal();
-        public Juggernaut Juggernaut = new Juggernaut();
-        public Marksman Marksman = new Marksman();
-        public Necromancer Necromancer = new Necromancer();
-        public Occultist Occultist = new Occultist();
-        public Pelican Pelican = new Pelican();
-        public PlagueBearer PlagueBearer = new PlagueBearer();
-        public Retributionist Retributionist = new Retributionist();
-        public Glitch Glitch = new Glitch();
-        public Werewolf Werewolf = new Werewolf();
-        public CustomRole NEUTRAL_PASSIVE_TITLE = new EnforceFunctionOrderingRole(() => new GameOptionTitleBuilder().Title("<size=2.3>❀ Neutral Passive ❀</size>").Color(ModConstants.Palette.PassiveColor).Tab(DefaultTabs.NeutralTab).Build());
+        public AgiTater AgiTater = new();
+        public Arsonist Arsonist = new();
+        public BloodKnight BloodKnight = new();
+        public Demon Demon = new();
+        public Egoist Egoist = new();
+        public Hitman Hitman = new();
+        public Jackal Jackal = new();
+        public Juggernaut Juggernaut = new();
+        public Marksman Marksman = new();
+        public Necromancer Necromancer = new();
+        public Occultist Occultist = new();
+        public Pelican Pelican = new();
+        public PlagueBearer PlagueBearer = new();
+        public Retributionist Retributionist = new();
+        public Glitch Glitch = new();
+        public Werewolf Werewolf = new();
+        // public CustomRole NEUTRAL_PASSIVE_TITLE = new EnforceFunctionOrderingRole(() => new GameOptionTitleBuilder().Title("<size=2.3>❀ Neutral Passive ❀</size>").Color(ModConstants.Palette.PassiveColor).Tab(DefaultTabs.NeutralTab).Build());
 
-        public Amnesiac Amnesiac = new Amnesiac();
-        public Archangel Archangel = new Archangel();
-        public Copycat Copycat = new Copycat();
-        public Executioner Executioner = new Executioner();
-        public Hacker Hacker = new Hacker();
-        public Jester Jester = new Jester();
-        public Opportunist Opportunist = new Opportunist();
-        public Roles.RoleGroups.Neutral.Phantom Phantom = new Roles.RoleGroups.Neutral.Phantom();
-        public Pirate Pirate = new Pirate();
-        public Postman Postman = new Postman();
-        public SchrodingersCat SchrodingersCat = new SchrodingersCat();
-        public Survivor Survivor = new Survivor();
-        public Terrorist Terrorist = new Terrorist();
-        public Vulture Vulture = new Vulture();
+        public Amnesiac Amnesiac = new();
+        public Archangel Archangel = new();
+        public Copycat Copycat = new();
+        public Executioner Executioner = new();
+        public Hacker Hacker = new();
+        public Jester Jester = new();
+        public Opportunist Opportunist = new();
+        public Roles.RoleGroups.Neutral.Phantom Phantom = new();
+        public Pirate Pirate = new();
+        public Postman Postman = new();
+        public SchrodingersCat SchrodingersCat = new();
+        public Survivor Survivor = new();
+        public Terrorist Terrorist = new();
+        public Vulture Vulture = new();
 
-        public Guesser Guesser = new Guesser();
-        public CustomRole LOAD_MODIFIER_OPTIONS = new EnforceFunctionOrderingRole(RoleOptions.SubroleOptions.Start);
+        public Guesser Guesser = new();
+        // public CustomRole LOAD_MODIFIER_OPTIONS = new EnforceFunctionOrderingRole(RoleOptions.SubroleOptions.Start);
     }
 
     public class Modifiers
     {
-        public Bait Bait = new Bait();
-        public Bewilder Bewilder = new Bewilder();
-        public Bloodlust Bloodlust = new Bloodlust();
-        public Deadly Deadly = new Deadly();
-        public Diseased Diseased = new Diseased();
-        public Flash Flash = new Flash();
-        public Honed Honed = new Honed();
-        public Nimble Nimble = new Nimble();
-        public Oblivious Oblivious = new Oblivious();
-        public Romantic Romantic = new Romantic();
-        public Sleuth Sleuth = new Sleuth();
-        public TieBreaker TieBreaker = new TieBreaker();
-        public Torch Torch = new Torch();
-        public Unstoppable Unstoppable = new Unstoppable();
-        public Watcher Watcher = new Watcher();
-        public Workhorse Workhorse = new Workhorse();
+        public Bait Bait = new();
+        public Bewilder Bewilder = new();
+        public Bloodlust Bloodlust = new();
+        public Deadly Deadly = new();
+        public Diseased Diseased = new();
+        public Flash Flash = new();
+        public Honed Honed = new();
+        public Nimble Nimble = new();
+        public Oblivious Oblivious = new();
+        public Romantic Romantic = new();
+        public Sleuth Sleuth = new();
+        public TieBreaker TieBreaker = new();
+        public Torch Torch = new();
+        public Unstoppable Unstoppable = new();
+        public Watcher Watcher = new();
+        public Workhorse Workhorse = new();
     }
 
     public class ExtraRoles
     {
-        public IllegalRole IllegalRole = new IllegalRole();
-        public GameMaster GM = new GameMaster();
+        public IllegalRole IllegalRole = new();
+        public GameMaster GM = new();
         // public Debugger Debugger = new Debugger();
 
         // public CrewGuesser CrewGuesser = new CrewGuesser();

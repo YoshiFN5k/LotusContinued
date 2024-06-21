@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Lotus.Options;
 using Lotus.Roles;
 using Lotus.Roles.Operations;
 using Lotus.Victory;
@@ -29,7 +30,8 @@ public class StandardGameMode : GameMode
 
     public override IEnumerable<GameOptionTab> EnabledTabs()
     {
-        throw new System.NotImplementedException();
+        // throw new System.NotImplementedException();
+        return DefaultTabs.All;
     }
 
     public override void Setup()

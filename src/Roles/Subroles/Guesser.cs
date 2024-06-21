@@ -188,5 +188,6 @@ public class Guesser : CustomRole
     }
 
 
-    protected override RoleModifier Modify(RoleModifier roleModifier) => roleModifier.VanillaRole(RoleTypes.Crewmate);
+    protected override RoleModifier Modify(RoleModifier roleModifier) => roleModifier.VanillaRole(RoleTypes.Crewmate)
+        .RoleFlags(RoleFlag.Hidden | RoleFlag.Unassignable | RoleFlag.CannotWinAlone | RoleFlag.DoNotTranslate | RoleFlag.DontRegisterOptions);
 }

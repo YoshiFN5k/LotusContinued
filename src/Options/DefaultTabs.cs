@@ -23,7 +23,7 @@ public class DefaultTabs
 
     public static GameOptionTab HiddenTab = new("Hidden", () => AssetLoader.LoadSprite("Lotus.assets.TabIcon_Addons.png"));
 
-    public static List<GameOptionTab> All = new() { GeneralTab, ImpostorsTab, CrewmateTab, NeutralTab, MiscTab };
+    public static List<GameOptionTab> All = new() { ImpostorsTab, CrewmateTab, NeutralTab, MiscTab };
 
     static DefaultTabs()
     {

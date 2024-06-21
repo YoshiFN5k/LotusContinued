@@ -12,7 +12,6 @@ namespace Lotus.Roles.Managers;
 public abstract class RoleManager : IRoleManager
 {
     public CustomRole FallbackRole { get; }
-    public RoleOperations RoleOperations { get; }
     public RoleHolder RoleHolder { get; }
 
     public RoleManager()

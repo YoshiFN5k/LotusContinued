@@ -13,7 +13,6 @@ public interface IRoleManager
     public static RoleManager Current => ProjectLotus.GameModeManager.CurrentGameMode.RoleManager;
 
     public CustomRole FallbackRole { get; }
-    public RoleOperations RoleOperations { get; }
 
     public IEnumerable<CustomRole> AllCustomRoles();
 

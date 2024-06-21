@@ -443,6 +443,7 @@ public abstract class AbstractBaseRole
         public RoleModifier SpecialType(SpecialType specialType)
         {
             myRole.SpecialType = specialType;
+            myRole.Metadata.Set(LotusKeys.AuxiliaryRoleType, specialType);
             return this;
         }
 

@@ -78,7 +78,7 @@ public class Sheriff : Crewmate
 
     public Sheriff()
     {
-        ProjectLotus.GameModeManager.CurrentGameMode?.RoleManager.RoleHolder.AddOnFinishCall(PopulateSheriffOptions);
+        ProjectLotus.GameModeManager.CurrentGameMode?.RoleManager?.RoleHolder?.AddOnFinishCall(PopulateSheriffOptions);
     }
 
     protected override void Setup(PlayerControl player)
