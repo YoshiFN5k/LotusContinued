@@ -40,6 +40,7 @@ using VentLib.Utilities.Optionals;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.API;
 using Lotus.Addons;
+using Lotus.Roles.Properties;
 
 namespace Lotus.Roles;
 
@@ -537,6 +538,12 @@ public abstract class AbstractBaseRole
         {
             if (replace) myRole.RoleFlags = roleFlags;
             else myRole.RoleFlags |= roleFlags;
+
+            if (roleFlags.HasFlag(RoleFlag.IsSubrole))
+                myRole.Metadata.GetOrDefault(RoleProperties.Key, new RoleProperties()).Add(RoleProperty.IsModifier);
+            if (roleFlags.HasFlag(RoleFlag.CannotWinAlone))
+                myRole.Metadata.GetOrDefault(RoleProperties.Key, new RoleProperties()).Add(RoleProperty.CannotWinAlone);
+
             return this;
         }
 
@@ -544,6 +551,10 @@ public abstract class AbstractBaseRole
         {
             if (replace) myRole.RoleAbilityFlags = roleAbilityFlags;
             else myRole.RoleAbilityFlags |= roleAbilityFlags;
+
+            if (roleAbilityFlags.HasFlag(RoleAbilityFlag.IsAbleToKill))
+                myRole.Metadata.GetOrDefault(RoleProperties.Key, new RoleProperties()).Add(RoleProperty.IsAbleToKill);
+
             return this;
         }
     }
