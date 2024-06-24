@@ -6,7 +6,7 @@ using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.Managers;
 using Lotus.Roles.Managers.Interfaces;
-using LotusTrigger.Options;
+using Lotus.Options;
 using VentLib.Utilities.Extensions;
 
 namespace Lotus.Patches;

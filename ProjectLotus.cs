@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
@@ -16,20 +13,19 @@ using Lotus.GameModes;
 using Lotus.GUI.Menus;
 using Lotus.GUI.Patches;
 using Lotus.Managers;
-using Lotus.Options;
 using UnityEngine;
 using VentLib;
 using VentLib.Networking.Handshake;
 using VentLib.Networking.RPC;
-using VentLib.Options.Game;
 using VentLib.Utilities.Optionals;
 using VentLib.Version;
 using VentLib.Version.Git;
 using VentLib.Version.Updater;
 using VentLib.Version.Updater.Github;
 using Version = VentLib.Version.Version;
-using VentLib.Utilities.Debug.Profiling;
 using Lotus.Extensions;
+using VentLib.Options.UI.Controllers;
+using VentLib.Options.UI.Tabs.Vanilla;
 
 [assembly: AssemblyVersion(ProjectLotus.CompileVersion)]
 namespace Lotus;
@@ -58,7 +54,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
     public static readonly string ModName = "Project Lotus";
     public static readonly string ModColor = "#4FF918";
     public static bool DevVersion = false;
-    public static readonly string DevVersionStr = "Dev 18.06.2024";
+    public static readonly string DevVersionStr = "Dev 24.06.2024";
 
     private static Harmony _harmony;
     public static string CredentialsText = null!;
@@ -102,9 +98,8 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 
     public static NormalGameOptionsV08 NormalOptions => GameOptionsManager.Instance.currentNormalGameOptions;
 
-
+    public static GameModeManager GameModeManager = null!;
     public static List<byte> ResetCamPlayerList = null!;
-    public static GameModeManager GameModeManager;
     public static ProjectLotus Instance = null!;
 
     public override void Load()
@@ -114,20 +109,21 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
         //Profilers.Global.SetActive(false);
         log.Info($"{Application.version}", "AmongUs Version");
 
-        GameOptionController.Enable();
+        SettingsOptionController.Enable();
         GameModeManager = new GameModeManager();
 
         log.Info(CurrentVersion.ToString(), "GitVersion");
 
         // Setup, order matters here
 
-        /*StaticEditor.Register(Assembly.GetExecutingAssembly());*/
         _harmony.PatchAll(Assembly.GetExecutingAssembly());
         AddonManager.ImportAddons();
 
         GameModeManager.Setup();
         GlobalRoleManager.Instance = new GlobalRoleManager();
-        // ShowerPages.InitPages();
+
+        RoleOptionController.Enable();
+        RoleOptionController.RemoveBuiltInTabs();
 
         FinishedLoading = true;
         log.High("Finished Initializing Project Lotus. Sending Post-Initialization Event");

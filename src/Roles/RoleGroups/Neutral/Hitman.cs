@@ -10,7 +10,7 @@ using Lotus.Roles.Internals.Enums;
 using Lotus.Factions.Interfaces;
 using Lotus.Factions.Neutrals;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 

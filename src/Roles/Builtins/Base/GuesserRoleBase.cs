@@ -16,7 +16,7 @@ using Lotus.Roles.Managers.Interfaces;
 using Lotus.Victory;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;

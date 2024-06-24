@@ -6,7 +6,7 @@ using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.GUI.Name.Impl;
 using Lotus.GUI.Name.Interfaces;
-using LotusTrigger.Options;
+using Lotus.Options;
 using VentLib.Utilities.Optionals;
 
 namespace Lotus.GUI.Name.Components;
@@ -24,7 +24,7 @@ public class SimpleComponent : INameModelComponent
 
     protected Optional<float> size = Optional<float>.Null();
 
-    private SimpleComponent() {}
+    private SimpleComponent() { }
 
     protected SimpleComponent(LiveString mainText, GameState[] gameStates, ViewMode viewMode = Name.ViewMode.Additive, Func<List<PlayerControl>>? viewers = null)
     {

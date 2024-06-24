@@ -9,7 +9,7 @@ using Action = System.Action;
 namespace Lotus.GUI.Menus.OptionsMenu.Components;
 
 [RegisterInIl2Cpp]
-public class MonoToggleButton : Behaviour
+public class MonoToggleButton : MonoBehaviour
 {
     private PassiveButton enabledButton;
     private SpriteRenderer enabledRender;

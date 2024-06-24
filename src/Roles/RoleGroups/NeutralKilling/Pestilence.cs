@@ -15,7 +15,7 @@ using Lotus.Roles.Internals.Attributes;
 using Lotus.Extensions;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
 using static Lotus.Roles.RoleGroups.NeutralKilling.Pestilence.Translations.Options;
 using Lotus.API.Player;

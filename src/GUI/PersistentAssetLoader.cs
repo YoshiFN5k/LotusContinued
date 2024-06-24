@@ -9,7 +9,7 @@ using VentLib.Utilities.Harmony.Attributes;
 namespace Lotus.GUI;
 
 [RegisterInIl2Cpp]
-internal class PersistentAssetLoader : Behaviour
+internal class PersistentAssetLoader : MonoBehaviour
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(PersistentAssetLoader));
 
@@ -54,7 +54,7 @@ internal class PersistentAssetLoader : Behaviour
     public static Sprite GetSprite(string key) => _spriteRenderers[key].sprite;
 
     [QuickPostfix(typeof(DiscordManager), nameof(DiscordManager.Start))]
-    public static void HookToDiscordManager(MainMenuManager __instance)
+    public static void HookToDiscordManager(DiscordManager __instance)
     {
         __instance.gameObject.AddComponent<PersistentAssetLoader>();
     }

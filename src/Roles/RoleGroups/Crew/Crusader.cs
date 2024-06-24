@@ -12,7 +12,7 @@ using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Extensions;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Optionals;
 using static Lotus.Roles.RoleGroups.Crew.Crusader.CrusaderTranslations.CrusaderOptions;
 using Lotus.Roles.Internals.Enums;

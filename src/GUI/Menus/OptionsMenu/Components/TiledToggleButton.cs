@@ -5,7 +5,7 @@ using VentLib.Utilities.Attributes;
 namespace Lotus.GUI.Menus.OptionsMenu.Components;
 
 [RegisterInIl2Cpp]
-public class TiledToggleButton : Behaviour
+public class TiledToggleButton : MonoBehaviour
 {
     private GameObject anchorObject;
     private GameObject leftButtonObject;

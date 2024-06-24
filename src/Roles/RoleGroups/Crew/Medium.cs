@@ -14,7 +14,7 @@ using Lotus.GUI;
 using Lotus.GUI.Name;
 using Lotus.Roles.Subroles;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;

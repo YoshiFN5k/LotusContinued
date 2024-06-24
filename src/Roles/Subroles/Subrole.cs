@@ -6,7 +6,7 @@ using Lotus.Factions.Interfaces;
 using Lotus.Extensions;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Interfaces;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using Lotus.Roles.Builtins;
 

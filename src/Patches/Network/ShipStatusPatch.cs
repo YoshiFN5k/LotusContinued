@@ -1,7 +1,6 @@
 using HarmonyLib;
-using Lotus.Victory;
+using Lotus.Options;
 using Lotus.API.Odyssey;
-using LotusTrigger.Options;
 
 namespace Lotus.Patches.Network;
 

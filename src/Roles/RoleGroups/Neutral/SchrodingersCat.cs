@@ -17,7 +17,7 @@ using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Attributes;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
 using Lotus.GameModes.Standard;
 

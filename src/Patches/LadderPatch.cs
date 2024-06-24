@@ -4,7 +4,7 @@ using Lotus.Extensions;
 using Lotus.Roles;
 using Lotus.Roles.Interactions;
 using Lotus.Utilities;
-using LotusTrigger.Options;
+using Lotus.Options;
 using UnityEngine;
 using VentLib.Utilities;
 

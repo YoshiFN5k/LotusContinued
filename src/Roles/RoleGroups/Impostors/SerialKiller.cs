@@ -14,7 +14,7 @@ using Lotus.Roles.Interfaces;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Logging;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 
 namespace Lotus.Roles.RoleGroups.Impostors;

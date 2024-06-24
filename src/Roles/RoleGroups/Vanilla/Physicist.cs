@@ -1,11 +1,11 @@
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles.RoleGroups.Vanilla;
 
 public class Physicist : Scientist
 {
-    protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) => 
+    protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddVitalsOptions(base.RegisterOptions(optionStream));
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>

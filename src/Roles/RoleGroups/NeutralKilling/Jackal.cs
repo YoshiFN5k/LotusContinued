@@ -5,7 +5,7 @@ using Lotus.Extensions;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 

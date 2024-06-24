@@ -7,7 +7,7 @@ using Lotus.Managers.History.Events;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 
 namespace Lotus.Roles.RoleGroups.Crew;

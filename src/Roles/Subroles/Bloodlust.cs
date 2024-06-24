@@ -18,10 +18,10 @@ using Lotus.Roles.RoleGroups.Crew;
 using Lotus.Roles.RoleGroups.Neutral;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
-using Lotus.Options.LotusImpl.Roles;
+using Lotus.Options.Roles;
 
 namespace Lotus.Roles.Subroles;
 

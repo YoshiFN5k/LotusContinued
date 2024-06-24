@@ -20,7 +20,7 @@ using Lotus.Utilities;
 using Lotus.Extensions;
 using UnityEngine;
 using VentLib.Logging;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 

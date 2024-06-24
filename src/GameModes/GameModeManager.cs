@@ -6,10 +6,11 @@ using Lotus.API.Reactive;
 using Lotus.GameModes.Standard;
 using Lotus.Victory;
 using VentLib.Options;
-using VentLib.Options.Game;
-using VentLib.Options.Game.Events;
-using VentLib.Options.Game.Tabs;
+using VentLib.Options.UI;
+using VentLib.Options.Events;
+using VentLib.Options.UI.Tabs;
 using VentLib.Utilities.Extensions;
+using Lotus.Options;
 
 namespace Lotus.GameModes;
 
@@ -34,7 +35,7 @@ public class GameModeManager
     }
 
     private IGameMode? currentGameMode;
-    private Option gamemodeOption = null!;
+    private GameOption gamemodeOption = null!;
 
     public GameModeManager()
     {
@@ -53,12 +54,8 @@ public class GameModeManager
 
     public void Setup()
     {
-        GameOptionBuilder builder = new GameOptionBuilder()
-            .Name("GameMode")
-            .IsHeader(true)
-            .Tab(VanillaMainTab.Instance)
-            .BindInt(SetGameMode);
-
+        GameOptionBuilder builder = new GameOptionBuilder();
+        ;
         GameModes.AddRange(new List<IGameMode>()
         {
             new StandardGameMode()
@@ -73,13 +70,18 @@ public class GameModeManager
             builder.Value(v => v.Text(gameMode.Name).Value(index).Build());
         }
 
-        gamemodeOption = builder.BuildAndRegister();
-        GameOptionController.RegisterEventHandler(ce =>
-        {
-            if (ce is not OptionOpenEvent) return;
-            GameOptionController.ClearTabs();
-            currentGameMode?.EnabledTabs().ForEach(GameOptionController.AddTab);
-        });
+        gamemodeOption = builder.Name("GameMode").IsHeader(true).BindInt(SetGameMode).BuildAndRegister();
+        DefaultTabs.GeneralTab.AddOption(new GameOptionTitleBuilder()
+            .Title("Gamemode Selection")
+            .Build());
+        DefaultTabs.GeneralTab.AddOption(gamemodeOption);
+        GeneralOptions.AllOptions.ForEach(DefaultTabs.GeneralTab.AddOption);
+        // GameOptionController.RegisterEventHandler(ce =>
+        // {
+        //     if (ce is not OptionOpenEvent) return;
+        //     GameOptionController.ClearTabs();
+        //     currentGameMode?.EnabledTabs().ForEach(GameOptionController.AddTab);
+        // });
     }
 
     public void StartGame(WinDelegate winDelegate)

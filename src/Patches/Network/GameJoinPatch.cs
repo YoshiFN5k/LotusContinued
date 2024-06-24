@@ -5,8 +5,8 @@ using Lotus.Addons;
 using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
 using Lotus.Managers;
-using LotusTrigger.Options;
-using LotusTrigger.Options.General;
+using Lotus.Options;
+using Lotus.Options.General;
 using VentLib.Utilities;
 
 namespace Lotus.Patches.Network;

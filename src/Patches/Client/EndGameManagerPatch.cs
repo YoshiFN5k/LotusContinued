@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 using Lotus.GUI.Menus.OptionsMenu;
-using LotusTrigger.Options;
+using Lotus.Options;
 using TMPro;
 using UnityEngine;
 using VentLib.Localization.Attributes;

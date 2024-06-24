@@ -8,7 +8,7 @@ using Lotus.GUI.Menus.OptionsMenu.Patches;
 using Lotus.Logging;
 using Lotus.Patches.Client;
 using Lotus.Roles;
-using LotusTrigger.Options;
+using Lotus.Options;
 using UnityEngine;
 using VentLib.Localization;
 using VentLib.Options;

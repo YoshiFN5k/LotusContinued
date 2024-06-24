@@ -10,7 +10,7 @@ using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using Lotus.Roles.Internals.Enums;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using static Lotus.Roles.RoleGroups.Crew.Repairman.RepairmanTranslations.RepairmanOptionTranslations;
 

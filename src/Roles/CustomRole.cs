@@ -21,7 +21,7 @@ using Lotus.Roles.Overrides;
 using Lotus.Extensions;
 using Lotus.Factions.Impostors;
 using Lotus.Logging;
-using Lotus.Options.LotusImpl.Roles;
+using Lotus.Options.Roles;
 using Lotus.Roles.Interfaces;
 using VentLib.Localization.Attributes;
 using VentLib.Networking.Interfaces;

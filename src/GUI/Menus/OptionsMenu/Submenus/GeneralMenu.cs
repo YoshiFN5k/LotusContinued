@@ -7,11 +7,12 @@ using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Utilities.Attributes;
 using VentLib.Utilities.Extensions;
+using Lotus.Logging;
 
 namespace Lotus.GUI.Menus.OptionsMenu.Submenus;
 
 [RegisterInIl2Cpp]
-public class GeneralMenu : Behaviour, IBaseOptionMenuComponent
+public class GeneralMenu : MonoBehaviour, IBaseOptionMenuComponent
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(GeneralMenu));
 
@@ -77,6 +78,7 @@ public class GeneralMenu : Behaviour, IBaseOptionMenuComponent
         censorChatButton.SetState(DataManager.Settings.Multiplayer.CensorChat);
         censorGameObject.transform.localPosition += new Vector3(0.5f, 0.25f);
 
+
         GameObject fIGameObject = new("Friend & Invite Button");
         fIGameObject.transform.SetParent(anchorObject.transform);
         fIGameObject.transform.localScale = new Vector3(1f, 1f, 1f);
@@ -89,7 +91,9 @@ public class GeneralMenu : Behaviour, IBaseOptionMenuComponent
         fIGameObject.transform.localPosition += new Vector3(0.5f, -1.25f);
 
 
+
         optionsMenuBehaviour.EnableFriendInvitesButton.gameObject.SetActive(false);
+
 
         GameObject colorblindGameObject = new("Colorblind Button");
         colorblindGameObject.transform.SetParent(anchorObject.transform);
@@ -102,7 +106,9 @@ public class GeneralMenu : Behaviour, IBaseOptionMenuComponent
         colorblindTextButton.SetState(DataManager.Settings.Accessibility.ColorBlindMode);
         colorblindGameObject.transform.localPosition += new Vector3(0.5f, -0.25f);
 
+
         optionsMenuBehaviour.ColorBlindButton.gameObject.SetActive(false);
+
 
         GameObject streamerGameObject = new("Streamer Mode Button");
         streamerGameObject.transform.SetParent(anchorObject.transform);
@@ -115,12 +121,15 @@ public class GeneralMenu : Behaviour, IBaseOptionMenuComponent
         streamerModeButton.SetState(DataManager.Settings.Gameplay.StreamerMode);
         streamerGameObject.transform.localPosition += new Vector3(0.5f, -0.75f);
 
+
         optionsMenuBehaviour.StreamerModeButton.gameObject.SetActive(false);
+
 
 
         GameObject controlGameObject = new("Control Scheme Button");
         controlsText = Instantiate(title, anchorObject.transform);
         controlsText.transform.localPosition += new Vector3(-1.3f, -0.2f);
+
 
         controlGameObject.transform.SetParent(anchorObject.transform);
         controlGameObject.transform.localScale = new Vector3(1f, 1f, 1f);
@@ -129,14 +138,17 @@ public class GeneralMenu : Behaviour, IBaseOptionMenuComponent
         controlScheme.SetRightButtonText("Mouse & Keyboard");
         controlScheme.SetState(DataManager.Settings.input.inputMode is ControlTypes.Keyboard);
 
-        PassiveButton joystickModeButton = optionsMenuBehaviour.MouseAndKeyboardOptions.FindChild<PassiveButton>("JoystickModeButton");
-        PassiveButton touchModeButton = optionsMenuBehaviour.MouseAndKeyboardOptions.FindChild<PassiveButton>("TouchModeButton");
+
+        PassiveButton joystickModeButton = optionsMenuBehaviour.gameObject.transform.Find("GeneralTab/ControlGroup/JoystickModeButton").GetComponent<PassiveButton>();
+        PassiveButton touchModeButton = optionsMenuBehaviour.gameObject.transform.Find("GeneralTab/ControlGroup/TouchModeButton").GetComponent<PassiveButton>();
+
 
         controlScheme.SetToggleOffAction(() => joystickModeButton.ReceiveClickDown());
         controlScheme.SetToggleOnAction(() => touchModeButton.ReceiveClickDown());
         controlGameObject.transform.localPosition += new Vector3(2.25f, 2f);
         optionsMenuBehaviour.MouseAndKeyboardOptions.gameObject.SetActive(false);
         optionsMenuBehaviour.MouseAndKeyboardOptions.gameObject.GetComponentsInChildren<Component>(true).ForEach(c => c.gameObject.SetActive(false));
+
 
         // ==========================================
         //     Mouse Movement Button
@@ -152,6 +164,8 @@ public class GeneralMenu : Behaviour, IBaseOptionMenuComponent
         mouseMovementButton.SetState(optionsMenuBehaviour.DisableMouseMovement.onState);
         mouseMovementObject.transform.localPosition += new Vector3(1f, 1.5f);
         optionsMenuBehaviour.DisableMouseMovement.gameObject.SetActive(false);
+
+
 
 
         // ==========================================
@@ -175,11 +189,15 @@ public class GeneralMenu : Behaviour, IBaseOptionMenuComponent
 
 
 
+
+
         // =======================================
         //          Language Button
         // =========================================
         LanguageSetter languageSetterPrefab = FindObjectOfType<LanguageSetter>(true);
         if (languageSetterPrefab == null) return;
+
+
 
         languageSetter = Instantiate(languageSetterPrefab, anchorObject.transform);
         languageSetter.transform.localPosition -= new Vector3(2.5f, 1.88f);
@@ -193,6 +211,7 @@ public class GeneralMenu : Behaviour, IBaseOptionMenuComponent
             languageSetter.Open();
         });
         languageSetterExists = true;
+
     }
 
 

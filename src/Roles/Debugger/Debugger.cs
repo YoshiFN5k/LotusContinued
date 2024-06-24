@@ -13,7 +13,7 @@ using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Overrides;
 using Lotus.Utilities;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Attributes;
 
 namespace Lotus.Roles.Debugger;

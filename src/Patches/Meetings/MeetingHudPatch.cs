@@ -3,7 +3,7 @@ using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.API.Vanilla.Meetings;
 using Lotus.Server;
-using LotusTrigger.Options;
+using Lotus.Options;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 

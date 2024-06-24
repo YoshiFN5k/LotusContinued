@@ -10,7 +10,7 @@ using Lotus.Extensions;
 using Lotus.Options;
 using Lotus.Roles.Internals;
 using Lotus.RPC;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Optionals;
 using Lotus.API.Player;

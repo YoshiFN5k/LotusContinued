@@ -16,7 +16,7 @@ namespace Lotus.GUI.Menus;
 
 [Localized("GUI")]
 [RegisterInIl2Cpp]
-public class ModUpdateMenu : Behaviour
+public class ModUpdateMenu : MonoBehaviour
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(ModUpdateMenu));
 

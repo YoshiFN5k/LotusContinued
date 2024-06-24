@@ -10,7 +10,7 @@ using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Utilities;
 using Lotus.Extensions;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 
 namespace Lotus.Roles.RoleGroups.Impostors;

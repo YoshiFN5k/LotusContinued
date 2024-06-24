@@ -15,7 +15,7 @@ using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Operations;
 using Lotus.RPC;
 using Lotus.Server;
-using LotusTrigger.Options;
+using Lotus.Options;
 using UnityEngine;
 using VentLib.Utilities;
 using VentLib.Utilities.Debug.Profiling;

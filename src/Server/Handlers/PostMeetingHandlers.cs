@@ -1,7 +1,7 @@
 ﻿using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.Server.Interfaces;
-using LotusTrigger.Options;
+using Lotus.Options;
 using VentLib.Utilities.Extensions;
 
 namespace Lotus.Server.Handlers;
@@ -11,7 +11,7 @@ internal class PostMeetingHandlers
     public static IPostMeetingHandler StandardHandler = new Standard();
     public static IPostMeetingHandler ProtectionPatchedHandler = new ProtectionPatched();
 
-    private class Standard: IPostMeetingHandler
+    private class Standard : IPostMeetingHandler
     {
         public void PostMeetingSetup()
         {

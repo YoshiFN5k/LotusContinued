@@ -18,7 +18,7 @@ using Lotus.API.Vanilla.Sabotages;
 using Lotus.Extensions;
 using Lotus.Options;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;

@@ -12,7 +12,7 @@ using Lotus.Utilities;
 using Lotus.API;
 using Lotus.Extensions;
 using Lotus.Factions;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
 
 namespace Lotus.Roles.RoleGroups.Impostors;

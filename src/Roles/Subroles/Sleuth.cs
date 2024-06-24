@@ -6,7 +6,7 @@ using Lotus.Roles.Internals.Attributes;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using Lotus.Roles.Internals.Enums;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 

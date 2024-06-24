@@ -20,7 +20,7 @@ using Lotus.Roles.Subroles;
 using Lotus.Roles.Subroles.Romantics;
 using Lotus.Roles.Managers.Interfaces;
 using VentLib.Options;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Attributes;
 using VentLib.Utilities.Extensions;
 using Medium = Lotus.Roles.RoleGroups.Crew.Medium;

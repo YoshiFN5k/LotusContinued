@@ -5,15 +5,19 @@ using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Utilities;
 using VentLib.Utilities.Attributes;
+using Lotus.GUI.Menus.OptionsMenu.Components;
+using Lotus.Options;
 
 namespace Lotus.GUI.Menus.OptionsMenu.Submenus;
 
 [RegisterInIl2Cpp]
-public class SoundMenu : Behaviour, IBaseOptionMenuComponent
+public class SoundMenu : MonoBehaviour, IBaseOptionMenuComponent
 {
     private TextMeshPro soundHeader;
     private SlideBar sfxSlider;
     private SlideBar musicSlider;
+
+    private MonoToggleButton lobbyMusicButton;
 
     private TextMeshPro musicText;
     private TextMeshPro sfxText;
@@ -57,6 +61,27 @@ public class SoundMenu : Behaviour, IBaseOptionMenuComponent
             menuBehaviour.SoundSlider.OnValidate();
         }));
         sfxSlider.transform.localPosition += new Vector3(0.27f, -0.1f);
+
+        GameObject lobbyGameObject = new("Censor Button");
+        lobbyGameObject.transform.SetParent(anchorObject.transform);
+        lobbyGameObject.transform.localScale = new Vector3(1f, 1f, 1f);
+        lobbyMusicButton = lobbyGameObject.AddComponent<MonoToggleButton>();
+        lobbyMusicButton.SetOnText("Lobby Music: DEFAULT");
+        lobbyMusicButton.SetOffText("Lobby Music: OFF");
+        lobbyMusicButton.SetToggleOnAction(() =>
+        {
+            ClientOptions.SoundOptions.CurrentSoundType = Options.Client.SoundOptions.SoundTypes.Default;
+            if (LobbyBehaviour.Instance == null) return;
+            else SoundManager.Instance.CrossFadeSound("MapTheme", LobbyBehaviour.Instance.MapTheme, 0.5f, 1.5f);
+        });
+        lobbyMusicButton.SetToggleOffAction(() =>
+        {
+            ClientOptions.SoundOptions.CurrentSoundType = Options.Client.SoundOptions.SoundTypes.Off;
+            if (LobbyBehaviour.Instance == null) return;
+            else SoundManager.Instance.StopNamedSound("MapTheme");
+        });
+        lobbyMusicButton.SetState(ClientOptions.SoundOptions.CurrentSoundType == Options.Client.SoundOptions.SoundTypes.Default);
+        lobbyGameObject.transform.localPosition += new Vector3(0.5f, 0.25f);
 
         anchorObject.SetActive(false);
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Lotus.GUI.Menus.OptionsMenu.Components;
 using Lotus.GUI.Menus.OptionsMenu.Submenus;
+using Lotus.Logging;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -17,7 +18,7 @@ namespace Lotus.GUI.Menus.OptionsMenu;
 
 [Localized("GUI")]
 [RegisterInIl2Cpp]
-public class CustomOptionContainer : Behaviour
+public class CustomOptionContainer : MonoBehaviour
 {
     [Localized(nameof(GeneralButton))] private static string GeneralButton = "General";
     [Localized(nameof(GraphicsButton))] private static string GraphicsButton = "Graphics";
@@ -58,7 +59,6 @@ public class CustomOptionContainer : Behaviour
         transform.localPosition += new Vector3(1f, 0f);
         background = gameObject.AddComponent<SpriteRenderer>();
         background.sprite = OptionMenuResources.OptionsBackgroundSprite;
-
 
         generalMenu = gameObject.AddComponent<GeneralMenu>();
         graphicsMenu = gameObject.AddComponent<GraphicsMenu>();

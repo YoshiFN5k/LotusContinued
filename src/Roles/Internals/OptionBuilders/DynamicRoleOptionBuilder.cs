@@ -7,7 +7,7 @@ using Lotus.Extensions;
 using Lotus.Options;
 using Lotus.Roles.Internals.Enums;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 

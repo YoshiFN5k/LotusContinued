@@ -18,7 +18,7 @@ using Lotus.Extensions;
 using Lotus.Roles.Internals;
 using UnityEngine;
 using VentLib.Logging;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
 using Lotus.API.Player;
 using Lotus.GameModes.Standard;

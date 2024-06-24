@@ -14,7 +14,7 @@ using VentLib.Utilities.Harmony.Attributes;
 namespace Lotus.GUI.Menus.HistoryMenu2;
 
 [RegisterInIl2Cpp]
-public class HM2 : Behaviour
+public class HM2 : MonoBehaviour
 {
     private GameObject anchorObject;
     private GameObject buttonObject;
@@ -56,7 +56,7 @@ public class HM2 : Behaviour
 
         // ===================
         // Set up Parent Menu
-        // ===================
+        // ====================
         background = Instantiate(hudManager.Chat.backgroundImage, anchorObject.transform);
         background.flipX = background.flipY = true;
         background.transform.localScale += new Vector3(0.3f, 0f);
@@ -83,6 +83,7 @@ public class HM2 : Behaviour
     {
         HudManager.Instance.SetHudActive(false);
         GameStartManager.Instance.StartButton.gameObject.SetActive(false);
+        HudManager.Instance.gameObject.transform.Find("LobbyInfoPane/AspectSize").gameObject.SetActive(false);
         historyButton.SetDisabled();
 
         HudManager.Instance.IsIntroDisplayed = true;
@@ -95,6 +96,7 @@ public class HM2 : Behaviour
     {
         HudManager.Instance.SetHudActive(true);
         GameStartManager.Instance.StartButton.gameObject.SetActive(true);
+        HudManager.Instance.gameObject.transform.Find("LobbyInfoPane/AspectSize").gameObject.SetActive(true);
         historyButton.SetEnabled();
 
         HudManager.Instance.IsIntroDisplayed = false;
@@ -112,11 +114,11 @@ public class HM2 : Behaviour
         });
     }
 
-    [QuickPostfix(typeof(HudManager), nameof(HudManager.Start))]
-    public static void CreateButton(HudManager __instance)
+    [QuickPostfix(typeof(LobbyBehaviour), nameof(LobbyBehaviour.Start))]
+    public static void CreateButton(LobbyBehaviour __instance)
     {
-        if (LobbyBehaviour.Instance == null) return;
-        HM2 historyMenu = __instance.gameObject.AddComponent<HM2>();
-        historyMenu.PassHudManager(__instance);
+        HudManager Instance = DestroyableSingleton<HudManager>.Instance;
+        HM2 historyMenu = Instance.gameObject.AddComponent<HM2>();
+        historyMenu.PassHudManager(Instance);
     }
 }

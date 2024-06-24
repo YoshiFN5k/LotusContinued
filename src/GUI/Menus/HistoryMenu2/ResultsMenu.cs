@@ -17,7 +17,7 @@ namespace Lotus.GUI.Menus.HistoryMenu2;
 
 [Localized("GUI.HistoryMenu.ResultsMenu")]
 [RegisterInIl2Cpp]
-public class ResultsMenu : Behaviour, IHistoryMenuChild
+public class ResultsMenu : MonoBehaviour, IHistoryMenuChild
 {
     public static List<Statistic> EligibleEndgameStats = DisplayEligibleStats();
     private PoolablePlayer playerPrefab = null!;

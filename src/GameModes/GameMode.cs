@@ -13,7 +13,7 @@ using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Operations;
 using Lotus.Victory;
 using Lotus.Roles.Managers.Interfaces;
-using VentLib.Options.Game.Tabs;
+using VentLib.Options.UI.Tabs;
 using VentLib.Utilities;
 
 namespace Lotus.GameModes;
@@ -36,6 +36,7 @@ public abstract class GameMode : IGameMode
     public RoleOperations RoleOperations { get; }
     public Roles.Managers.RoleManager RoleManager { get; }
     public abstract IEnumerable<GameOptionTab> EnabledTabs();
+    public abstract MainSettingTab MainTab();
 
     public virtual void Activate() { }
 

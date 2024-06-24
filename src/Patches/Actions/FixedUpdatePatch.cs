@@ -4,7 +4,7 @@ using Lotus.Roles.Internals;
 using Lotus.Extensions;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Operations;
-using LotusTrigger.Options;
+using Lotus.Options;
 using VentLib.Utilities;
 using VentLib.Utilities.Debug.Profiling;
 using VentLib.Utilities.Extensions;

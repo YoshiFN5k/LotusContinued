@@ -11,7 +11,7 @@ using Lotus.API;
 using Lotus.API.Stats;
 using Lotus.Extensions;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 

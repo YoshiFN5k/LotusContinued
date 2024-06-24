@@ -6,6 +6,7 @@ namespace Lotus.GUI.Menus.OptionsMenu.Patches;
 [HarmonyPatch(typeof(OptionsMenuBehaviour), nameof(OptionsMenuBehaviour.Start))]
 public class GameOptionMenuOpenPatch
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(GameOptionMenuOpenPatch));
     private static CustomOptionContainer customOptionContainer;
     public static OptionsMenuBehaviour MenuBehaviour;
     public static void Postfix(OptionsMenuBehaviour __instance)

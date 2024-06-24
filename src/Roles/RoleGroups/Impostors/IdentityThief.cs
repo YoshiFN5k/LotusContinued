@@ -11,7 +11,7 @@ using Lotus.Roles.Internals;
 using Lotus.Roles.Overrides;
 using Lotus.RPC;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using static Lotus.ModConstants.Palette;
 using static Lotus.Roles.RoleGroups.Impostors.IdentityThief.Translations.Options;

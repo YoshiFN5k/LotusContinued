@@ -31,7 +31,7 @@ using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization;
 using VentLib.Options;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Options.IO;
 using VentLib.Utilities;
 using VentLib.Utilities.Debug.Profiling;

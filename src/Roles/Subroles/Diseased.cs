@@ -9,7 +9,7 @@ using Lotus.GUI.Name.Holders;
 using Lotus.Statuses;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 
 namespace Lotus.Roles.Subroles;

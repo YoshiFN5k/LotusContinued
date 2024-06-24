@@ -8,7 +8,7 @@ using Lotus.GUI.Name;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using Lotus.Roles.Internals.Enums;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 

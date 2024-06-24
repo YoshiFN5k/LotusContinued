@@ -4,9 +4,8 @@ using HarmonyLib;
 using Lotus.API.Odyssey;
 using Lotus.GUI.Name.Components;
 using Lotus.Options;
-using Lotus.Options.LotusImpl;
+using Lotus.Options.General;
 using Lotus.Patches.Actions;
-using LotusTrigger.Options;
 using VentLib.Utilities.Extensions;
 
 namespace Lotus.GUI.Name.Holders;
@@ -51,7 +50,7 @@ public class SubroleHolder : ComponentHolder<SubroleComponent>
             if (newMode is ViewMode.Absolute) break;
         }
 
-        string newString = endString.Count == 0 ? "" :  " " + endString.Join(delimiter: " ".Repeat(Spacing - 1));
+        string newString = endString.Count == 0 ? "" : " " + endString.Join(delimiter: " ".Repeat(Spacing - 1));
 
         updated[player.PlayerId] = CacheStates.GetValueOrDefault(player.PlayerId, "") != newString;
         return CacheStates[player.PlayerId] = newString;

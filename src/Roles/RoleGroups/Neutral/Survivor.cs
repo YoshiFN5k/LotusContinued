@@ -11,7 +11,7 @@ using Lotus.Victory;
 using Lotus.Victory.Conditions;
 using Lotus.Extensions;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 
 namespace Lotus.Roles.RoleGroups.Neutral;

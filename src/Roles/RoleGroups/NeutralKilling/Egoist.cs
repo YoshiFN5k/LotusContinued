@@ -13,7 +13,7 @@ using Lotus.Roles.Internals;
 using Lotus.Victory;
 using Lotus.Victory.Conditions;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 

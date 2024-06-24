@@ -11,7 +11,7 @@ using VentLib.Utilities.Attributes;
 namespace Lotus.GUI.Menus.OptionsMenu.Submenus;
 
 [RegisterInIl2Cpp]
-public class VentLibMenu : Behaviour, IBaseOptionMenuComponent
+public class VentLibMenu : MonoBehaviour, IBaseOptionMenuComponent
 {
     private MonoToggleButton allowLobbySending;
     private TextMeshPro allowLobbySendingText;

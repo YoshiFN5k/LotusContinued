@@ -8,10 +8,10 @@ internal class OptionMenuResources
 {
     public static Sprite OptionsBackgroundSprite => PersistentAssetLoader.GetSprite(nameof(OptionMenuResources) + nameof(OptionsBackgroundSprite));
     public static Sprite ModUpdaterBackgroundSprite => PersistentAssetLoader.GetSprite(nameof(OptionMenuResources) + nameof(ModUpdaterBackgroundSprite));
-    
+
     public static Sprite ProgressBarFull => PersistentAssetLoader.GetSprite(nameof(OptionMenuResources) + nameof(ProgressBarFull));
     public static Sprite ProgressBarMask => PersistentAssetLoader.GetSprite(nameof(OptionMenuResources) + nameof(ProgressBarMask));
-    
+
     public static Sprite ButtonOnSprite => PersistentAssetLoader.GetSprite(nameof(OptionMenuResources) + nameof(ButtonOnSprite));
     public static Sprite ButtonOffSprite => PersistentAssetLoader.GetSprite(nameof(OptionMenuResources) + nameof(ButtonOffSprite));
 
@@ -32,7 +32,7 @@ internal class OptionMenuResources
 
         PersistentAssetLoader.RegisterSprite(nameof(OptionMenuResources) + nameof(ProgressBarFull), "Lotus.assets.Settings.ProgressBarFill.png", 800);
         PersistentAssetLoader.RegisterSprite(nameof(OptionMenuResources) + nameof(ProgressBarMask), "Lotus.assets.Settings.ProgressBarMask.png", 800);
-        
+
         PersistentAssetLoader.RegisterSprite(nameof(OptionMenuResources) + nameof(ButtonOnSprite), "Lotus.assets.Settings.SelectButton.png", 450);
         PersistentAssetLoader.RegisterSprite(nameof(OptionMenuResources) + nameof(ButtonOffSprite), "Lotus.assets.Settings.UnselectButton.png", 450);
 

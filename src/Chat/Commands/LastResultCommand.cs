@@ -10,7 +10,7 @@ using Lotus.Roles;
 using Lotus.Roles.Builtins;
 using Lotus.Victory;
 using Lotus.Victory.Conditions;
-using LotusTrigger.Options;
+using Lotus.Options;
 using UnityEngine;
 using VentLib.Commands;
 using VentLib.Commands.Attributes;

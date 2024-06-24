@@ -9,7 +9,7 @@ using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Extensions;
 using Lotus.Options;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
 using static Lotus.Roles.RoleGroups.Impostors.Conman.ConmanTranslations.ConmanOptionTranslations;
 using Lotus.API.Player;

@@ -7,10 +7,10 @@ using Lotus.Patches.Network;
 using Lotus.Roles.Builtins;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
 using VentLib.Options.IO;
+using VentLib.Options.UI;
 
-namespace LotusTrigger.Options.General;
+namespace Lotus.Options.General;
 
 [Localized(ModConstants.Options)]
 public class AdminOptions
@@ -37,48 +37,53 @@ public class AdminOptions
     public AdminOptions()
     {
         AllOptions.Add(new GameOptionTitleBuilder()
-            .Tab(DefaultTabs.GeneralTab)
             .Title(AdminOptionTranslations.AdminTitle)
             .Color(_optionColor)
             .IsHeader(false)
             .Build());
 
-        AllOptions.Add(Builder("HostGM")
+        AllOptions.Add(new GameOptionBuilder()
+            .AddBoolean(false)
             .Name(AdminOptionTranslations.HostGmText)
-            .AddOnOffValues(false)
+            .Key("Host GM").Color(_optionColor)
             .BindBool(b => HostGM = b)
             .IsHeader(true)
             .BuildAndRegister());
 
         // TODO: repeat offenders
-        AllOptions.Add(Builder("Chat AutoKick")
+        AllOptions.Add(new GameOptionBuilder()
+            .AddBoolean()
+            .Builder("Chat AutoKick", _optionColor)
             .Name(AdminOptionTranslations.AutoKickText)
-            .AddEnableDisabledValues()
             .BindBool(b => AutoKick = b)
             .BuildAndRegister());
 
-        AllOptions.Add(Builder("Kick Players Without Friendcode")
+        AllOptions.Add(new GameOptionBuilder()
+            .AddBoolean(false)
+            .Builder("Kick Players Without Friendcode", _optionColor)
             .Name(AdminOptionTranslations.AutoKickNoFriendCodeText)
-            .AddEnableDisabledValues(false)
             .BindBool(b => KickPlayersWithoutFriendcodes = b)
             .BuildAndRegister());
 
-        AllOptions.Add(Builder("Kick Players Under Level")
-            .Name(AdminOptionTranslations.AutoKickUnderLevel)
-            .Value(v => v.Text(GeneralOptionTranslations.DisabledText).Value(0).Color(Color.red).Build())
+        AllOptions.Add(new GameOptionBuilder()
             .AddIntRange(1, 100, 1)
+            .Value(v => v.Text(GeneralOptionTranslations.DisabledText).Value(0).Color(Color.red).Build())
+            .Builder("Kick Players Under Level", _optionColor)
+            .Name(AdminOptionTranslations.AutoKickUnderLevel)
             .BindInt(i => KickPlayersUnderLevel = i)
             .BuildAndRegister());
 
-        AllOptions.Add(Builder("Kick Mobile Players")
+        AllOptions.Add(new GameOptionBuilder()
+            .AddBoolean(false)
+            .Builder("Kick Mobile Players", _optionColor)
             .Name(AdminOptionTranslations.AutoKickMobile)
-            .AddEnableDisabledValues(false)
             .BindBool(b => KickMobilePlayers = b)
             .BuildAndRegister());
 
-        AllOptions.Add(Builder("Auto Start")
+        AllOptions.Add(new GameOptionBuilder()
+            .AddBoolean(false)
+            .Builder("Auto Start", _optionColor)
             .Name(AdminOptionTranslations.AutoStartText)
-            .AddOnOffValues(false)
             .BindBool(b =>
             {
                 AutoStartEnabled = b;
@@ -86,16 +91,16 @@ public class AdminOptions
             })
             .ShowSubOptionPredicate(b => (bool)b)
             .SubOption(sub2 => sub2
-                .KeyName("Player Threshold", AdminOptionTranslations.AutoStartPlayerThreshold)
-                .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(-1).Color(Color.red).Build())
                 .AddIntRange(5, 15, suffix: " " + AdminOptionTranslations.AutoStartSuffix)
+                .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(-1).Color(Color.red).Build())
+                .Name(AdminOptionTranslations.AutoStartPlayerThreshold)
                 .IOSettings(io => io.UnknownValueAction = ADEAnswer.Allow)
                 .BindInt(i => AutoStartPlayerThreshold = i)
                 .Build())
             .SubOption(sub2 => sub2
-                .KeyName("Maximum Wait Time", AdminOptionTranslations.AutoStartMaxWaitTime)
-                .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(-1).Color(Color.red).Build())
                 .AddIntRange(30, 540, 15, 0, GeneralOptionTranslations.SecondsSuffix)
+                .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(-1).Color(Color.red).Build())
+                .Name(AdminOptionTranslations.AutoStartMaxWaitTime)
                 .IOSettings(io => io.UnknownValueAction = ADEAnswer.Allow)
                 .BindInt(i =>
                 {
@@ -111,15 +116,16 @@ public class AdminOptions
                 })
                 .Build())
             .SubOption(sub2 => sub2
-                .KeyName("Game Countdown", AdminOptionTranslations.AutoStartGameCountdown)
                 .AddIntRange(0, 20, 2, 5, GeneralOptionTranslations.SecondsSuffix)
+                .Name(AdminOptionTranslations.AutoStartGameCountdown)
                 .BindInt(i => AutoStartGameCountdown = i)
                 .Build())
             .BuildAndRegister());
 
-        AllOptions.Add(Builder("Auto Play Again")
+        AllOptions.Add(new GameOptionBuilder()
+            .AddBoolean()
+            .Builder("Auto Play Again", _optionColor)
             .Name(AdminOptionTranslations.AutoPlayAgain)
-            .AddEnableDisabledValues()
             .BindBool(b => AutoPlayAgain = b)
             .BuildAndRegister());
 
@@ -139,8 +145,6 @@ public class AdminOptions
     {
         additionalOptions.Add(option);
     }
-
-    private GameOptionBuilder Builder(string key) => new GameOptionBuilder().Key(key).Tab(DefaultTabs.GeneralTab).Color(_optionColor);
 
     [Localized("Admin")]
     private class AdminOptionTranslations

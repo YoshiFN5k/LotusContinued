@@ -8,7 +8,7 @@ using Lotus.Victory.Conditions;
 using UnityEngine;
 using Lotus.Roles.Internals.Enums;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 

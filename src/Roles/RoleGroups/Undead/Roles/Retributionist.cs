@@ -19,7 +19,7 @@ using Lotus.Options;
 using Lotus.Roles.Subroles;
 using UnityEngine;
 using VentLib.Networking.RPC;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;

@@ -9,7 +9,7 @@ using Lotus.Managers.History;
 using Lotus.Managers.Hotkeys;
 using Lotus.Utilities;
 using Lotus.Victory.Conditions;
-using LotusTrigger.Options;
+using Lotus.Options;
 using UnityEngine;
 using VentLib.Utilities;
 using VentLib.Utilities.Debug.Profiling;

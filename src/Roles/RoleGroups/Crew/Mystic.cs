@@ -20,7 +20,7 @@ using VentLib;
 using VentLib.Localization.Attributes;
 using VentLib.Networking.RPC;
 using VentLib.Networking.RPC.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Options.IO;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;

@@ -7,7 +7,7 @@ using VentLib.Utilities.Attributes;
 namespace Lotus.GUI.Components;
 
 [RegisterInIl2Cpp]
-public class LazyProgressBar : Behaviour
+public class LazyProgressBar : MonoBehaviour
 {
     public SpriteRenderer FullBar;
     private GameObject FullObject;

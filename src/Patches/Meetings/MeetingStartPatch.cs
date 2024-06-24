@@ -9,14 +9,15 @@ using Lotus.API.Vanilla.Meetings;
 using Lotus.Chat;
 using Lotus.Extensions;
 using Lotus.Managers;
-using Lotus.Options.LotusImpl;
+using Lotus.Options.Roles;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Operations;
 using Lotus.Utilities;
-using LotusTrigger.Options;
+using Lotus.Options;
 using VentLib.Utilities.Attributes;
 using VentLib.Utilities.Extensions;
+using Lotus.Options.General;
 
 namespace Lotus.Patches.Meetings;
 
@@ -78,8 +79,8 @@ public class MeetingStartPatch
 
         int remainingButtons = GeneralOptions.MeetingOptions.MeetingButtonPool - Game.MatchData.EmergencyButtonsUsed;
 
-        ChatHandler.Of(LotusMeetingOptions.MeetingOptionTranslations.ButtonsRemainingMessage.Formatted(remainingButtons))
-            .Title(t => t.PrefixSuffix("⚠").Color(ModConstants.Palette.InvalidUsage).Text(LotusMeetingOptions.MeetingOptionTranslations.SingleMeetingPool).Build())
+        ChatHandler.Of(MeetingOptions.MeetingOptionTranslations.ButtonsRemainingMessage.Formatted(remainingButtons))
+            .Title(t => t.PrefixSuffix("⚠").Color(ModConstants.Palette.InvalidUsage).Text(MeetingOptions.MeetingOptionTranslations.SingleMeetingPool).Build())
             .Send();
     }
 

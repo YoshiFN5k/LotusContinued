@@ -1,9 +1,9 @@
 using Lotus.Options;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles;
 
-public class NotImplemented: CustomRole
+public class NotImplemented : CustomRole
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(NotImplemented));
 

@@ -4,7 +4,7 @@ using Lotus.Extensions;
 
 namespace Lotus.API;
 
-public sealed class NamespacedKey<T>: NamespacedKey
+public sealed class NamespacedKey<T> : NamespacedKey
 {
     public string Namespace { get; }
     public string Key { get; }
@@ -35,5 +35,5 @@ public interface NamespacedKey
     public Type Type { get; }
 
     public static NamespacedKey<T> Lotus<T>(string key) => new("Lotus", key);
-    public static NamespacedKey<T> LotusTrigger<T>(string key) => new("LotusTrigger", key);
+    // public static NamespacedKey<T> Lotus<T>(string key) => new("Lotus", key);
 }

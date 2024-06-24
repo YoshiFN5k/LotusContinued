@@ -24,7 +24,7 @@ using UnityEngine;
 using VentLib.Localization.Attributes;
 using Lotus.Roles.Internals.Enums;
 using VentLib.Networking.RPC;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;

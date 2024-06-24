@@ -3,7 +3,7 @@ using Lotus.API.Player;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Internals.Enums;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.Subroles;

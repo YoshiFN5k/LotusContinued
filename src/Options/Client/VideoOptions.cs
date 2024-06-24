@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Options;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Options.IO;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
@@ -33,11 +33,11 @@ public class VideoOptions
     {
         OptionManager optionManager = OptionManager.GetManager();
         fpsOption = new GameOptionBuilder()
+            .Values(2, FpsLimits)
             .Key("Max Framerate")
             .Name("Max Framerate")
             .Description("Maximum Framerate for the Application")
             .IOSettings(s => s.UnknownValueAction = ADEAnswer.Allow)
-            .Values(2, FpsLimits)
             .BindInt(i =>
             {
                 optionManager.DelaySave(0);

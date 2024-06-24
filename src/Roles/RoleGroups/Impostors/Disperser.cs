@@ -13,7 +13,7 @@ using Lotus.Extensions;
 using Lotus.Options;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
 using Lotus.API.Player;
 

@@ -2,7 +2,7 @@ using HarmonyLib;
 using Lotus.API.Odyssey;
 using Lotus.Options;
 using Lotus.Utilities;
-using LotusTrigger.Options;
+using Lotus.Options;
 using UnityEngine;
 using VentLib.Localization;
 using VentLib.Utilities;

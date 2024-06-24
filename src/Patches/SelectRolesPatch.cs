@@ -8,7 +8,7 @@ using Lotus.Extensions;
 using Lotus.GameModes.Standard;
 using Lotus.Logging;
 using Lotus.Managers;
-using LotusTrigger.Options;
+using Lotus.Options;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using GameMaster = Lotus.Roles.Builtins.GameMaster;
@@ -29,7 +29,7 @@ class SelectRolesPatch
             List<PlayerControl> unassignedPlayers = Players.GetPlayers().ToList();
             if (GeneralOptions.AdminOptions.HostGM)
             {
-                MatchData.AssignRole(PlayerControl.LocalPlayer, (StandardGameMode.Instance.RoleManager.RoleHolder as StandardRoles).Special.GM, true);
+                MatchData.AssignRole(PlayerControl.LocalPlayer, StandardGameMode.Instance.RoleManager.RoleHolder.Special.GM, true);
                 unassignedPlayers.RemoveAll(p => p.PlayerId == PlayerControl.LocalPlayer.PlayerId);
             }
 

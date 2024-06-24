@@ -10,7 +10,7 @@ using IntPtr = System.IntPtr;
 namespace Lotus.Logging;
 
 [RegisterInIl2Cpp]
-public class LogUI : Behaviour
+public class LogUI : MonoBehaviour
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(LogUI));
     private FreeChatInputField chatInputField;

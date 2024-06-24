@@ -11,7 +11,7 @@ using Lotus.Options;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Internals;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;

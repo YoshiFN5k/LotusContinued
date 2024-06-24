@@ -7,11 +7,11 @@
 // using Lotus.Roles.Builtins;
 // using Lotus.Roles.Internals.Enums;
 // using Lotus.Utilities;
-// using LotusTrigger.Options;
+// using Lotus.Options;
 // using UnityEngine;
 // using VentLib.Localization.Attributes;
 // using VentLib.Options;
-// using VentLib.Options.Game;
+// using VentLib.Options.UI;
 // using VentLib.Utilities;
 // using VentLib.Utilities.Extensions;
 

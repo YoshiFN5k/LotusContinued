@@ -8,10 +8,11 @@ using Lotus.Roles.Operations;
 using Lotus.Roles.Overrides;
 using Lotus.Victory;
 using Lotus.Roles.Managers.Interfaces;
-using VentLib.Options.Game;
-using VentLib.Options.Game.Tabs;
+using VentLib.Options.UI;
+using VentLib.Options.UI.Tabs;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
+using VentLib.Options.UI.Controllers;
 
 namespace Lotus.GameModes;
 
@@ -24,6 +25,7 @@ public interface IGameMode
     public Roles.Managers.RoleManager RoleManager { get; }
 
     IEnumerable<GameOptionTab> EnabledTabs();
+    MainSettingTab MainTab();
 
     void Assign(PlayerControl player, CustomRole role);
     void AssignRoles(List<PlayerControl> players);
@@ -43,13 +45,13 @@ public interface IGameMode
     internal void InternalActivate()
     {
         Activate();
-        EnabledTabs().ForEach(GameOptionController.AddTab);
+        EnabledTabs().ForEach(RoleOptionController.AddTab);
     }
 
     internal void InternalDeactivate()
     {
         Deactivate();
-        EnabledTabs().ForEach(GameOptionController.RemoveTab);
+        EnabledTabs().ForEach(RoleOptionController.RemoveTab);
     }
 
     void Trigger(LotusActionType action, ActionHandle handle, params object[] arguments);

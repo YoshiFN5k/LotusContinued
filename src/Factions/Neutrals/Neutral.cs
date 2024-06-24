@@ -1,6 +1,6 @@
 using Lotus.Factions.Interfaces;
 using Lotus.Options;
-using LotusTrigger.Options;
+using Lotus.Options;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 
@@ -23,7 +23,7 @@ public class Neutral : Faction<Neutral>
 
     public override Relation Relationship(Neutral sameFaction) => Relation.None;
 
-    public override bool CanSeeRole(PlayerControl player) => RoleOptions.NeutralOptions.NeutralsKnowAlliedRoles;
+    public override bool CanSeeRole(PlayerControl player) => RoleOptions.LoadNeutralOptions().NeutralsKnowAlliedRoles;
 
     public override Color Color => Color.gray;
 

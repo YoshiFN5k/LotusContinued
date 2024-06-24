@@ -2,7 +2,7 @@ using AmongUs.GameOptions;
 using Lotus.Options;
 using Lotus.Roles.Overrides;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles.RoleGroups.Vanilla;
 

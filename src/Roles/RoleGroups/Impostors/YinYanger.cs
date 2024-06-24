@@ -14,7 +14,7 @@ using Lotus.GUI;
 using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 
