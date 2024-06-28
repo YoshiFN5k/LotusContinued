@@ -8,9 +8,9 @@ namespace Lotus.Roles.RoleGroups.Vanilla;
 
 public class Tracker : Crewmate
 {
-    protected float TrackerCooldown;
-    protected float TrackerDuration;
-    protected float TrackerDelay;
+    protected float? TrackerCooldown;
+    protected float? TrackerDuration;
+    protected float? TrackerDelay;
 
     protected GameOptionBuilder AddTrackerOptions(GameOptionBuilder builder)
     {

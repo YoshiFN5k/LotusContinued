@@ -208,7 +208,7 @@ public class Sheriff : Crewmate
             rtb.builder.BindInt(i => rtb.allKillable = i == 1);
             Option option = rtb.builder.Build();
             RoleOptions.AddChild(option);
-            GlobalRoleManager.Instance.RoleOptionManager.Register(option, OptionLoadMode.LoadOrCreate);
+            GlobalRoleManager.RoleOptionManager.Register(option, OptionLoadMode.LoadOrCreate);
         });
     }
 

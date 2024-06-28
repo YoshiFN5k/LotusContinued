@@ -48,8 +48,6 @@ public static class GameStartManagerPatch
     [HarmonyPatch(typeof(GameStartManager), nameof(GameStartManager.Update))]
     public class GameStartManagerUpdatePatch
     {
-        private static bool update = false;
-        private static string currentText = "";
         public static void Prefix(GameStartManager __instance)
         {
             // Lobby code

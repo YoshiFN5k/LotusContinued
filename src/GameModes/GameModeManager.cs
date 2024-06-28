@@ -44,6 +44,7 @@ public class GameModeManager
 
     public void SetGameMode(int id)
     {
+        if (currentGameMode?.GetType() == GameModes[id].GetType()) return;
         CurrentGameMode = GameModes[id];
         log.High($"Setting GameMode {CurrentGameMode.Name}", "GameMode");
     }
@@ -55,13 +56,13 @@ public class GameModeManager
     public void Setup()
     {
         GameOptionBuilder builder = new GameOptionBuilder();
-        ;
+
         GameModes.AddRange(new List<IGameMode>()
         {
             new StandardGameMode()
         });
 
-        SetGameMode(0);
+        // currentGameMode = GameModes[0];
 
         for (int i = 0; i < GameModes.Count; i++)
         {

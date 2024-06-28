@@ -23,8 +23,9 @@ public static class Game
 
     private static readonly Dictionary<byte, ulong> GameIDs = new();
     private static ulong _gameID;
+    private static MatchData tempData = new(); // used for roles the IndirectKillCooldown class
 
-    public static MatchData MatchData => CurrentGameMode.MatchData;
+    public static MatchData MatchData => CurrentGameMode?.MatchData ?? tempData;
     public static Dictionary<byte, INameModel> NameModels = new();
     public static RandomSpawn RandomSpawn = null!;
     public static int RecursiveCallCheck;

@@ -45,7 +45,8 @@ public class AdminOptions
         AllOptions.Add(new GameOptionBuilder()
             .AddBoolean(false)
             .Name(AdminOptionTranslations.HostGmText)
-            .Key("Host GM").Color(_optionColor)
+            .Key("HostGM")
+            .Color(_optionColor)
             .BindBool(b => HostGM = b)
             .IsHeader(true)
             .BuildAndRegister());

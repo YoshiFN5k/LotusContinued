@@ -46,7 +46,7 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
         //AbstractConstructors.Register(typeof(CustomRole), r => ProjectLotus.RoleManager.GetRole(r.ReadString()));
     }
 
-    public virtual bool CanVent() => (BaseCanVent && !RoleAbilityFlags.HasFlag(RoleAbilityFlag.CannotVent));
+    public virtual bool CanVent() => BaseCanVent && !RoleAbilityFlags.HasFlag(RoleAbilityFlag.CannotVent);
 
     public virtual void HandleDisconnect() { }
 
@@ -82,6 +82,8 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
 
         CreateInstanceBasedVariables();
 
+        if (cloned.Editor != null)
+            cloned.Editor = cloned.Editor.Instantiate(cloned, player);
 
         cloned.Setup(player);
         cloned.SetupUI2(player.NameModel());

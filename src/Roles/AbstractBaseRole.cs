@@ -41,6 +41,8 @@ using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.API;
 using Lotus.Addons;
 using Lotus.Roles.Properties;
+using Lotus.Roles.Subroles;
+using Lotus.Managers;
 
 namespace Lotus.Roles;
 
@@ -114,14 +116,17 @@ public abstract class AbstractBaseRole
         this.EnglishRoleName = this.GetType().Name.Replace("CRole", "").Replace("Role", "");
         log.Debug($"Role Name: {EnglishRoleName}");
         CreateInstanceBasedVariables();
+        // Why? Modify may reference uncreated options, yet when setting up options developers may try to reference
+        // RoleColor (which is white until after Modify)
+        // To solve this we call Modify to TRY to setup the role color, crashing once it requires uncreated options
+        // The modify at the end of this method is the "real" modify
         RoleModifier _;
         try
         {
-            _ = _editors.Aggregate(Modify(new RoleModifier(this)), (current, editor) => editor.HookModifier(current));
+            // _ = _editors.Aggregate(Modify(new RoleModifier(this)), (current, editor) => editor.HookModifier(current));
+            _ = Modify(new RoleModifier(this));
         }
         catch { }
-        //LinkedRoles.ForEach(ProjectLotus.RoleManager.AddRole);
-        SetupRoleActions();
         Metadata = new RoleMetadata();
     }
 
@@ -139,6 +144,8 @@ public abstract class AbstractBaseRole
         RoleOptions = optionBuilder.Build();
 
         if (RoleFlags.HasFlag(RoleFlag.DontRegisterOptions) || RoleOptions.GetValueText() == "N/A") return;
+        RoleOptions.Register(GlobalRoleManager.RoleOptionManager, OptionLoadMode.LoadOrCreate);
+        Modify(new RoleModifier(this));
 
         if (!RoleFlags.HasFlag(RoleFlag.Hidden) && RoleOptions.Tab == null)
         {
@@ -146,13 +153,30 @@ public abstract class AbstractBaseRole
             else if (GetType() == typeof(Engineer)) RoleOptions.Tab = DefaultTabs.HiddenTab;
             else if (GetType() == typeof(Scientist)) RoleOptions.Tab = DefaultTabs.HiddenTab;
             else if (GetType() == typeof(Crewmate)) RoleOptions.Tab = DefaultTabs.HiddenTab;
+            else if (GetType() == typeof(Phantom)) RoleOptions.Tab = DefaultTabs.HiddenTab;
+            else if (GetType() == typeof(Tracker)) RoleOptions.Tab = DefaultTabs.HiddenTab;
+            else if (GetType() == typeof(Noisemaker)) RoleOptions.Tab = DefaultTabs.HiddenTab;
+            else if (GetType() == typeof(Shapeshifter)) RoleOptions.Tab = DefaultTabs.HiddenTab;
             else if (GetType() == typeof(GuardianAngel)) RoleOptions.Tab = DefaultTabs.HiddenTab;
             else
             {
 
+                // if (this is GameMaster) { /*ignored*/ }
+                // /*else if (this is Subrole)
+                //     RoleOptions.Tab = DefaultTabs.MiscTab;*/
+                // else if (Faction is ImpostorFaction || SpecialType is SpecialType.Madmate)
+                //     RoleOptions.Tab = DefaultTabs.ImpostorsTab;
+                // else if (Faction is Crewmates)
+                //     RoleOptions.Tab = DefaultTabs.CrewmateTab;
+                // else if (Faction is TheUndead)
+                //     RoleOptions.Tab = DefaultTabs.NeutralTab;
+                // else if (SpecialType is SpecialType.NeutralKilling or SpecialType.Neutral)
+                //     RoleOptions.Tab = DefaultTabs.NeutralTab;
+                // else
+                //     RoleOptions.Tab = DefaultTabs.MiscTab;
                 if (this is GameMaster) { /*ignored*/ }
-                /*else if (this is Subrole)
-                    RoleOptions.Tab = DefaultTabs.MiscTab;*/
+                else if (this is Subrole)
+                    RoleOptions.Tab = DefaultTabs.MiscTab;
                 else if (this.Faction is ImpostorFaction)
                     RoleOptions.Tab = DefaultTabs.ImpostorsTab;
                 else if (this.Faction is Crewmates)
@@ -165,8 +189,7 @@ public abstract class AbstractBaseRole
                     RoleOptions.Tab = DefaultTabs.MiscTab;
             }
         }
-        //RoleOptions.Register(OptionManager.GetManager(DeclaringAssembly, "role_options.txt"), OptionLoadMode.LoadOrCreate);
-        //if (this is not AbridgedRole2) RoleOptions.Register(ProjectLotus.RoleManager.RoleOptionManager, OptionLoadMode.LoadOrCreate);
+        SetupRoleActions();
     }
 
     private void SetupRoleActions()
@@ -392,6 +415,7 @@ public abstract class AbstractBaseRole
         if (!RoleFlags.HasFlag(RoleFlag.RemoveRolePercent))
         {
             return new GameOptionBuilder()
+                .SetAsRoleOption()
                 .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
                 .BindInt(val => this.Chance = val)
                 .AddIntRange(0, 100, RoleFlags.HasFlag(RoleFlag.IncrementChanceByFives) ? 5 : 10, 0, "%")
@@ -488,6 +512,8 @@ public abstract class AbstractBaseRole
         {
             if (ColorUtility.TryParseHtmlString(htmlColor, out Color color))
                 myRole.RoleColor = color;
+            else
+                log.Fatal($"Could not parse HTML Code {htmlColor} for {myRole.EnglishRoleName}");
             return this;
         }
 
@@ -513,7 +539,7 @@ public abstract class AbstractBaseRole
                 Mathf.FloorToInt(color.g * 255),
                 Mathf.FloorToInt(color.b * 255));
 
-            DevLogger.Log($"Name: {ColorMapper.GetNearestName(dColor)}");
+            DevLogger.Log($"ColoredName: {ColorMapper.GetNearestName(dColor)}");
 
             return this;
         }

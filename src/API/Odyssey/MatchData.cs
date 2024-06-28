@@ -35,7 +35,6 @@ public class MatchData
     public int EmergencyButtonsUsed;
 
     private static readonly Func<RemoteList<GameOptionOverride>> OptionOverrideListSupplier = GetGlobalOptions;
-    public static GameState[] InGameStates => new[] { GameState.Roaming, GameState.InMeeting };
 
     public RoleData Roles = new();
 

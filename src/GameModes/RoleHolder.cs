@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Lotus.Roles;
+using VentLib.Utilities.Extensions;
 
 namespace Lotus.GameModes;
 public abstract class RoleHolder : IRoleHolder
@@ -17,7 +18,7 @@ public abstract class RoleHolder : IRoleHolder
 
     public List<CustomRole> AllRoles { get; set; }
 
-    public RoleHolder()
+    public RoleHolder(Roles.Managers.RoleManager manager)
     {
 
     }

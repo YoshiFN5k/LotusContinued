@@ -26,6 +26,8 @@ using Version = VentLib.Version.Version;
 using Lotus.Extensions;
 using VentLib.Options.UI.Controllers;
 using VentLib.Options.UI.Tabs.Vanilla;
+using Lotus.Logging;
+using Lotus.Roles.Internals.Attributes;
 
 [assembly: AssemblyVersion(ProjectLotus.CompileVersion)]
 namespace Lotus;
@@ -105,7 +107,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
     public override void Load()
     {
 
-        _harmony = new Harmony("com.discussions.LotusContinued");
+        _harmony = new Harmony(Id);
         //Profilers.Global.SetActive(false);
         log.Info($"{Application.version}", "AmongUs Version");
 
@@ -119,8 +121,9 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
         _harmony.PatchAll(Assembly.GetExecutingAssembly());
         AddonManager.ImportAddons();
 
+        // new GlobalRoleManager();
         GameModeManager.Setup();
-        GlobalRoleManager.Instance = new GlobalRoleManager();
+        StaticEditor.Register(Assembly.GetExecutingAssembly());
 
         RoleOptionController.Enable();
         RoleOptionController.RemoveBuiltInTabs();
