@@ -84,7 +84,7 @@ public class BasicCommands : CommandTranslations
             0 => source.IsHost(),
             1 => source.IsHost() || PluginDataManager.FriendManager.IsFriend(source),
             2 => true,
-            _ => throw new ArgumentOutOfRangeException()
+            _ => throw new ArgumentOutOfRangeException($"{allowedUsers} is not a valid integer for MiscellaneousOptions.ChangeNameUsers.")
         };
 
         if (!permitted)
@@ -113,7 +113,7 @@ public class BasicCommands : CommandTranslations
             0 => source.IsHost(),
             1 => source.IsHost() || PluginDataManager.FriendManager.IsFriend(source),
             2 => true,
-            _ => throw new ArgumentOutOfRangeException()
+            _ => throw new ArgumentOutOfRangeException($"{allowedUsers} is not a valid integer for MiscellaneousOptions.ChangeColorAndLevelUsers.")
         };
 
         if (!permitted)

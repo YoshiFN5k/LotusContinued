@@ -70,7 +70,7 @@ public class PlayerJoinPatch
                 GameStartManager.Instance.ResetStartState();
                 return;
             }
-            DevLogger.Log(GeneralOptions.AdminOptions.AutoCooldown.TimeRemaining());
+            DevLogger.Log("Auto Cooldown. Time Remaining: " + GeneralOptions.AdminOptions.AutoCooldown.TimeRemaining());
             GameStartManager.Instance.BeginGame();
             float timeRemaining = GeneralOptions.AdminOptions.AutoCooldown.TimeRemaining();
             GameStartManager.Instance.countDownTimer = timeRemaining;

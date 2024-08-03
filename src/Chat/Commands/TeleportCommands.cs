@@ -5,6 +5,7 @@ using Lotus.Utilities;
 using VentLib.Commands;
 using VentLib.Commands.Attributes;
 using VentLib.Utilities.Extensions;
+using Vector2 = UnityEngine.Vector2;
 
 namespace Lotus.Chat.Commands;
 
@@ -18,7 +19,7 @@ public class TeleportCommands
             0 => source.IsHost(),
             1 => source.IsHost() || PluginDataManager.FriendManager.IsFriend(source),
             2 => true,
-            _ => throw new ArgumentOutOfRangeException()
+            _ => throw new ArgumentOutOfRangeException($"{allowedUsers} is not a valid integer for MiscellaneousOptions.AllowTeleportInLobby.")
         };
 
         if (!permitted)
@@ -31,13 +32,13 @@ public class TeleportCommands
     public static void TeleportOutOfLobby(PlayerControl source)
     {
         if (!IsAllowedToTeleport(source)) return;
-        Utils.Teleport(source.NetTransform, new UnityEngine.Vector2(0.1f, 3.8f));
+        Utils.Teleport(source.NetTransform, new Vector2(0.1f, 3.8f));
     }
 
     [Command(CommandFlag.LobbyOnly, "tpin")]
     public static void TeleportIntoLobby(PlayerControl source)
     {
         if (!IsAllowedToTeleport(source)) return;
-        Utils.Teleport(source.NetTransform, new UnityEngine.Vector2(-0.2f, 1.3f));
+        Utils.Teleport(source.NetTransform, new Vector2(-0.2f, 1.3f));
     }
 }

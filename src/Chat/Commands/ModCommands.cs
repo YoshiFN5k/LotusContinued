@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Lotus.API.Player;
 using Lotus.Managers;
@@ -46,7 +47,7 @@ public class ModCommands : ICommandReceiver
             CheckType.AdminsAndAbove => PluginDataManager.ModManager.GetStatusOfPlayer(source).ModType == "Admin" || source.IsHost(),
             CheckType.ModsAndAbove => PluginDataManager.ModManager.IsPlayerModded(source) || source.IsHost(),
             CheckType.HostOnly => source.IsHost(),
-            _ => false
+            _ => throw new ArgumentOutOfRangeException($"{checkType} is not a valid parameter for Enum CheckType.")
         };
         if (!permitted)
         {
@@ -142,7 +143,7 @@ public class ModCommands : ICommandReceiver
         if (CheckPlayer(source, context, out int targetPlayerId, checkArgs: false, checkType: CheckType.AdminsAndAbove) == -1) return;
         if (GameStartManager.Instance == null) return;
         GameStartManager.Instance.BeginGame();
-        GameStartManager.Instance.countDownTimer = 1;
+        GameStartManager.Instance.countDownTimer = 0.0001f;
     }
 
     private enum CheckType

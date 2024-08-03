@@ -78,6 +78,10 @@ public class GameStartRandomMap
 {
     public static bool Prefix(GameStartManager __instance)
     {
+        if (__instance.startState != GameStartManager.StartingStates.NotStarting)
+        {
+            return false;
+        }
         if (GeneralOptions.AdminOptions.HostGM) LogManager.SendInGame("[Info] GM is Enabled");
 
         __instance.ReallyBegin(false);

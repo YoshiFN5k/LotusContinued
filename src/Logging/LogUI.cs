@@ -69,8 +69,4 @@ public class LogUI : MonoBehaviour
     }
 
     public System.Action<string> OnTextSubmit { get; set; }
-
-    // public event TextSubmitEvent? OnTextSubmit
-
-    public delegate void TextSubmitEvent(string text);
 }
