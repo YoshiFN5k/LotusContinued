@@ -43,6 +43,10 @@ using Lotus.Addons;
 using Lotus.Roles.Properties;
 using Lotus.Roles.Subroles;
 using Lotus.Managers;
+using Lotus.Roles.RoleGroups.NeutralKilling;
+using Lotus.Patches.Intro;
+using Lotus.API.Player;
+using VentLib.Options.UI.Options;
 
 namespace Lotus.Roles;
 
@@ -51,22 +55,19 @@ namespace Lotus.Roles;
 public abstract class AbstractBaseRole
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(AbstractBaseRole));
-
     public PlayerControl MyPlayer { get; protected set; } = null!;
-
-    public string Description => Localizer.Translate($"Roles.{EnglishRoleName.RemoveHtmlTags()}.Description");
-    public string Blurb => Localizer.Translate($"Roles.{EnglishRoleName.RemoveHtmlTags()}.Blurb");
+    public string Description => Localizer.Translate($"Roles.{EnglishRoleName.RemoveHtmlTags()}.Description", assembly: DeclaringAssembly);
+    public string Blurb => Localizer.Translate($"Roles.{EnglishRoleName.RemoveHtmlTags()}.Blurb", assembly: DeclaringAssembly);
 
     public string RoleName
     {
         get
         {
             if (RoleFlags.HasFlag(RoleFlag.DoNotTranslate)) return OverridenRoleName ?? EnglishRoleName;
-            string name = Localizer.Translate($"Roles.{EnglishRoleName.RemoveHtmlTags()}.RoleName");
+            string name = Localizer.Translate($"Roles.{EnglishRoleName.RemoveHtmlTags()}.RoleName", assembly: DeclaringAssembly);
             return OverridenRoleName ?? (name == "N/A" ? EnglishRoleName : name);
         }
     }
-
     public string? OverridenRoleName;
 
     public RoleTypes RealRole => DesyncRole ?? VirtualRole;
@@ -76,6 +77,7 @@ public abstract class AbstractBaseRole
     public SpecialType SpecialType = SpecialType.None;
     public Color RoleColor = Color.white;
     public ColorGradient? RoleColorGradient = null;
+    public Func<AudioClip>? IntroSound = null;
 
     public int Chance { get; private set; }
     public int Count { get; private set; }
@@ -85,8 +87,7 @@ public abstract class AbstractBaseRole
 
     public RoleAbilityFlag RoleAbilityFlags;
     public RoleFlag RoleFlags;
-    public readonly List<CustomRole> LinkedRoles = new();
-    internal Assembly Assembly => this.GetType().Assembly;
+    public Assembly Assembly => this.GetType().Assembly;
     internal LotusAddon? Addon;
 
     internal virtual LotusRoleType LotusRoleType { get; set; } = LotusRoleType.Unknown;
@@ -114,12 +115,12 @@ public abstract class AbstractBaseRole
         DeclaringAssembly = this.GetType().Assembly;
         //if (this is AbridgedRole2) return;
         this.EnglishRoleName = this.GetType().Name.Replace("CRole", "").Replace("Role", "");
-        log.Debug($"Role Name: {EnglishRoleName}");
+        log.Debug($"AbstractBaseRole() Role Name: {EnglishRoleName}");
         CreateInstanceBasedVariables();
         // Why? Modify may reference uncreated options, yet when setting up options developers may try to reference
         // RoleColor (which is white until after Modify)
         // To solve this we call Modify to TRY to setup the role color, crashing once it requires uncreated options
-        // The modify at the end of this method is the "real" modify
+        // The modify in the Solodify method is the "real" modify
         RoleModifier _;
         try
         {
@@ -130,22 +131,36 @@ public abstract class AbstractBaseRole
         Metadata = new RoleMetadata();
     }
 
-    internal virtual void Solidify()
+    public virtual void Solidify()
     {
         this.RoleSpecificGameOptionOverrides.Clear();
 
         GameOptionBuilder optionBuilder = GetGameOptionBuilder();
 
-        LinkedRoles.ForEach(r =>
+        LinkedRoles().ForEach(lRole =>
         {
-            optionBuilder.SubOption(_ => r.GetGameOptionBuilder().IsHeader(false).Build());
+            optionBuilder.SubOption(_ =>
+            {
+                lRole.RoleOptions = lRole.GetGameOptionBuilder().IsHeader(false).Build();
+                lRole.Modify(new RoleModifier(lRole));
+                lRole.RoleOptions.Color = lRole.RoleColor;
+                lRole.SetupRoleActions();
+                return lRole.RoleOptions;
+            });
         });
 
         RoleOptions = optionBuilder.Build();
-
-        if (RoleFlags.HasFlag(RoleFlag.DontRegisterOptions) || RoleOptions.GetValueText() == "N/A") return;
-        RoleOptions.Register(GlobalRoleManager.RoleOptionManager, OptionLoadMode.LoadOrCreate);
         Modify(new RoleModifier(this));
+        RoleOptions.Color = RoleColor;
+
+        if (RoleFlags.HasFlag(RoleFlag.DontRegisterOptions) || RoleOptions.GetValueText() == "N/A") goto finished;
+        Option percentageOption = RoleOptions.Children.Find(child => child.Name() == "Percentage");
+        if (percentageOption != null) this.Chance = (int)percentageOption.GetValue();
+        else
+        {
+            DevLogger.Log($"Could not find Percentage Option for {EnglishRoleName}. Setting as 0.");
+            this.Chance = 0;
+        }
 
         if (!RoleFlags.HasFlag(RoleFlag.Hidden) && RoleOptions.Tab == null)
         {
@@ -160,20 +175,6 @@ public abstract class AbstractBaseRole
             else if (GetType() == typeof(GuardianAngel)) RoleOptions.Tab = DefaultTabs.HiddenTab;
             else
             {
-
-                // if (this is GameMaster) { /*ignored*/ }
-                // /*else if (this is Subrole)
-                //     RoleOptions.Tab = DefaultTabs.MiscTab;*/
-                // else if (Faction is ImpostorFaction || SpecialType is SpecialType.Madmate)
-                //     RoleOptions.Tab = DefaultTabs.ImpostorsTab;
-                // else if (Faction is Crewmates)
-                //     RoleOptions.Tab = DefaultTabs.CrewmateTab;
-                // else if (Faction is TheUndead)
-                //     RoleOptions.Tab = DefaultTabs.NeutralTab;
-                // else if (SpecialType is SpecialType.NeutralKilling or SpecialType.Neutral)
-                //     RoleOptions.Tab = DefaultTabs.NeutralTab;
-                // else
-                //     RoleOptions.Tab = DefaultTabs.MiscTab;
                 if (this is GameMaster) { /*ignored*/ }
                 else if (this is Subrole)
                     RoleOptions.Tab = DefaultTabs.MiscTab;
@@ -189,6 +190,10 @@ public abstract class AbstractBaseRole
                     RoleOptions.Tab = DefaultTabs.MiscTab;
             }
         }
+        RoleOptions.Register(GeneralOptions.RoleOptionManager, OptionLoadMode.LoadOrCreate);
+
+    finished:
+
         SetupRoleActions();
     }
 
@@ -198,7 +203,7 @@ public abstract class AbstractBaseRole
         this.GetType().GetMethods(AccessFlags.InstanceAccessFlags)
             .SelectMany(method => method.GetCustomAttributes<RoleActionAttribute>().Select(a => (a, method)))
             .Where(t => t.a.Subclassing || t.method.DeclaringType == this.GetType())
-            .Select(t => new RoleAction(t.Item1, t.method))
+            .Select(t => new RoleAction(t.Item1, t.method, this))
             .Do(AddRoleAction);
     }
 
@@ -217,65 +222,6 @@ public abstract class AbstractBaseRole
         this.RoleActions[action.ActionType] = currentActions;
     }
 
-    public void Trigger(LotusActionType actionType, ref ActionHandle handle, params object[] parameters)
-    {
-        if (!AmongUsClient.Instance.AmHost || Game.State is GameState.InLobby) return;
-
-        uint id = Profilers.Global.Sampler.Start("Action: " + actionType);
-        if (actionType == LotusActionType.FixedUpdate)
-        {
-            if (!RoleActions.TryGetValue(LotusActionType.FixedUpdate, out List<RoleAction>? fixedUpdate)) return;
-            if (fixedUpdate.IsEmpty())
-            {
-                Profilers.Global.Sampler.Discard(id);
-                return;
-            }
-            fixedUpdate[0].ExecuteFixed(this);
-            Profilers.Global.Sampler.Stop(id);
-            return;
-        }
-
-        handle.ActionType = actionType;
-        parameters = parameters.AddToArray(handle);
-        // Block ALL triggers if not host
-
-        if (!RoleActions.TryGetValue(actionType, out List<RoleAction>? actions)) return;
-        foreach (RoleAction action in actions.Sorted(a => (int)a.Priority))
-        {
-            if (handle.Cancellation is not (ActionHandle.CancelType.None or ActionHandle.CancelType.Soft)) continue;
-            if (MyPlayer == null || !MyPlayer.IsAlive() && !action.TriggerWhenDead) continue;
-
-            try
-            {
-                if (actionType.IsPlayerAction())
-                {
-                    Hooks.PlayerHooks.PlayerActionHook.Propagate(new PlayerActionHookEvent(MyPlayer, action, parameters));
-                    //Game.TriggerForAll(LotusActionType.PlayerAction, ref handle, MyPlayer, action, parameters);
-                }
-
-                handle.ActionType = actionType;
-
-                if (handle.Cancellation is not (ActionHandle.CancelType.None or ActionHandle.CancelType.Soft)) continue;
-
-                action.Execute(parameters);
-            }
-            catch (Exception e)
-            {
-                log.Exception($"Failed to execute RoleAction {action}.", e);
-            }
-        }
-        Profilers.Global.Sampler.Stop(id);
-    }
-
-    private static readonly List<(RoleAction, AbstractBaseRole)> EmptyActions = new();
-
-    // lol this method is such a hack it's funny
-    public IEnumerable<(RoleAction, AbstractBaseRole)> GetActions(LotusActionType actionType)
-    {
-        return !RoleActions.TryGetValue(actionType, out List<RoleAction>? actions)
-            ? EmptyActions : actions.Select(action => (action, this));
-    }
-
     protected void CreateInstanceBasedVariables()
     {
         this.GetType().GetFields(AccessFlags.InstanceAccessFlags)
@@ -290,6 +236,14 @@ public abstract class AbstractBaseRole
                 else if (f.FieldType == typeof(Cooldown)) CreateCooldown(f);
                 else CreateOptional(f);
             });
+    }
+
+    // lol this method is such a hack it's funny
+    private static readonly List<(RoleAction, AbstractBaseRole)> EmptyActions = new();
+    public IEnumerable<(RoleAction, AbstractBaseRole)> GetActions(LotusActionType actionType)
+    {
+        return !RoleActions.TryGetValue(actionType, out List<RoleAction>? actions)
+            ? EmptyActions : actions.Select(action => (action, this));
     }
 
     private void CreateAnnotatedFields(NewOnSetup setupRules)
@@ -365,46 +319,111 @@ public abstract class AbstractBaseRole
     /// <param name="player">The player assigned to this role</param>
     protected virtual void Setup(PlayerControl player) { }
 
+    /// <summary>
+    /// This method is called after the current role is finished cloning and setting up.
+    /// A player is not passed here as MyPlayer is already set and should be used.
+    /// </summary>
     protected virtual void PostSetup() { }
+
+    /// <summary>
+    /// This method is called when the options are generated to get the role type.
+    /// Override this along with adding the RoleFlag for the Role.
+    /// <br/>
+    /// This is only used for Variation and Transformation Roles.
+    /// </summary>
+    /// <returns>Role Type</returns>
+    protected virtual RoleType GetRoleType() => RoleType.Normal;
 
     /// <summary>
     /// Forced method that allows CustomRoles to provide unique definitions for themselves
     /// </summary>
-    /// <param name="roleModifier">Automatically supplied RoleFactory used for class specifications</param>
-    /// <returns>Provided <b>OR</b> new RoleFactory</returns>
+    /// <param name="roleModifier">Automatically supplied RoleModifier used for class specifications</param>
+    /// <returns>Provided <b>OR</b> new RoleModifier</returns>
     protected abstract RoleModifier Modify(RoleModifier roleModifier);
+
+    /// <summary>
+    /// Roles that are "Linked" to this role. What this means:
+    /// ANY role you put in here will have its options become a sub-option of this role.
+    /// Additionally, you DO NOT (AND SHOULD NOT) register said role in your addon. The role will be automatically hooked in by being a member
+    /// of this function. If you happen to do so probably nothing will go wrong, but it's undefined behaviour and should be avoided.
+    /// <br/><br/>
+    /// If you're looking to change the options from % chance to "Show" / "Hide" refer to <see cref="RoleFlags"/> on the child role.
+    /// </summary>
+    /// <returns>Linked Roles</returns>
+    protected virtual List<CustomRole> LinkedRoles() => new();
+
+    /// <summary>
+    /// Force the path for the Role Image.
+    /// Override GetRoleImage() instead of you are making an Addon.
+    /// </summary>
+    protected virtual string ForceRoleImageDirectory() => "N/A";
+
+    /// <summary>
+    /// This method gets the sprite of the Role Image to Replace.
+    /// You have to override this if you are developing an Addon.
+    /// </summary>
+    protected virtual Func<Sprite> GetRoleImage()
+    {
+        string imageDirectory = ForceRoleImageDirectory();
+
+        if (imageDirectory != "N/A") return () => AssetLoader.LoadSprite("Lotus.assets.RoleImages." + imageDirectory + ".png", 500, true);
+        imageDirectory = "";
+
+        if (this is GameMaster) imageDirectory = "gm";
+        else if (Faction is ImpostorFaction | SpecialType is SpecialType.Madmate && this is not NeutralKillingBase) imageDirectory = "Imposter." + EnglishRoleName.ToLower();
+        else if (Faction is Crewmates) imageDirectory = "Crew." + EnglishRoleName.ToLower();
+        else imageDirectory = "Neutral." + EnglishRoleName.ToLower();
+
+        imageDirectory = "Lotus.assets.RoleImages." + imageDirectory + ".png";
+        string? debugMessage = null;
+        if (!AssetLoader.ResourceExists(imageDirectory))
+        {
+            debugMessage = $"Could not find RoleImage for {EnglishRoleName}. Defaulting to the GM image. Path: {imageDirectory}";
+            imageDirectory = "Lotus.assets.RoleImages.gm.png";
+        }
+        string key = EnglishRoleName + "RoleImage";
+        PersistentAssetLoader.RegisterSprite(key, imageDirectory, 500);
+        return () =>
+        {
+            if (debugMessage != null)
+            {
+                log.Debug(debugMessage);
+                debugMessage = null;
+            }
+            return PersistentAssetLoader.GetSprite(key);
+        };
+    }
 
     public GameOptionBuilder GetGameOptionBuilder()
     {
         GameOptionBuilder b = GetBaseBuilder();
-        if (RoleFlags.HasFlag(RoleFlag.RemoveRoleMaximum)) return RegisterOptions(b);
 
+        if (GetRoleType() is not RoleType.Normal) return RegisterOptions(b);
         b = b.SubOption(s => s.Name(RoleTranslations.MaximumText)
-                 .Key("Maximum")
-                 .AddIntRange(1, 15)
-                 .Bind(val => this.Count = (int)val)
-                 .ShowSubOptionPredicate(v => 1 < (int)v)
-                 .SubOption(subsequent => subsequent
-                     .Name(RoleTranslations.SubsequentChanceText)
-                     .Key("Subsequent Chance")
-                     .AddIntRange(10, 100, 10, 0, "%")
-                     .BindInt(v => AdditionalChance = v)
-                     .Build())
-                 .Build());
+            .Key("Maximum")
+            .AddIntRange(1, ModConstants.MaxPlayers)
+            .Bind(val => this.Count = (int)val)
+            .ShowSubOptionPredicate(v => 1 < (int)v)
+            .SubOption(subsequent => subsequent
+                .Name(RoleTranslations.SubsequentChanceText)
+                .Key("Subsequent Chance")
+                .AddIntRange(10, 100, 10, 0, "%")
+                .BindInt(v => AdditionalChance = v)
+                .Build())
+            .Build());
 
         return RegisterOptions(b);
     }
 
     protected virtual GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream)
     {
-        Assembly callingAssembly = Assembly.GetCallingAssembly();
-        Localizer localizer = Localizer.Get(callingAssembly);
+        Localizer localizer = Localizer.Get(DeclaringAssembly);
         string qualifier = $"Roles.{EnglishRoleName}.RoleName";
 
         return optionStream
-            .LocaleName(qualifier)
-            .Key(EnglishRoleName)
-            .Color(RoleColor)
+            // .Name(localizer.Translate(qualifier))
+            // .Key(EnglishRoleName)
+            .KeyName(EnglishRoleName, localizer.Translate(qualifier))
             .Description(localizer.Translate($"Roles.{EnglishRoleName}.Blurb"))
             .IsHeader(true);
     }
@@ -412,30 +431,43 @@ public abstract class AbstractBaseRole
     [SuppressMessage("ReSharper", "RemoveRedundantBraces")]
     private GameOptionBuilder GetBaseBuilder()
     {
-        if (!RoleFlags.HasFlag(RoleFlag.RemoveRolePercent))
+        if (!RoleFlags.HasFlag(RoleFlag.RemoveRolePercent) && GetRoleType() is RoleType.Normal)
         {
             return new GameOptionBuilder()
-                .SetAsRoleOption()
+                .SetAsRoleOption(val => this.Chance = val, 0, 100, RoleFlags.HasFlag(RoleFlag.IncrementChanceByFives) ? 5 : 10, suffix: "%")
                 .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
-                .BindInt(val => this.Chance = val)
-                .AddIntRange(0, 100, RoleFlags.HasFlag(RoleFlag.IncrementChanceByFives) ? 5 : 10, 0, "%")
-                .ShowSubOptionPredicate(value => ((int)value) > 0);
+                // .AddIntRange(0, 100, RoleFlags.HasFlag(RoleFlag.IncrementChanceByFives) ? 5 : 10, suffix: "%")
+                // .Value(0)
+                // .BindInt(val => this.Chance = val)
+                .RoleImage(GetRoleImage())
+                .ShowSubOptionPredicate(value => this.Chance > 0);
         }
 
         string onText = GeneralOptionTranslations.OnText;
         string offText = GeneralOptionTranslations.OffText;
 
-        if (RoleFlags.HasFlag(RoleFlag.TransformationRole))
+        if (GetRoleType() is RoleType.Transformation)
         {
             onText = GeneralOptionTranslations.ShowText;
             offText = GeneralOptionTranslations.HideText;
         }
+        DevLogger.Log($"Variation Role: {EnglishRoleName}");
 
-        return new GameOptionBuilder()
-                .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
-                .Value(v => v.Text(onText).Value(true).Color(Color.cyan).Build())
-                .Value(v => v.Text(offText).Value(false).Color(Color.red).Build())
-                .ShowSubOptionPredicate(b => (bool)b);
+        if (GetRoleType() is RoleType.Variation)
+            return new GameOptionBuilder()
+            .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
+            // .Value(v => v.Text(onText).Value(true).Color(Color.cyan).Build())
+            // .Value(v => v.Text(offText).Value(false).Color(Color.red).Build())
+            // .ShowSubOptionPredicate(b => (bool)b);
+            .AddIntRange(0, 100, RoleFlags.HasFlag(RoleFlag.IncrementChanceByFives) ? 5 : 10, suffix: "%")
+            .BindInt(val => this.Chance = val)
+            .ShowSubOptionPredicate(value => this.Chance > 0);
+        else
+            return new GameOptionBuilder()
+            .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
+            .Value(v => v.Text(onText).Value(true).Color(Color.cyan).Build())
+            .Value(v => v.Text(offText).Value(false).Color(Color.red).Build())
+            .ShowSubOptionPredicate(b => (bool)b);
     }
 
 
@@ -481,6 +513,14 @@ public abstract class AbstractBaseRole
         public RoleModifier CanVent(bool canVent)
         {
             myRole.BaseCanVent = canVent;
+            return this;
+        }
+
+        public RoleModifier IntroSound(RoleTypes roleType) => IntroSound(() => BeginCrewmatePatch.GetIntroSound(roleType));
+
+        public RoleModifier IntroSound(Func<AudioClip> sound)
+        {
+            myRole.IntroSound = sound;
             return this;
         }
 
@@ -544,31 +584,20 @@ public abstract class AbstractBaseRole
             return this;
         }
 
-        /// <summary>
-        /// Roles that are "Linked" to this role. What this means:
-        /// ANY role you put in here will have its options become a sub-option of this role.
-        /// Additionally, you DO NOT (AND SHOULD NOT) register said role in your addon. The role will be automatically hooked in by being a member
-        /// of this function. If you happen to do so probably nothing will go wrong, but it's undefined behaviour and should be avoided.
-        /// <br/><br/>
-        /// If you're looking to change the options from % chance to "Show" / "Hide" refer to <see cref="RoleFlags"/> on the child role.
-        /// </summary>
-        /// <param name="roles">The roles linked to this role</param>
-        /// <returns>this role modifier</returns>
-        public RoleModifier LinkedRoles(params CustomRole[] roles)
-        {
-            myRole.LinkedRoles.AddRange(roles);
-            return this;
-        }
-
         public RoleModifier RoleFlags(RoleFlag roleFlags, bool replace = false)
         {
             if (replace) myRole.RoleFlags = roleFlags;
             else myRole.RoleFlags |= roleFlags;
 
+            bool alreadyReplaced = false;
+
             if (roleFlags.HasFlag(RoleFlag.IsSubrole))
-                myRole.Metadata.GetOrDefault(RoleProperties.Key, new RoleProperties()).Add(RoleProperty.IsModifier);
+            {
+                AddRoleProperty(RoleProperty.IsModifier, replace);
+                alreadyReplaced = true;
+            }
             if (roleFlags.HasFlag(RoleFlag.CannotWinAlone))
-                myRole.Metadata.GetOrDefault(RoleProperties.Key, new RoleProperties()).Add(RoleProperty.CannotWinAlone);
+                AddRoleProperty(RoleProperty.CannotWinAlone, alreadyReplaced ? false : replace);
 
             return this;
         }
@@ -582,6 +611,20 @@ public abstract class AbstractBaseRole
                 myRole.Metadata.GetOrDefault(RoleProperties.Key, new RoleProperties()).Add(RoleProperty.IsAbleToKill);
 
             return this;
+        }
+
+        public RoleModifier AddRoleProperty(RoleProperty[] properties, bool replace = false)
+        {
+            if (replace)
+            {
+                myRole.Metadata.Set(RoleProperties.Key, new RoleProperties());
+            }
+            myRole.Metadata.GetOrDefault(RoleProperties.Key, new RoleProperties()).AddAll(properties);
+            return this;
+        }
+        public RoleModifier AddRoleProperty(RoleProperty property, bool replace = false)
+        {
+            return AddRoleProperty([property], replace);
         }
     }
 }

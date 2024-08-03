@@ -11,6 +11,7 @@ using Lotus.Roles.Operations;
 using UnityEngine;
 using VentLib.Networking.RPC;
 using VentLib.Utilities;
+using Lotus.Patches.Client;
 
 namespace Lotus.Patches.Actions;
 
@@ -28,7 +29,7 @@ class EnterVentPatch
         CustomRole role = pc.PrimaryRole();
         ActionHandle vented = ActionHandle.NoInit();
 
-        if (!role.CanVent())
+        if (!UseVentPatch.CanUseVent(pc, role, __instance))
         {
             log.Trace($"{pc.GetNameWithRole()} cannot enter vent. Booting.");
             Async.Schedule(() => pc.MyPhysics.RpcBootFromVent(__instance.Id), 0.01f);

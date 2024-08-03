@@ -1,6 +1,14 @@
 using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
+using Hazel;
+using InnerNet;
 using Lotus.API.Odyssey;
+using Lotus.API.Player;
+using Lotus.Logging;
+using UnityEngine;
+using VentLib.Utilities;
+using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Harmony.Attributes;
 
 namespace Lotus.Patches;
@@ -33,8 +41,9 @@ class EndGamePatch
             if (killerId != byte.MaxValue && killerId != targetId)
                 KillLog += $"\n\t\t⇐ {TOHPlugin.AllPlayerNames[killerId]}({Utils.GetDisplayRoleName(killerId)}{Utils.GetSubRolesText(killerId)})";
         }*/
+        SelectRolesPatch.desyncedIntroText = new();
 
         KillLog = "asdoksdoksadpsako";
-        log.Info("-----------ゲーム終了-----------", "Phase");
+        log.Info("-----------ゲーム終了----------- Phase");
     }
 }

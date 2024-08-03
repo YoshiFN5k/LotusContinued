@@ -101,7 +101,8 @@ public class Transporter : Crewmate
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .VanillaRole(RoleTypes.Crewmate)
-            .RoleColor("#00EEFF");
+            .RoleColor("#00EEFF")
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
 
     private class TransportedEvent : AbilityEvent, IMultiTargetEvent

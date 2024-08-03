@@ -18,13 +18,15 @@ public abstract class RoleHolder : IRoleHolder
 
     public List<CustomRole> AllRoles { get; set; }
 
+    private static List<CustomRole> AddonRoles = new();
+
     public RoleHolder(Roles.Managers.RoleManager manager)
     {
 
     }
 
     public void AddOnFinishCall(Action action) => this.FinishedCallbacks().Add(action);
-    public void AddRole(CustomRole role) => this.AllRoles.Add(role);
+    public static void AddRole(CustomRole role) => AddonRoles.Add(role);
     public bool Intialized
     {
         get { return _initialized; }

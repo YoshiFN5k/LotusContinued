@@ -11,25 +11,26 @@ public class ProtectedRpc
 
     public static void CheckMurder(PlayerControl killer, PlayerControl target)
     {
-        log.Trace("Protected Check Murder", "ProtectedRpc::CheckMurder");
         if (AmongUsClient.Instance.IsGameOver || !AmongUsClient.Instance.AmHost) return;
+        log.Trace($"Protected Check Murder ({killer?.name ?? "null"} => {target?.name ?? "null"})");
         if (target == null) return;
         NetworkedPlayerInfo data = target.Data;
-        if (data == null) return;
-        if (!MurderPatches.Lock(killer.PlayerId)) return;
+        if (data == null)
+        {
+            log.Trace("Kill was canceled because target's data is null.");
+            return;
+        }
 
         if (MeetingHud.Instance != null)
         {
             killer.RpcVaporize(target);
-            RpcV3.Immediate(killer.NetId, RpcCalls.MurderPlayer).Write(target).Write((int)MurderResultFlags.DecisionByHost).Send(target.GetClientId());
+            RpcV3.Immediate(killer.NetId, RpcCalls.MurderPlayer).Write(target).Write((int)MurderResultFlags.Succeeded).Send(target.GetClientId());
             return;
         }
 
-        // Suspicious call, perhaps figure out a better way to track if players are protected at all times
-        if (AmongUsClient.Instance.AmHost) killer.MurderPlayer(target, MurderResultFlags.DecisionByHost);
+        if (AmongUsClient.Instance.AmHost) killer.MurderPlayer(target, MurderResultFlags.Succeeded);
 
-
-        RpcV3.Immediate(killer.NetId, RpcCalls.MurderPlayer).Write(target).Write((int)MurderResultFlags.DecisionByHost).Send();
+        RpcV3.Immediate(killer.NetId, RpcCalls.MurderPlayer).Write(target).Write((int)MurderResultFlags.Succeeded).Send();
         target.Data.IsDead = true;
     }
 }

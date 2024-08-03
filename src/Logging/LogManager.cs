@@ -31,11 +31,11 @@ public class LogManager
         Hooks.NetworkHooks.GameJoinHook.Bind(nameof(LogManager), e => BeginGameLogSession(e.IsNewLobby));
     }
 
-    [QuickPostfix(typeof(HudManager), nameof(HudManager.Start))]
+    [QuickPostfix(typeof(ChatController), nameof(ChatController.Awake))]
     public static void AttachUI(HudManager __instance)
     {
-        _logUI = __instance.gameObject.AddComponent<LogUI>();
-        _logUI.PassRequirements(__instance);
+        _logUI = HudManager.Instance.gameObject.AddComponent<LogUI>();
+        _logUI.PassRequirements(HudManager.Instance);
         _logUI.OnTextSubmit += logName => Async.ExecuteThreaded(() => WriteSessionLog(logName));
     }
 
@@ -46,12 +46,18 @@ public class LogManager
 
     public static void SendInGame(string message, params object[] args)
     {
-        StaticLogger.Debug($"Sending In Game: {message}", args);
+        log.Debug($"Sending In Game: {message}", args);
         if (DestroyableSingleton<HudManager>.Instance)
         {
-            LobbyNotificationMessage notifMessage = new();
-            notifMessage.SetUp(message, AssetLoader.LoadSprite("Lotus.assets.Lotus_Icon.png", 700f), Color.red, null);
-            DestroyableSingleton<HudManager>.Instance.Notifier.AddMessageToQueue(notifMessage);
+            DestroyableSingleton<HudManager>.Instance.Chat.AddChat(PlayerControl.LocalPlayer, message, false);
+            NotificationPopper notifier = DestroyableSingleton<HudManager>.Instance.Notifier;
+
+            LobbyNotificationMessage newMessage = UnityEngine.Object.Instantiate<LobbyNotificationMessage>(notifier.notificationMessageOrigin, Vector3.zero, Quaternion.identity, notifier.transform);
+            newMessage.transform.localPosition = new Vector3(0f, 0f, -2f);
+            newMessage.SetUp(message, AssetLoader.LoadSprite("Lotus.assets.Lotus_Icon.png", 700f), Color.white, (Action)(() => notifier.OnMessageDestroy(newMessage)));
+            notifier.ShiftMessages();
+            notifier.AddMessageToQueue(newMessage);
+            SoundManager.Instance.PlaySound(notifier.playerDisconnectSound, false, 1f, null);
         }
     }
     public static void BeginGameLogSession(bool isNewGame)
@@ -60,7 +66,7 @@ public class LogManager
         if (!isNewGame)
         {
             var appender = _sessionAppender.Get();
-            appender.FileNamePattern = $"_game-{LogDirectory.GetLogs("_game-", _dailyDirectory).Count().ToString()}.txt";
+            appender.FileNamePattern = $"_game-{LogDirectory.GetLogs("_game-", _dailyDirectory).Count().ToString()}.log";
             appender.LogFile = LogDirectory.CreateLog(appender.FileNamePattern, _dailyDirectory);
             appender.Clear();
         }
@@ -97,7 +103,7 @@ public class LogManager
             logName = DateTime.Now.ToString("yyyy-MM-dd") + "-session-";
             logName += LogDirectory.GetLogs(logName, _dailyDirectory).Count().ToString();
         }
-        if (!logName.Contains('.')) logName += ".txt";
+        if (!logName.Contains('.')) logName += ".log";
 
         var appender = _sessionAppender.Get();
 

@@ -46,7 +46,7 @@ public class AgiTater : NeutralKillingBase
     private int currentBombs;
 
     [UIComponent(UI.Counter, ViewMode.Additive, GameState.Roaming)]
-    private string BombCounter() => bombsPerRound == -1 ? "" : RoleUtils.Counter(currentBombs, bombsPerRound, RoleColor);
+    private string BombCounter() => bombsPerRound == -1 ? RoleUtils.Counter(currentBombs, color: RoleColor) : RoleUtils.Counter(currentBombs, bombsPerRound, RoleColor);
 
     [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
@@ -74,7 +74,7 @@ public class AgiTater : NeutralKillingBase
     [RoleAction(LotusActionType.RoundStart)]
     private void AgitaterBombReset()
     {
-        log.Trace($"Resetting AgiTater's Bombs ({bombsPerRound})", "AgitaterBombReset");
+        log.Trace($"(AgitaterBombReset) Resetting AgiTater's Bombs ({bombsPerRound})");
         currentBombs = bombsPerRound;
     }
 
@@ -85,10 +85,11 @@ public class AgiTater : NeutralKillingBase
         bombs.RemoveAll(b => b.DoUpdate());
     }
 
-    [RoleAction(LotusActionType.MeetingCalled, ActionFlag.WorksAfterDeath)]
+    [RoleAction(LotusActionType.MeetingCalled, ActionFlag.WorksAfterDeath | ActionFlag.GlobalDetector)]
     private void KillPlayersBeforeMeeting()
     {
         if (Condition.HasFlag(ExplodeCondition.Meetings)) bombs.RemoveAll(b => b.Explode());
+        bombs.ForEach(b => b.DeleteBomb());
         bombs.Clear();
     }
 
@@ -114,7 +115,7 @@ public class AgiTater : NeutralKillingBase
                 .Build())
             .SubOption(sub2 => sub2.KeyName("Bombs per Round", AgiOptions.BombsPerRound)
                 .Value(v => v.Text(ModConstants.Infinity).Color(ModConstants.Palette.InfinityColor).Value(-1).Build())
-                .AddIntRange(1, 15, 1, 3)
+                .AddIntRange(1, ModConstants.MaxPlayers, 1, 3)
                 .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
                 .BindInt(i => bombsPerRound = i)
                 .Build())

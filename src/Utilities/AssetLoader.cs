@@ -42,6 +42,16 @@ public class AssetLoader
         return sprite;
     }
 
+    public static bool ResourceExists(string path, Assembly? assembly = null)
+    {
+        assembly ??= Assembly.GetCallingAssembly();
+        foreach (var res in assembly.GetManifestResourceNames())
+        {
+            if (res == path) return true;
+        }
+        return false;
+    }
+
     internal static Sprite LoadLotusSprite(string path, float pixelsPerUnit, bool linear = false, int mipMapLevels = 0)
     {
         if (path.StartsWith('.')) path = AssetPath + path;
@@ -62,6 +72,4 @@ public class AssetLoader
         else resourcePath = AssetPath + "." + resourcePath;
         return LoadLazy(resourcePath, pixelsPerUnit, linear, mipMapLevels, assembly);
     }
-
-
 }

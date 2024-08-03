@@ -76,8 +76,8 @@ public class TemplateUnit
         { "AllRoles", _ => TUAllRoles.GetAllRoles(false) },
         { "AllModifiers", _ => TUAllRoles.GetAllRoles(true, true).Replace("Modifiers\n", "") },
 
-        { "AlivePlayers", _ => Players.GetPlayers(PlayerFilter.Alive).Select(p => p.name).Fuse() },
-        { "AlivePlayerCount", _ => Players.GetPlayers(PlayerFilter.Alive).Count().ToString() },
+        { "AlivePlayers", _ => Players.GetAlivePlayers().Select(p => p.name).Fuse() },
+        { "AlivePlayerCount", _ => Players.GetAlivePlayers().Count().ToString() },
         { "DeadPlayers", _ => Players.GetPlayers(PlayerFilter.Dead).Select(p => p.name).Fuse() },
         { "DeadPlayerCount", _ => Players.GetPlayers(PlayerFilter.Dead).Count().ToString() },
 
@@ -117,9 +117,9 @@ public class TemplateUnit
         { "Mods", ShowModifiers },
         { "ModsDescriptive", ModifierText },
         { "MyRole", player => MyRoleCommand.GenerateMyRoleText(((PlayerControl)player).PrimaryRole()) },
-        { "TasksComplete", QW(p => (GetTaskHolderRole(p) != null ? GetTaskHolderRole(p).CompleteTasks : 0).ToString() )},
-        { "TotalTasks", QW(p => (GetTaskHolderRole(p) != null ? GetTaskHolderRole(p).TotalTasks : 0).ToString() )},
-        { "TasksRemaining", QW(p => (GetTaskHolderRole(p) != null ? GetTaskHolderRole(p).TotalTasks - GetTaskHolderRole(p).CompleteTasks : 0).ToString())},
+        { "TasksComplete", QW(p => (GetTaskHolderRole(p)?.CompleteTasks ?? 0).ToString() )},
+        { "TotalTasks", QW(p => (GetTaskHolderRole(p)?.TotalTasks ?? 0).ToString() )},
+        { "TasksRemaining", QW(p => (GetTaskHolderRole(p)?.TotalTasks - GetTaskHolderRole(p)?.CompleteTasks ?? 0).ToString())},
 
         { "Role_Name", role => ((CustomRole) role).RoleName },
         { "Role_Description", role => ((CustomRole) role).Description },

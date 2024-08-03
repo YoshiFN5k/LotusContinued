@@ -48,7 +48,7 @@ public class Phantom : Crewmate, IPhantomRole
     private void ClearComponents() => indicatorComponents.ForEach(c => c.Delete());
 
     [RoleAction(LotusActionType.Vote, ActionFlag.GlobalDetector, priority: Priority.Last)]
-    private void ClearVotesAgainstPhantom(Optional<PlayerControl> player, ActionHandle handle)
+    private void ClearVotesAgainstPhantom(Optional<PlayerControl> player, MeetingDelegate meetingDelegate, ActionHandle handle)
     {
         if (!isRevealed) return;
         if (!player.Exists() || player.Get().PlayerId != MyPlayer.PlayerId) return;
@@ -78,6 +78,7 @@ public class Phantom : Crewmate, IPhantomRole
 
     private void PhantomReveal()
     {
+        if (isRevealed) return;
         MyPlayer.NameModel().GetComponentHolder<IndicatorHolder>().Add(new IndicatorComponent(new LiveString("⚠", RoleColor), Game.InGameStates));
 
         Players.GetAlivePlayers().Where(p => p.PlayerId != MyPlayer.PlayerId).ForEach(p =>

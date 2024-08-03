@@ -84,10 +84,14 @@ public class Vampiress : Impostor
                 .AddFloatRange(2.5f, 60f, 2.5f, 2, GeneralOptionTranslations.SecondsSuffix)
                 .Build());
 
+    protected override RoleType GetRoleType() => RoleType.Variation;
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .OptionOverride(new IndirectKillCooldown(KillCooldown, () => mode is VampireMode.Biting))
-            .RoleFlags(RoleFlag.VariationRole);
+            .RoleFlags(RoleFlag.VariationRole)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
+            .IntroSound(AmongUs.GameOptions.RoleTypes.Shapeshifter);
 
     public enum VampireMode
     {

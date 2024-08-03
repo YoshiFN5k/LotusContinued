@@ -15,6 +15,8 @@ using VentLib.Options.UI;
 using VentLib.Utilities;
 using static Lotus.ModConstants.Palette;
 using static Lotus.Roles.RoleGroups.Impostors.IdentityThief.Translations.Options;
+using VentLib.Utilities.Optionals;
+using Lotus.API.Vanilla.Meetings;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -23,6 +25,8 @@ public class IdentityThief : Impostor
     private ShiftingType shiftingType;
 
     private bool shapeshiftedThisRound;
+
+    private int currentRound;
 
     [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
@@ -37,10 +41,12 @@ public class IdentityThief : Impostor
 
         if (shiftingType is not ShiftingType.UntilMeeting || !shapeshiftedThisRound) MyPlayer.CRpcShapeshift(target, true);
 
+        int curRoundCopy = currentRound;
         if (shiftingType is ShiftingType.KillCooldown) Async.Schedule(() =>
         {
-            if (Game.State is GameState.InMeeting) return;
+            if (Game.State is GameState.InMeeting || currentRound != curRoundCopy) return;
             MyPlayer.CRpcRevertShapeshift(true);
+            shapeshiftedThisRound = false;
         }, KillCooldown);
 
         ProtectedRpc.CheckMurder(MyPlayer, target);
@@ -49,7 +55,22 @@ public class IdentityThief : Impostor
     }
 
     [RoleAction(LotusActionType.RoundStart)]
-    private void ClearShapeshiftStatus() => shapeshiftedThisRound = false;
+    private void ClearShapeshiftStatus()
+    {
+        shapeshiftedThisRound = false;
+        currentRound++;
+    }
+
+    // might conflict with camouflager
+    [RoleAction(LotusActionType.MeetingCalled, ActionFlag.GlobalDetector, priority: Priority.Low)]
+    private void HandleMeetingCall(PlayerControl reporter, Optional<NetworkedPlayerInfo> reported, ActionHandle handle)
+    {
+        if (!shapeshiftedThisRound) return;
+        shapeshiftedThisRound = false;
+        MyPlayer.CRpcRevertShapeshift(false);
+        handle.Cancel();
+        Async.Schedule(() => MeetingPrep.PrepMeeting(reporter, reported.OrElse(null!)), 0.5f);
+    }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)

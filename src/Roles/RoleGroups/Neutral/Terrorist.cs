@@ -9,6 +9,7 @@ using UnityEngine;
 using Lotus.Roles.Internals.Enums;
 using VentLib.Localization.Attributes;
 using VentLib.Options.UI;
+using System.Linq;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
@@ -39,6 +40,8 @@ public class Terrorist : Engineer
         ManualWin.Activate(MyPlayer, ReasonType.TasksComplete, 900);
     }
 
+    protected override string ForceRoleImageDirectory() => "Neutral.terrorist";
+
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddTaskOverrideOptions(base.RegisterOptions(optionStream)
             .Tab(DefaultTabs.NeutralTab)
@@ -58,7 +61,8 @@ public class Terrorist : Engineer
             .RoleColor(new Color(0.52f, 0.84f, 0.28f))
             .RoleFlags(RoleFlag.CannotWinAlone)
             .Faction(FactionInstances.Neutral)
-            .SpecialType(SpecialType.Neutral);
+            .SpecialType(SpecialType.Neutral)
+            .IntroSound(() => ShipStatus.Instance.CommonTasks.FirstOrDefault(task => task.TaskType == TaskTypes.FixWiring)?.MinigamePrefab.OpenSound ?? null);
 
     [Localized(nameof(Terrorist))]
     internal static class TerroristTranslations

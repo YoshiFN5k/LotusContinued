@@ -13,12 +13,13 @@ using VentLib.Options.UI.Tabs;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using VentLib.Options.UI.Controllers;
+using Rewired.Utils.Platforms.Windows;
 
 namespace Lotus.GameModes;
 
 public interface IGameMode
 {
-    public string Name { get; set; }
+    public string Name { get; protected internal set; }
     public CoroutineManager CoroutineManager { get; }
     public MatchData MatchData { get; protected internal set; }
     public RoleOperations RoleOperations { get; }
@@ -27,8 +28,9 @@ public interface IGameMode
     IEnumerable<GameOptionTab> EnabledTabs();
     MainSettingTab MainTab();
 
-    void Assign(PlayerControl player, CustomRole role);
+    void Assign(PlayerControl player, CustomRole role, bool addAsMainRole = true, bool sendToClient = false);
     void AssignRoles(List<PlayerControl> players);
+    // void OnShowRole();
 
     protected internal void Activate();
 
@@ -45,6 +47,7 @@ public interface IGameMode
     internal void InternalActivate()
     {
         Activate();
+        SettingsOptionController.SetMainTab(MainTab());
         EnabledTabs().ForEach(RoleOptionController.AddTab);
     }
 

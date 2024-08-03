@@ -54,7 +54,7 @@ public class PlayerJoinPatch
             return;
         }
 
-        PluginDataManager.BanManager.CheckBanPlayer(client);
+        PluginDataManager.BanManager.CheckBanPlayer(player, client);
 
         Hooks.PlayerHooks.PlayerJoinHook.Propagate(new PlayerHookEvent(player));
         CheckAutostart();

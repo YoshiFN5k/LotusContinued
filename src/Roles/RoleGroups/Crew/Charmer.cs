@@ -36,6 +36,7 @@ using VentLib.Options.UI;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
+using Lotus.GameModes.Standard;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -108,7 +109,7 @@ public class Charmer : Crewmate
 
         CustomRole playerRole = player.PrimaryRole();
         IStatus status = CustomStatus.Of(Translations.CharmedText).Description(Translations.CharmedDescription).Color(_charmedColor).Build();
-        charmedPlayers[player.PlayerId] = (player.NameModel().GCH<NameHolder>().Insert(0, component), MatchData.AddStatus(player, status, MyPlayer), playerRole.Faction);
+        charmedPlayers[player.PlayerId] = (player.NameModel().GCH<NameHolder>().Insert(0, component), Game.MatchData.AddStatus(player, status, MyPlayer), playerRole.Faction);
         playerRole.Faction = _charmedFaction;
         _charmedPlayers.Increment(MyPlayer.UniquePlayerId());
 
@@ -126,7 +127,7 @@ public class Charmer : Crewmate
         if (CharmPlayer(closestPlayer)) charmingCooldown.Start();
     }
 
-    [RoleAction(LotusActionType.Interaction, ActionFlag.WorksAfterDeath)]
+    [RoleAction(LotusActionType.Interaction, ActionFlag.WorksAfterDeath | ActionFlag.GlobalDetector)]
     public void PreventCrewmateInteractions(PlayerControl target, PlayerControl actor, Interaction interaction, ActionHandle handle)
     {
         if (breakCharmOnDeath && !MyPlayer.IsAlive()) return;
@@ -185,14 +186,14 @@ public class Charmer : Crewmate
             .SubOption(sub => sub.KeyName("Max Charmed Players", Translations.Options.MaxCharmedPlayers)
                 .BindInt(i => maxCharmedPlayers = i)
                 .Value(v => v.Text(ModConstants.Infinity).Color(ModConstants.Palette.InfinityColor).Value(0).Build())
-                .AddIntRange(1, 15, 1, 0)
+                .AddIntRange(1, ModConstants.MaxPlayers, 1, 0)
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(0.71f, 0.67f, 0.9f))
             .DesyncRole(usesKillButton ? RoleTypes.Impostor : RoleTypes.Crewmate)
-            .RoleAbilityFlags(RoleAbilityFlag.CannotVent | RoleAbilityFlag.CannotSabotage)
+            .RoleAbilityFlags(RoleAbilityFlag.CannotVent | RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.UsesPet)
             .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod())
             .OptionOverride(new IndirectKillCooldown(() => charmingCooldown.Duration <= -1 ? AUSettings.KillCooldown() : charmingCooldown.Duration));
 

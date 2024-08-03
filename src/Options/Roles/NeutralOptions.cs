@@ -53,7 +53,7 @@ public class NeutralOptions
             .BuildAndRegister());
 
         AllOptions.Add(new GameOptionBuilder()
-            .AddIntRange(0, 15)
+            .AddIntRange(0, ModConstants.MaxPlayers)
             .Builder("Minimum Neutral Passive Roles")
             .IsHeader(true)
             .Name(GColor(NeutralOptionTranslations.MinimumNeutralPassiveRoles))
@@ -62,7 +62,7 @@ public class NeutralOptions
             .BuildAndRegister());
 
         AllOptions.Add(new GameOptionBuilder()
-            .AddIntRange(0, 15)
+            .AddIntRange(0, ModConstants.MaxPlayers)
             .Builder("Maximum Neutral Passive Roles")
             .Name(GColor(NeutralOptionTranslations.MaximumNeutralPassiveRoles))
             // .Tab(DefaultTabs.NeutralTab)
@@ -70,7 +70,7 @@ public class NeutralOptions
             .BuildAndRegister());
 
         AllOptions.Add(new GameOptionBuilder()
-            .AddIntRange(0, 15)
+            .AddIntRange(0, ModConstants.MaxPlayers)
             // .Tab(DefaultTabs.NeutralTab)
             .BindInt(i => MinimumNeutralKillingRoles = i)
             .Builder("Minimum Neutral Killing Roles")
@@ -78,7 +78,7 @@ public class NeutralOptions
             .BuildAndRegister());
 
         AllOptions.Add(new GameOptionBuilder()
-            .AddIntRange(0, 15)
+            .AddIntRange(0, ModConstants.MaxPlayers)
             // .Tab(DefaultTabs.NeutralTab)
             .BindInt(i => MaximumNeutralKillingRoles = i)
             .Builder("Maximum Neutral Killing Roles")

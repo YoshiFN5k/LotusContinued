@@ -14,10 +14,12 @@ using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using UnityEngine;
 using VentLib.Options.UI;
+using Lotus.Logging;
+using System;
 
 namespace Lotus.Roles.RoleGroups.Vanilla;
-
-public partial class Impostor : CustomRole, IModdable, ISabotagerRole
+// IModdable
+public class Impostor : CustomRole, ISabotagerRole
 {
     private const float DefaultFloatValue = -1;
 

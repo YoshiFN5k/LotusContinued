@@ -18,7 +18,7 @@ public class Tasks
             log.Debug($"Assigning player: {taskHolder.MyPlayer.name} new tasks (Short={shortTasks}, Long={longTasks})", "AssignNewTasks");
             TasksOverride tasksOverride = new(shortTasks, longTasks, taskAssignmentMode);
             TaskQueue.Enqueue(tasksOverride);
-            PlayerControl.LocalPlayer.Data.RpcSetTasks(new Il2CppStructArray<byte>(0));
+            taskHolder.MyPlayer.Data.RpcSetTasks(new Il2CppStructArray<byte>(0));
             callback?.Invoke(tasksOverride);
         }, delayed ? NetUtils.DeriveDelay(1f) : 0);
     }

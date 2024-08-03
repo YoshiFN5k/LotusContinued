@@ -26,17 +26,17 @@ public class VersionShowerStartPatch
     static void Postfix(VersionShower __instance)
     {
         ProjectLotus.CredentialsText = "\r\n";
-    #if DEBUG
+#if DEBUG
         ProjectLotus.CredentialsText += $"v{ProjectLotus.PluginVersion}";
         ProjectLotus.CredentialsText += $" ({ProjectLotus.DevVersionStr})\n";
-    #endif
+#endif
         ProjectLotus.CredentialsText += $"{_startColor.Colorize(ProjectLotus.ModName)}";
-    #if !DEBUG
+#if !DEBUG
         ProjectLotus.CredentialsText += $" v{ProjectLotus.PluginVersion}";
-    #endif
-    #if DEBUG
+#endif
+#if DEBUG
         ProjectLotus.CredentialsText += $": {_endColor.Colorize($"{ProjectLotus.Instance.Version().Branch}({ProjectLotus.Instance.Version().CommitNumber})")}";
-    #endif
+#endif
 
         int addonCount = AddonManager.Addons.Count;
         if (addonCount > 0)
@@ -77,7 +77,7 @@ class ModManagerLateUpdatePatch
 
     public static void Postfix(ModManager __instance)
     {
-        var offsetY = HudManager.InstanceExists ? 1.6f : 0.9f;
+        var offsetY = HudManager.InstanceExists ? 1.8f : 0.9f;
         __instance.ModStamp.transform.position = AspectPosition.ComputeWorldPosition(
             __instance.localCamera, AspectPosition.EdgeAlignments.RightTop,
             new Vector3(0.4f, offsetY, __instance.localCamera.nearClipPlane + 0.1f));

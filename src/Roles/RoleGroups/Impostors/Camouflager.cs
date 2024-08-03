@@ -31,8 +31,8 @@ public class Camouflager : Shapeshifter
     private void CamouflagerShapeshift(PlayerControl target)
     {
         if (camouflaged) return;
+        Players.GetAlivePlayers().Where(p => p.PlayerId != MyPlayer.PlayerId && p.PlayerId != target.PlayerId).Do(p => p.CRpcShapeshift(target, true));
         camouflaged = true;
-        Players.GetAlivePlayers().Where(p => p.PlayerId != MyPlayer.PlayerId).Do(p => p.CRpcShapeshift(target, true));
     }
 
     [RoleAction(LotusActionType.Unshapeshift)]
@@ -43,14 +43,36 @@ public class Camouflager : Shapeshifter
         Players.GetAlivePlayers().Where(p => p.PlayerId != MyPlayer.PlayerId).Do(p => p.CRpcRevertShapeshift(true));
     }
 
-    [RoleAction(LotusActionType.MeetingCalled)]
+    [RoleAction(LotusActionType.MeetingCalled, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath, priority: API.Priority.First)]
     private void HandleMeetingCall(PlayerControl reporter, Optional<NetworkedPlayerInfo> reported, ActionHandle handle)
     {
         if (!camouflaged) return;
         camouflaged = false;
-        Players.GetAlivePlayers().Where(p => p.PlayerId != MyPlayer.PlayerId).Do(p => p.CRpcRevertShapeshift(true));
+        Players.GetAlivePlayers().Where(p => p.PlayerId != MyPlayer.PlayerId).Do(p => p.CRpcRevertShapeshift(false));
         handle.Cancel();
         Async.Schedule(() => MeetingPrep.PrepMeeting(reporter, reported.OrElse(null!)), 0.5f);
+    }
+
+    [RoleAction(LotusActionType.PlayerDeath)]
+    private void HandlePlayerDeath()
+    {
+        if (!camouflaged) return;
+        camouflaged = false;
+        Players.GetAlivePlayers().Where(p => p.PlayerId != MyPlayer.PlayerId).Do(p => p.CRpcRevertShapeshift(true));
+    }
+
+
+    [RoleAction(LotusActionType.Shapeshift, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath, priority: API.Priority.VeryHigh)]
+    private void StopShapeshift(PlayerControl player, ActionHandle handle)
+    {
+        if (!camouflaged) return;
+        if (player.PlayerId != MyPlayer.PlayerId) handle.Cancel();
+    }
+    [RoleAction(LotusActionType.Unshapeshift, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath, priority: API.Priority.VeryHigh)]
+    private void StopUnShapeshift(PlayerControl player, ActionHandle handle)
+    {
+        if (!camouflaged) return;
+        if (player.PlayerId != MyPlayer.PlayerId) handle.Cancel();
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>

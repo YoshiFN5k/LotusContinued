@@ -11,7 +11,6 @@ public partial class Api
 
         public static void SetName(PlayerControl player, string name, bool send = false, GameState state = GameState.None)
         {
-
             if (player == null) return;
             if (state is GameState.None) state = Game.State;
 

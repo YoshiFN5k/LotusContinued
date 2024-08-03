@@ -116,7 +116,7 @@ public abstract class RoleEditor
         this.GetType().GetMethods(BindingFlags.Default | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             .SelectMany(method => method.GetCustomAttributes<RoleActionAttribute>().Select(a => (a, method)))
             .Where(t => t.a.Subclassing || t.method.DeclaringType == this.GetType())
-            .Select(t => t.Item1 is ModifiedActionAttribute modded ? new ModifiedAction(modded, t.method) : new RoleAction(t.Item1!, t.method))
+            .Select(t => t.Item1 is ModifiedActionAttribute modded ? new ModifiedAction(modded, t.method, this) : new RoleAction(t.Item1!, t.method, this))
             .Do(action =>
             {
                 if (action is not ModifiedAction modded) ModdedRole.AddRoleAction(action);

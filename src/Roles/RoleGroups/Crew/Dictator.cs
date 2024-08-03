@@ -69,11 +69,11 @@ public class Dictator : Crewmate
         else if (suicideIfVoteCrewmate && Relationship(player) is not Relation.FullAllies)
         {
             shouldSuicide = true;
-            return;
+            if (showDictatorVoteAtEnd) return;
         }
-        else return;
+        else if (showDictatorVoteAtEnd) return;
 
-        FinalizeDictate();
+        FinalizeDictate(meetingDelegate);
         meetingDelegate.EndVoting(dictatedPlayer);
     }
 
@@ -83,15 +83,17 @@ public class Dictator : Crewmate
         if (showDictatorVoteAtEnd && dictatedPlayer != null && currentDictates > 0)
         {
             meetingDelegate.ExiledPlayer = dictatedPlayer;
-            FinalizeDictate();
+            FinalizeDictate(meetingDelegate);
         }
         dictateMessage = null;
         dictatedPlayer = null;
         shouldSuicide = false;
     }
 
-    private void FinalizeDictate()
+    private void FinalizeDictate(MeetingDelegate meetingDelegate)
     {
+        meetingDelegate.ClearAllVotes();
+        meetingDelegate.CastVote(MyPlayer.PlayerId, Optional<byte>.NonNull(dictatedPlayer.PlayerId));
         dictateMessage?.Send();
         if (!shouldSuicide) return;
 
@@ -102,7 +104,7 @@ public class Dictator : Crewmate
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub.KeyName("Number of Dictates", NumberOfDictates)
-                .AddIntRange(1, 15)
+                .AddIntRange(1, ModConstants.MaxPlayers)
                 .BindInt(i => totalDictates = i)
                 .ShowSubOptionPredicate(i => (int)i > 1)
                 .SubOption(sub2 => sub2

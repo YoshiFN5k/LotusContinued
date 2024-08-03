@@ -27,15 +27,20 @@ namespace Lotus.Roles.Subroles;
 
 public class Bloodlust : Subrole
 {
-    public static Type[] IncompatibleRoles =
+    /// <summary>
+    /// A list of roles that Bloodlust is not compatiable with. Add your role to this list to make it not be assigned with your role.
+    /// </summary>
+    public static readonly List<Type> IncompatibleRoles = new()
     {
         typeof(Crusader),
         typeof(Observer),
+        typeof(Sheriff),
         typeof(Snitch),
         typeof(Speedrunner),
         typeof(Amnesiac),
         typeof(Copycat),
-        typeof(Phantom)
+        typeof(Phantom),
+        typeof(Postman),
     };
 
     private bool restrictedToCompatibleRoles;

@@ -55,7 +55,8 @@ public class AddonManager
         }
         catch (Exception e)
         {
-            log.Exception($"Exception encountered while loading addon: {file.Name}", e);
+            log.Exception($"Error occured while loading addon. Addon File Name: {file.Name}", e);
+            log.Exception(e);
         }
     }
 
@@ -101,7 +102,7 @@ public class AddonManager
         if (addons.Count == 0) return;
         log.Exception(" Error Validating Addons. All CustomRPCs between the host and this client have been disabled.", "VerifyAddons");
         log.Exception(" -=-=-=-=-=-=-=-=-=[Errored Addons]=-=-=-=-=-=-=-=-=-", "VerifyAddons");
-        foreach (var rejectReason in addons.Where(info => info.Mismatches is not Mismatch.None).Select(addonInfo => (addonInfo.Mismatches)
+        foreach (var rejectReason in addons.Where(info => info.Mismatches is not Mismatch.None).Select(addonInfo => addonInfo.Mismatches
              switch
         {
             Mismatch.Version => $" {addonInfo.Name}:{addonInfo.Version} => Local version is not compatible with the host version of the addon",

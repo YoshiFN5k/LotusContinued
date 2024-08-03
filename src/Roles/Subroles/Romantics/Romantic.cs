@@ -24,6 +24,8 @@ using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
+using System.Collections.Generic;
+using Lotus.API.Vanilla.Meetings;
 
 namespace Lotus.Roles.Subroles.Romantics;
 
@@ -86,17 +88,17 @@ public class Romantic : Subrole
         if (dead.PlayerId != partner) return;
         MyPlayer.GetSubroles().Remove(this);
         winDelegateRemote?.Delete();
-        if (Random.RandomRange(0, 100) < _ruthlessRomantic.Chance) MatchData.AssignSubRole(MyPlayer, _ruthlessRomantic);
+        if (Random.RandomRange(0, 100) < _ruthlessRomantic.Chance) Game.AssignSubRole(MyPlayer, _ruthlessRomantic);
         else
         {
-            MatchData.AssignSubRole(MyPlayer, _vengefulRomantic);
+            Game.AssignSubRole(MyPlayer, _vengefulRomantic);
             MyPlayer.PrimaryRole().Faction = FactionInstances.Neutral;
             MyPlayer.GetSubrole<VengefulRomantic>()?.SetupVengeful(killer, originalFaction);
         }
     }
 
     [RoleAction(LotusActionType.Vote, priority: Priority.High)]
-    public void SetPartner(Optional<PlayerControl> votedPlayer, ActionHandle handle)
+    public void SetPartner(Optional<PlayerControl> votedPlayer, MeetingDelegate _, ActionHandle handle)
     {
         if (!partnerLockedIn) handle.Cancel();
         else return;
@@ -170,10 +172,11 @@ public class Romantic : Subrole
                 .BindFloat(protectionDuration.SetDuration)
                 .Build());
 
+    protected override List<CustomRole> LinkedRoles() => base.LinkedRoles().Concat(new List<CustomRole>() { _vengefulRomantic, _ruthlessRomantic }).ToList();
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(RomanticColor)
-            .LinkedRoles(_vengefulRomantic, _ruthlessRomantic);
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     private ChatHandler RHandler(string message) => new ChatHandler().Title(t => t.PrefixSuffix(Identifier()).Color(RoleColor).Text(RoleName).Build()).LeftAlign().Message(message);
 

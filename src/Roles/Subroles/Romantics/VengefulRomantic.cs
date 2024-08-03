@@ -97,9 +97,12 @@ public class VengefulRomantic : Subrole
                 .BindBool(b => suicideAfterRevenge = b)
                 .Build());
 
+    protected override RoleType GetRoleType() => RoleType.Transformation;
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleFlags(RoleFlag.TransformationRole)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
             .RoleColor(new Color(0.71f, 0.23f, 0.35f));
 
     [Localized(nameof(VengefulRomantic))]

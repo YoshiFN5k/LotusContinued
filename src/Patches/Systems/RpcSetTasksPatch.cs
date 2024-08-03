@@ -11,7 +11,7 @@ using Lotus.Logging;
 
 namespace Lotus.Patches.Systems;
 
-[HarmonyPatch(typeof(NetworkedPlayerInfo), nameof(GameData.Instance.PlayerInfoPrefab.RpcSetTasks))]
+[HarmonyPatch(typeof(NetworkedPlayerInfo), nameof(NetworkedPlayerInfo.RpcSetTasks))]
 public class RpcSetTasksPatch
 {
     internal static readonly Queue<TasksOverride> TaskQueue = new();

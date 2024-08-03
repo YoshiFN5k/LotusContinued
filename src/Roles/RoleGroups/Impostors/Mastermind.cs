@@ -27,6 +27,7 @@ using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using static Lotus.Roles.RoleGroups.Impostors.Mastermind.MastermindTranslations;
 using static Lotus.Roles.RoleGroups.Impostors.Mastermind.MastermindTranslations.MastermindOptionTranslations;
+using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -39,6 +40,7 @@ public class Mastermind : Impostor
     [NewOnSetup] private HashSet<byte> manipulatedPlayers = null!;
     [NewOnSetup] private Dictionary<byte, Remote<TextComponent>?[]> remotes = null!;
     [NewOnSetup] private Dictionary<byte, Cooldown> expirationTimers = null!;
+    [NewOnSetup] private Dictionary<byte, HashSet<byte>> manipuletedKills = null!;
 
     private bool CanManipulate => manipulatedPlayerLimit == -1 || manipulatedPlayers.Count < manipulatedPlayerLimit;
 
@@ -58,13 +60,24 @@ public class Mastermind : Impostor
         remotes[target.PlayerId] = textComponents;
         manipulatedPlayers.Add(target.PlayerId);
 
-
         Async.Schedule(() => BeginSuicideCountdown(target), 5f);
         RefreshKillCooldown(target);
         return false;
     }
 
-    [RoleAction(LotusActionType.OnPet, ActionFlag.GlobalDetector)]
+    [RoleAction(LotusActionType.RoundStart)]
+    private void OnRoundStart() => manipuletedKills.Clear();
+
+    [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath, priority: API.Priority.First)]
+    private void StopManipulatedReport(PlayerControl reporter, Optional<NetworkedPlayerInfo> body, ActionHandle handle)
+    {
+        if (!body.Exists()) return; // trying to report meeting
+        if (!manipuletedKills.TryGetValue(reporter.PlayerId, out HashSet<byte>? killedPlayers)) return; // they havent killed someone
+        if (!killedPlayers.Contains(body.Get().PlayerId)) return; // they are reporting someone else
+        handle.Cancel();
+    }
+
+    [RoleAction(LotusActionType.OnPet, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath)]
     public void InterceptPetAction(PlayerControl petter, ActionHandle handle)
     {
         if (!manipulatedPlayers.Contains(petter.PlayerId)) return;
@@ -75,7 +88,7 @@ public class Mastermind : Impostor
         DoManipulationKill(petter, target);
     }
 
-    [RoleAction(LotusActionType.PlayerAction, ActionFlag.GlobalDetector)]
+    [RoleAction(LotusActionType.PlayerAction, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath)]
     public void InterceptTargetAction(PlayerControl emitter, RoleAction action, ActionHandle handle, object[] parameters)
     {
         if (!manipulatedPlayers.Contains(emitter.PlayerId)) return;
@@ -102,6 +115,8 @@ public class Mastermind : Impostor
             emitter.InteractWith(target, new ManipulatedInteraction(new FatalIntent(), emitter.PrimaryRole(), MyPlayer));
             killCooldown.Delete();
             emitterRole.SyncOptions();
+            if (target.IsAlive()) return;
+            manipuletedKills.GetOrCompute(emitter.PlayerId, () => new HashSet<byte>()).Add(target.PlayerId);
         }, NetUtils.DeriveDelay(0.05f));
         ClearManipulated(emitter);
     }
@@ -123,8 +138,8 @@ public class Mastermind : Impostor
     }
 
 
-    [RoleAction(LotusActionType.PlayerDeath)]
-    [RoleAction(LotusActionType.MeetingCalled)]
+    [RoleAction(LotusActionType.PlayerDeath)] // MY DEATH
+    [RoleAction(LotusActionType.MeetingCalled, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath)]
     public override void HandleDisconnect()
     {
         manipulatedPlayers.ToArray().Filter(Players.PlayerById).ForEach(p =>
@@ -135,7 +150,7 @@ public class Mastermind : Impostor
         });
     }
 
-    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
+    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)] // EVERY OTHER PERSON'S DEATH
     private void HandleManipulatedDeath(PlayerControl deadPlayer)
     {
         ClearManipulated(deadPlayer);
@@ -170,7 +185,8 @@ public class Mastermind : Impostor
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .OptionOverride(new IndirectKillCooldown(KillCooldown, () => CanManipulate))
-            .OptionOverride(Override.KillCooldown, () => AUSettings.KillCooldown(), () => !CanManipulate);
+            .OptionOverride(Override.KillCooldown, () => AUSettings.KillCooldown(), () => !CanManipulate)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     [Localized(nameof(Mastermind))]
     internal static class MastermindTranslations

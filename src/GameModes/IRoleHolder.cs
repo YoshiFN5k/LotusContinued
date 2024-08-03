@@ -15,6 +15,7 @@ public interface IRoleHolder
 
     public List<CustomRole> AllRoles { get; set; }
 
+    private static List<CustomRole> AddonRoles = new();
+
     public void AddOnFinishCall(Action action);
-    public void AddRole(CustomRole role);
 }

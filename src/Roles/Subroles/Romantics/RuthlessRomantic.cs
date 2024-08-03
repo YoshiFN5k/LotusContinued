@@ -40,8 +40,11 @@ public class RuthlessRomantic : NeutralKillingBase
         MyPlayer.InteractWith(MyPlayer, new UnblockedInteraction(new FatalIntent(), this));
     }
 
+    protected override RoleType GetRoleType() => RoleType.Variation;
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleFlags(RoleFlag.VariationRole)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
             .RoleColor(new Color(0.23f, 0f, 0.24f, 0.98f));
 }

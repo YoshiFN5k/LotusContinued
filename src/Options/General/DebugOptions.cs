@@ -35,6 +35,11 @@ public class DebugOptions
             .BindBool(b => NameBasedRoleAssignment = b)
             .BuildAndRegister());
 
+        AllOptions.Add(Builder("Advanced Role Assignment")
+            .Name(DebugOptionTranslations.AdvancedRoleAssignment)
+            .BindBool(b => ProjectLotus.AdvancedRoleAssignment = b)
+            .BuildAndRegister());
+
         additionalOptions.ForEach(o =>
         {
             o.Register();
@@ -65,5 +70,8 @@ public class DebugOptions
 
         [Localized("NameRoleAssignment")]
         public static string NameBasedRoleAssignmentText = "Name-Based Role Assignment";
+
+        [Localized("AdvancedRoleAssignment")]
+        public static string AdvancedRoleAssignment = "Advanced Role Assignment";
     }
 }

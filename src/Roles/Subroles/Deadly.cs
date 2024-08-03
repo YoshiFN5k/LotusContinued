@@ -22,7 +22,7 @@ public class Deadly : Subrole
     {
         CustomRole playerRole = MyPlayer.PrimaryRole();
         if (playerRole.RoleAbilityFlags.HasFlag(RoleAbilityFlag.IsAbleToKill)) return;
-        OverridenRoleName = (StandardGameMode.Instance.RoleManager.RoleHolder as StandardRoles).Mods.Honed.RoleName;
+        OverridenRoleName = StandardGameMode.Instance.RoleManager.RoleHolder.Mods.Honed.RoleName;
     }
 
     [RoleAction(LotusActionType.RoundStart)]

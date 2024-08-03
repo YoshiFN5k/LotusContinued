@@ -36,13 +36,17 @@ public class RoleCommand
     [Command("r", "roles")]
     public static void Roles(PlayerControl source, CommandContext context)
     {
-        Localizer localizer = Localizer.Get();
+        ;
         if (context.Args.Length == 0 || context.Args[0] is "" or " ") ChatHandler.Of(TUAllRoles.GetAllRoles(true)).LeftAlign().Send(source);
         else
         {
             string roleName = context.Args.Join(delimiter: " ").ToLower().Trim().Replace("[", "").Replace("]", "").ToLowerInvariant();
-            CustomRole? roleDefinition = IRoleManager.Current.AllCustomRoles().FirstOrDefault(r => r.RoleName.ToLowerInvariant().Contains(roleName));
-            if (roleDefinition != null) ShowRole(source, roleDefinition);
+            // CustomRole? roleDefinition = IRoleManager.Current.AllCustomRoles().FirstOrDefault(r => r.RoleName.ToLowerInvariant().Contains(roleName));
+            // if (roleDefinition != null) ShowRole(source, roleDefinition);
+            IEnumerable<CustomRole> allFoundRoles = IRoleManager.Current.AllCustomRoles().Where(r => r.RoleName.ToLowerInvariant().Contains(roleName));
+            if (allFoundRoles.Count() > 5) SendSpecial(source, "Search aborted. More than 5 roles were found with your search. Please be more specific.");
+            else if (allFoundRoles.Count() > 0) allFoundRoles.ForEach(r => ShowRole(source, r));
+            else SendSpecial(source, "No roles for this gamemode matched your search.\nDid you accidentally insert a character?");
         }
     }
 

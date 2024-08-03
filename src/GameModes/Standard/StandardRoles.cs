@@ -3,25 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Lotus.Roles;
 using System.Reflection;
-using Lotus.Logging;
-using Lotus.Options;
 using Lotus.Roles.Builtins;
-using Lotus.Roles.Debugger;
-using Lotus.Roles.Internals;
 using Lotus.Roles.RoleGroups.Crew;
 using Lotus.Roles.RoleGroups.Impostors;
 using Lotus.Roles.RoleGroups.Madmates.Roles;
 using Lotus.Roles.RoleGroups.Neutral;
 using Lotus.Roles.RoleGroups.NeutralKilling;
-using Lotus.Roles.RoleGroups.Stock;
 using Lotus.Roles.RoleGroups.Undead.Roles;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Roles.Subroles;
 using Lotus.Roles.Subroles.Romantics;
-using Lotus.Roles.Managers.Interfaces;
-using VentLib.Options;
-using VentLib.Options.UI;
-using VentLib.Utilities.Attributes;
 using VentLib.Utilities.Extensions;
 using Medium = Lotus.Roles.RoleGroups.Crew.Medium;
 using Pirate = Lotus.Roles.RoleGroups.Neutral.Pirate;
@@ -39,16 +30,20 @@ public class StandardRoles : RoleHolder
 
     public new List<CustomRole> AllRoles { get; set; }
 
-    public List<Action> Callbacks { get; set; } = new List<Action>();
+    private static List<CustomRole> AddonRoles = new();
+
+    public static List<Action> Callbacks { get; set; } = new List<Action>();
 
     public StaticRoles Static;
     public Modifiers Mods;
     public ExtraRoles Special;
 
-    private static StandardRoleManager roleManager;
+    private static StandardRoleManager roleManager = null!;
+    public static StandardRoles Instance = null!;
 
     public StandardRoles(Roles.Managers.RoleManager manager) : base(manager)
     {
+        Instance = this;
         roleManager = manager as StandardRoleManager;
         AllRoles = new List<CustomRole>();
         Static = new StaticRoles();
@@ -74,11 +69,12 @@ public class StandardRoles : RoleHolder
         realAllRoleList.AddRange(ModifierRoles);
         realAllRoleList.AddRange(SpecialRoles);
         realAllRoleList.AddRange(AllRoles);
+        realAllRoleList.AddRange(AddonRoles);
         AllRoles = realAllRoleList;
         AllRoles.ForEach(r => r.Solidify());
-
-        this.Intialized = true;
     }
+
+    public static void AddRole(CustomRole role) => AddonRoles.Add(role);
 
     internal void LinkEditor(Type editorType)
     {

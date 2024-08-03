@@ -9,7 +9,11 @@ namespace Lotus.Roles.RoleGroups.Vanilla;
 public class Crewmate : TaskRoleBase
 {
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        roleModifier.VanillaRole(RoleTypes.Crewmate).Faction(FactionInstances.Crewmates).RoleColor("#b6f0ff");
+        roleModifier
+            .VanillaRole(RoleTypes.Crewmate)
+            .Faction(FactionInstances.Crewmates)
+            .RoleColor("#b6f0ff")
+            .CanVent(false);
 
     public override List<Statistic> Statistics() => new() { VanillaStatistics.TasksComplete };
 }

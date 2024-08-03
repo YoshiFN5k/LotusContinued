@@ -23,13 +23,13 @@ public class SimpleNameModel : INameModel
 
     private string cacheString = "";
 
-    public NameHolder NameHolder = new NameHolder();
-    public IndicatorHolder IndicatorHolder = new IndicatorHolder();
-    public RoleHolder RoleHolder = new RoleHolder(1);
-    public SubroleHolder SubroleHolder = new SubroleHolder(1);
-    public CounterHolder CounterHolder = new CounterHolder(1);
-    public CooldownHolder CooldownHolder = new CooldownHolder(2);
-    public TextHolder TextHolder = new TextHolder(2);
+    public NameHolder NameHolder = new();
+    public IndicatorHolder IndicatorHolder = new();
+    public RoleHolder RoleHolder = new(1);
+    public SubroleHolder SubroleHolder = new(1);
+    public CounterHolder CounterHolder = new(1);
+    public CooldownHolder CooldownHolder = new(2);
+    public TextHolder TextHolder = new(2);
 
     private List<IComponentHolder> componentHolders;
     private PlayerControl player;
@@ -49,7 +49,7 @@ public class SimpleNameModel : INameModel
         this.player = player;
         SetHolders();
         this.unalteredName = player.name;
-        NameHolder.Add(new NameComponent(new LiveString(unalteredName, Color.white), new[] { GameState.Roaming, GameState.InMeeting}));
+        NameHolder.Add(new NameComponent(new LiveString(unalteredName, Color.white), new[] { GameState.Roaming, GameState.InMeeting }));
     }
 
     public bool Updated() => didUpdate;
@@ -86,7 +86,7 @@ public class SimpleNameModel : INameModel
             else
             {
                 int clientId = rPlayer.GetClientId();
-                if (clientId != -1) RpcV3.Immediate(player.NetId, RpcCalls.SetName).Write(cacheString).Send(clientId);
+                if (clientId != -1) RpcV3.Immediate(player.NetId, RpcCalls.SetName).Write(player.Data.NetId).Write(cacheString).Send(clientId);
             }
         }
         Profilers.Global.Sampler.Stop(id);

@@ -34,9 +34,8 @@ public partial class Alchemist
     }
 
     [RoleAction(LotusActionType.SabotagePartialFix)]
-    private void SabotageQuickFix(PlayerControl fixer, ISabotage sabotage)
+    private void SabotageQuickFix(ISabotage sabotage)
     {
-        if (fixer.PlayerId != MyPlayer.PlayerId) return;
         sabotage.Fix(MyPlayer);
         QuickFixSabotage = false;
     }

@@ -23,6 +23,10 @@ using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Optionals;
 using Lotus.Roles.Managers.Interfaces;
+using System.Linq;
+using Lotus.Factions.Impostors;
+using VentLib;
+using Lotus.RPC;
 
 namespace Lotus.Extensions;
 
@@ -38,18 +42,18 @@ public static class PlayerControlExtensions
         {
             var caller = new System.Diagnostics.StackFrame(1, false);
             var callerMethod = caller.GetMethod();
-            string callerMethodName = callerMethod.Name;
-            string? callerClassName = callerMethod.DeclaringType.FullName;
+            string callerMethodName = callerMethod?.Name ?? "(Null callerMethod Name)";
+            string? callerClassName = callerMethod?.DeclaringType?.FullName ?? "(Null callerMethod ClassName)";
             log.Warn(callerClassName + "." + callerMethodName + " Invalid Custom Role", "GetCustomRole");
-            return ProjectLotus.GameModeManager.CurrentGameMode.RoleManager.FallbackRole;
+            return ProjectLotus.GameModeManager.CurrentGameMode.RoleManager.FallbackRole();
         }
-        CustomRole? role = Game.MatchData.Roles.PrimaryRoleDefinitions.GetValueOrDefault(player.PlayerId);
-        return role ?? IRoleManager.Current.FallbackRole;
+        CustomRole? role = Game.MatchData.Roles.MainRoles.GetValueOrDefault(player.PlayerId);
+        return role ?? IRoleManager.Current.FallbackRole();
     }
 
     public static CustomRole? GetCustomRoleSafe(this PlayerControl player)
     {
-        return player == null ? null : Game.MatchData.Roles.PrimaryRoleDefinitions.GetValueOrDefault(player.PlayerId);
+        return player == null ? null : Game.MatchData.Roles.MainRoles.GetValueOrDefault(player.PlayerId);
     }
 
     public static CustomRole GetSubrole(this PlayerControl player)
@@ -70,6 +74,7 @@ public static class PlayerControlExtensions
     public static void SyncAll(this PlayerControl player)
     {
         if (player == null) return;
+        if (!AmongUsClient.Instance.AmHost) return;
         RoleOperations.Current.SyncOptions(player);
     }
 
@@ -78,11 +83,11 @@ public static class PlayerControlExtensions
         if (player == null) return;
         if (AmongUsClient.Instance.ClientId == clientId)
         {
-            player.CoSetRole(role, true);
+            player.StartCoroutine(player.CoSetRole(role, ProjectLotus.AdvancedRoleAssignment));
             return;
         }
 
-        RpcV3.Immediate(player.NetId, RpcCalls.SetRole).Write((ushort)role).Write(true).Send(clientId);
+        RpcV3.Immediate(player.NetId, RpcCalls.SetRole).Write((ushort)role).Write(ProjectLotus.AdvancedRoleAssignment).Send(clientId);
     }
 
     public static void RpcMark(this PlayerControl killer, PlayerControl? target = null, int colorId = 0)
@@ -93,15 +98,15 @@ public static class PlayerControlExtensions
         // Host
         if (killer.AmOwner)
         {
-            killer.ProtectPlayer(target, colorId);
-            killer.MurderPlayer(target, MurderResultFlags.DecisionByHost);
+            // killer.ProtectPlayer(target, colorId);
+            killer.MurderPlayer(target, MurderResultFlags.FailedProtected);
         }
 
         // Other Clients
         if (killer.PlayerId == 0) return;
 
         RpcV3.Mass()
-            .Start(killer.NetId, RpcCalls.ProtectPlayer).Write(target).Write(colorId).End()
+            // .Start(killer.NetId, RpcCalls.ProtectPlayer).Write(target).Write(colorId).End()
             .Start(killer.NetId, RpcCalls.MurderPlayer).Write(target).Write((int)MurderResultFlags.FailedProtected).End()
             .Send(killer.GetClientId());
     }
@@ -112,7 +117,7 @@ public static class PlayerControlExtensions
     }
     public static T? GetSubrole<T>(this PlayerControl player) where T : CustomRole
     {
-        return player.GetSubrole() as T;
+        return player.GetSubroles().Where(sR => sR is T).FirstOrDefault() as T ?? null;
     }
 
     public static void SetKillCooldown(this PlayerControl player, float time)
@@ -123,6 +128,11 @@ public static class PlayerControlExtensions
             DevLogger.Log("Synced all cooldowns");
             player.SetKillTimer(time);
         }
+        else if (player.IsModded())
+        {
+            Vents.FindRPC((uint)ModCalls.SetKillCooldown)!.Send([player.GetClientId()], time);
+            player.PrimaryRole().SyncOptions();
+        }
         else
         {
             // IMPORTANT: This could be a possible "issue" area
@@ -130,6 +140,9 @@ public static class PlayerControlExtensions
             CustomRole roleDefinition = player.PrimaryRole();
             IRemote remote = Game.CurrentGameMode.AddOverride(player.PlayerId, new GameOptionOverride(Override.KillCooldown, time * 2));
             roleDefinition.SyncOptions();
+
+            float deriveDelay = NetUtils.DeriveDelay(0.5f);
+            Async.Schedule(() => player.RpcMark(), time <= deriveDelay ? NetUtils.DeriveDelay((float)(time * 0.1)) : deriveDelay);
 
             Async.Schedule(() =>
             {
@@ -139,16 +152,16 @@ public static class PlayerControlExtensions
         }
     }
 
-    public static void RpcSpecificMurderPlayer(this PlayerControl killer, PlayerControl? target = null)
+    public static void RpcMurderSpecificPlayer(this PlayerControl killer, PlayerControl? target = null)
     {
         if (target == null) target = killer;
         if (killer.AmOwner)
-            killer.MurderPlayer(target, MurderResultFlags.DecisionByHost);
+            killer.MurderPlayer(target, MurderResultFlags.Succeeded);
         else
         {
             MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.None, killer.GetClientId());
             messageWriter.WriteNetObject(target);
-            messageWriter.Write((int)MurderResultFlags.DecisionByHost);
+            messageWriter.Write((int)MurderResultFlags.Succeeded);
             AmongUsClient.Instance.FinishRpcImmediately(messageWriter);
         }
     }
@@ -175,7 +188,7 @@ public static class PlayerControlExtensions
 
     public static string GetNameWithRole(this PlayerControl? player)
     {
-        if (player == null) return "";
+        if (player == null) return "(GetNameWithRole(player is null))";
         return $"{player.name}" + (Game.State is GameState.Roaming ? $"({player.GetAllRoleName()})" : "");
     }
 
@@ -193,13 +206,20 @@ public static class PlayerControlExtensions
         if (ProjectLotus.NormalOptions.MapId == 2) systemtypes = SystemTypes.Laboratory;
 
         Async.Schedule(() => pc.RpcDesyncRepairSystem(systemtypes, 128), 0f + delay);
-        Async.Schedule(() => pc.RpcSpecificMurderPlayer(target), 0.2f + delay);
+        Async.Schedule(() => pc.RpcMurderSpecificPlayer(target), 0.2f + delay);
 
         Async.Schedule(() =>
         {
             pc.RpcDesyncRepairSystem(systemtypes, 16);
             if (ProjectLotus.NormalOptions.MapId == 4) //Airship用
                 pc.RpcDesyncRepairSystem(systemtypes, 17);
+            if (ProjectLotus.AdvancedRoleAssignment)
+            {
+                RoleTypes realRole = pc.PrimaryRole().RealRole;
+                bool isDead = pc.Data.IsDead;
+                RpcV3.Immediate(pc.NetId, RpcCalls.SetRole).Write((ushort)(isDead ? realRole.GhostEquivelant() : realRole)).Write(true).Send(pc.GetClientId());
+                // Async.Schedule(() => RpcV3.Immediate(p.NetId, RpcCalls.SetRole).Write((ushort)(isDead ? realRole.GhostEquivelant() : realRole)).Write(true).Send(p.GetClientId()), NetUtils.DeriveDelay(0.3f));
+            }
         }, 0.4f + delay);
     }
 
@@ -225,7 +245,7 @@ public static class PlayerControlExtensions
     public static void RpcVaporize(this PlayerControl player, PlayerControl target, IDeathEvent? deathEvent = null)
     {
         if (player == null || target == null) return;
-        log.Trace($"{player.name} vaporize => {target.name}");
+        log.Trace($"(RpcVaporize) {player.name} => {target.name}");
         target.RpcExileV2(false, false);
 
         MurderPatches.Lock(player.PlayerId);
@@ -273,11 +293,29 @@ public static class PlayerControlExtensions
     }
 
     public static RoleTypes GetVanillaRole(this PlayerControl player) => player.GetTeamInfo().MyRole;
+    // public static RoleTypes GetVanillaRole(this PlayerControl player) => player.PrimaryRole().GetType == IRoleManager.Current.FallbackRole().GetType
+    //     ? player.GetTeamInfo().MyRole
+    //     : player.PrimaryRole().RealRole;
 
     public static VanillaRoleTracker.TeamInfo GetTeamInfo(this PlayerControl player) => Game.MatchData.VanillaRoleTracker.GetInfo(player.PlayerId);
 
     public static bool IsAlive(this PlayerControl target)
     {
         return target != null && !target.Data.IsDead && !target.Data.Disconnected;
+    }
+
+    public static void RpcResetAbilityCooldown(this PlayerControl target)
+    {
+        if (!AmongUsClient.Instance.AmHost) return;
+        if (PlayerControl.LocalPlayer.PlayerId == target.PlayerId)
+        {
+            log.Debug($"Resetting Ability Cooldown for Host (Current Player).");
+            PlayerControl.LocalPlayer.Data.Role.SetCooldown();
+        }
+        else
+        {
+            log.Debug($"Resetting Ability Cooldown for Non-Host ({target.name})");
+            RpcV3.Immediate(target.NetId, (byte)RpcCalls.ProtectPlayer, SendOption.None).Write(target).Write(0).Send(target.GetClientId());
+        }
     }
 }

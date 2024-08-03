@@ -50,7 +50,7 @@ public class VanillaCrewmateWin : IFactionWinCondition
     }
 
     // Determines if the given role is an "enemy role"
-    private static bool IsEligibleEnemy(AbstractBaseRole role)
+    private static bool IsEligibleEnemy(CustomRole role)
     {
         PlayerControl player = role.MyPlayer;
         if (!player.IsAlive()) return false;

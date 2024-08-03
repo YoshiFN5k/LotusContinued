@@ -12,6 +12,7 @@ using Lotus.Victory.Conditions;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Options.UI;
+using VentLib.Utilities.Extensions;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
@@ -32,14 +33,18 @@ public class Pirate : Guesser
 
     protected override void HandleBadGuess()
     {
-        if (!pirateDiesOnMissguess) return;
+        if (!pirateDiesOnMissguess)
+        {
+            base.GuesserHandler(Guesser.Translations.GuessAnnouncementMessage.Formatted("No one")).Send(MyPlayer);
+            return;
+        }
         base.HandleBadGuess();
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub.KeyName("Pirate Guess Win Amount", TranslationUtil.Colorize(Translations.Options.PirateGuesses, RoleColor))
-                .AddIntRange(0, 15, 1, 3)
+                .AddIntRange(0, ModConstants.MaxPlayers, 1, 3)
                 .BindInt(i => pirateGuessesToWin = i)
                 .Build())
             .SubOption(sub => sub.KeyName("Pirate Dies on Missguess", TranslationUtil.Colorize(Translations.Options.PirateDiesOnMissGues, RoleColor))

@@ -92,14 +92,14 @@ public class AdminOptions
             })
             .ShowSubOptionPredicate(b => (bool)b)
             .SubOption(sub2 => sub2
-                .AddIntRange(5, 15, suffix: " " + AdminOptionTranslations.AutoStartSuffix)
+                .AddIntRange(5, ModConstants.MaxPlayers, suffix: " " + AdminOptionTranslations.AutoStartSuffix)
                 .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(-1).Color(Color.red).Build())
                 .Name(AdminOptionTranslations.AutoStartPlayerThreshold)
                 .IOSettings(io => io.UnknownValueAction = ADEAnswer.Allow)
                 .BindInt(i => AutoStartPlayerThreshold = i)
                 .Build())
             .SubOption(sub2 => sub2
-                .AddIntRange(30, 540, 15, 0, GeneralOptionTranslations.SecondsSuffix)
+                .AddIntRange(30, 540, ModConstants.MaxPlayers, 0, GeneralOptionTranslations.SecondsSuffix)
                 .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(-1).Color(Color.red).Build())
                 .Name(AdminOptionTranslations.AutoStartMaxWaitTime)
                 .IOSettings(io => io.UnknownValueAction = ADEAnswer.Allow)
@@ -187,10 +187,5 @@ public class AdminOptions
         [Localized(nameof(AutoPlayAgain))]
         public static string AutoPlayAgain = "Auto Play Again";
     }
-
-}
-
-public enum BannedMobileDevice
-{
 
 }

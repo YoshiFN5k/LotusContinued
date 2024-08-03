@@ -87,7 +87,7 @@ public class Consort : Impostor
         blockDelegate.UpdateDelegate();
     }
 
-    [RoleAction(LotusActionType.SabotageStarted)]
+    [RoleAction(LotusActionType.SabotageStarted, ActionFlag.GlobalDetector)]
     private void BlockSabotage(PlayerControl caller, ActionHandle handle)
     {
         Escort.BlockDelegate? blockDelegate = blockedPlayers.GetValueOrDefault(caller.PlayerId);
@@ -122,6 +122,8 @@ public class Consort : Impostor
 
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier).OptionOverride(new IndirectKillCooldown(KillCooldown, () => blocking));
+        base.Modify(roleModifier)
+            .OptionOverride(new IndirectKillCooldown(KillCooldown, () => blocking))
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
 }

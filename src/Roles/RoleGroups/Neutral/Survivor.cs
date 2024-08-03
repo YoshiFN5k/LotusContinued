@@ -83,5 +83,6 @@ public class Survivor : CustomRole
         roleModifier
             .Faction(FactionInstances.Neutral)
             .SpecialType(SpecialType.Neutral)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
             .RoleColor(new Color(1f, 0.9f, 0.3f));
 }

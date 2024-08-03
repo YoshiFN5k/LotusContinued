@@ -35,5 +35,5 @@ public interface NamespacedKey
     public Type Type { get; }
 
     public static NamespacedKey<T> Lotus<T>(string key) => new("Lotus", key);
-    // public static NamespacedKey<T> Lotus<T>(string key) => new("Lotus", key);
+    public static NamespacedKey<T> LotusTrigger<T>(string key) => new("LotusTrigger", key);
 }

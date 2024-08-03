@@ -18,6 +18,7 @@ using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using Lotus.API.Player;
+using Lotus.API.Vanilla.Meetings;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -39,7 +40,7 @@ public class Oracle : Crewmate
     }
 
     [RoleAction(LotusActionType.Vote)]
-    private void OracleLockInTarget(Optional<PlayerControl> target, ActionHandle handle)
+    private void OracleLockInTarget(Optional<PlayerControl> target, MeetingDelegate _, ActionHandle handle)
     {
         if (targetLockedIn || initialSkip) return;
         handle.Cancel();

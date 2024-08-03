@@ -84,7 +84,7 @@ public class Glitch : NeutralKillingBase
         blockDelegate.UpdateDelegate();
     }
 
-    [RoleAction(LotusActionType.SabotageStarted)]
+    [RoleAction(LotusActionType.SabotageStarted, ActionFlag.GlobalDetector)]
     private void BlockSabotage(PlayerControl caller, ActionHandle handle)
     {
         BlockDelegate? blockDelegate = blockedPlayers.GetValueOrDefault(caller.PlayerId);
@@ -103,5 +103,7 @@ public class Glitch : NeutralKillingBase
                 .AddFloatRange(5, 120, 5, suffix: GeneralOptionTranslations.SecondsSuffix)
                 .Build());
 
-    protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier).RoleColor(Color.green);
+    protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier)
+        .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
+        .RoleColor(Color.green);
 }

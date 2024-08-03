@@ -89,5 +89,6 @@ public class Grenadier : Vanilla.Impostor
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
-            .CanVent(canVent);
+            .CanVent(canVent)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 }

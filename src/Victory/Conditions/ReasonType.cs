@@ -25,4 +25,9 @@ public struct WinReason
         ReasonType = reasonType;
         ReasonText = reasonText;
     }
+
+    public override string ToString()
+    {
+        return ReasonText ?? ReasonType.ToString();
+    }
 }

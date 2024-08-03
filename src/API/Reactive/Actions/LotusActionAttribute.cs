@@ -4,9 +4,9 @@ using Lotus.Roles.Internals.Enums;
 
 namespace Lotus.API.Reactive.Actions;
 
-[JBAnnotations::JetBrains.Annotations.MeansImplicitUseAttribute]
+[JBAnnotations::JetBrains.Annotations.MeansImplicitUse]
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
-public class LotusActionAttribute: Attribute
+public class LotusActionAttribute : Attribute
 {
     public LotusActionType ActionType { get; }
     public Priority Priority { get; }

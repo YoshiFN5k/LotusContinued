@@ -25,6 +25,7 @@ using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using static Lotus.Roles.RoleGroups.Crew.Investigator.Translations.Options;
 using Lotus.Logging;
+using Lotus.GameModes.Standard;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -62,7 +63,7 @@ public class Investigator : Crewmate
 
     public Investigator()
     {
-        ProjectLotus.GameModeManager.CurrentGameMode?.RoleManager?.RoleHolder?.AddOnFinishCall(PopulateInvestigatorOptions);
+        StandardRoles.Callbacks.Add(PopulateInvestigatorOptions);
     }
 
     [RoleAction(LotusActionType.OnPet)]
@@ -102,12 +103,11 @@ public class Investigator : Crewmate
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier).RoleColor(new Color(1f, 0.79f, 0.51f));
+        base.Modify(roleModifier).RoleColor(new Color(1f, 0.79f, 0.51f)).RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     private void PopulateInvestigatorOptions()
     {
-        DevLogger.Log("investigator test...");
-        ProjectLotus.GameModeManager.CurrentGameMode.RoleManager.RoleHolder.AllRoles.OrderBy(r => r.EnglishRoleName).ForEach(r =>
+        StandardGameMode.Instance.RoleManager.RoleHolder.AllRoles.OrderBy(r => r.EnglishRoleName).ForEach(r =>
         {
             RoleTypeBuilders.FirstOrOptional(b => b.predicate(r)).Map(i => i.builder)
                 .IfPresent(builder =>
@@ -127,7 +127,7 @@ public class Investigator : Crewmate
             rtb.builder.BindInt(i => rtb.allColored = i == 1);
             Option option = rtb.builder.Build();
             RoleOptions.AddChild(option);
-            GlobalRoleManager.RoleOptionManager.Register(option, OptionLoadMode.LoadOrCreate);
+            GeneralOptions.RoleOptionManager.Register(option, OptionLoadMode.LoadOrCreate);
         });
     }
 

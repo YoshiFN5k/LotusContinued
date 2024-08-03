@@ -36,7 +36,7 @@ public class CheckForEndVotingPatch
         log.Debug("Beginning End Voting", "CheckEndVotingPatch");
 
 
-        if (GeneralOptions.MeetingOptions.NoVoteMode is not (SkipVoteMode.None))
+        if (GeneralOptions.MeetingOptions.NoVoteMode is not SkipVoteMode.None)
             Players.GetPlayers(PlayerFilter.Alive)
                 .Where(p => new Dictionary<byte, List<Optional<byte>>>(meetingDelegate.CurrentVotes()).GetOptional(p.PlayerId).Compare(r => !r.IsEmpty()) == false).ForEach(p =>
                 {

@@ -34,13 +34,13 @@ public class MadmateOptions
             // .Tab(DefaultTabs.ImpostorsTab)
             .ShowSubOptionPredicate(b => !(bool)b)
             .SubOption(sub2 => sub2.KeyName("Minimum Madmates", GColor(Translations.MinimumMadmates))
-                .AddIntRange(0, 15, 1)
+                .AddIntRange(0, ModConstants.MaxPlayers, 1)
                 .BindInt(i => MinimumMadmates = i)
                 .Build())
             .BuildAndRegister());
 
         AllOptions.Add(new GameOptionBuilder()
-            .AddIntRange(0, 15, 1)
+            .AddIntRange(0, ModConstants.MaxPlayers, 1)
             .Builder("Maximum Madmates")
             .Name(GColor(Translations.MaximumMadmates))
             .Tab(DefaultTabs.ImpostorsTab)

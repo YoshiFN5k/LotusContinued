@@ -12,7 +12,7 @@ using VentLib.Utilities.Optionals;
 namespace Lotus.Chat.Commands;
 
 [Localized("Commands.Admin")]
-[Command(CommandFlag.HostOnly, "kick", "ban")]
+[Command("kick", "ban")]
 public class KickBanCommand : ICommandReceiver
 {
     [Localized("KickMessage")] private static string _kickedMessage = "{0} was kicked by host.";
@@ -20,6 +20,11 @@ public class KickBanCommand : ICommandReceiver
 
     public void Receive(PlayerControl source, CommandContext context)
     {
+        if (!PluginDataManager.ModManager.IsPlayerModded(source) && !source.IsHost())
+        {
+            ChatHandlers.NotPermitted().Send(source);
+            return;
+        }
         bool ban = context.Alias == "ban";
         string message = ban ? _banMessage : _kickedMessage;
 
@@ -42,11 +47,16 @@ public class KickBanCommand : ICommandReceiver
 
         targetPlayer.Handle(player =>
         {
+            if (player.IsHost())
+            {
+                ChatHandlers.InvalidCmdUsage("Not able to ban the host from the game.").Send();
+                return;
+            }
             if (LobbyBehaviour.Instance == null) player.RpcExileV2(false);
             if (banWithId && context.Args.Length > 1)
             {
                 string reason = context.Args[1..].Fuse(" ");
-                PluginDataManager.BanManager.BanWithReason(player, reason);
+                PluginDataManager.BanManager.BanWithReason(player, reason, $"{player.name} was banned for {reason}.");
             }
             else AmongUsClient.Instance.KickPlayer(player.GetClientId(), ban);
             ChatHandler.Of(message.Formatted(player.name), "Announcement").Send();

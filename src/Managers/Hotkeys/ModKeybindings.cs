@@ -15,6 +15,9 @@ using VentLib.Options;
 using VentLib.Utilities.Attributes;
 using VentLib.Utilities.Debug.Profiling;
 using static Lotus.Managers.Hotkeys.HotkeyManager;
+using Lotus.API.Player;
+using VentLib.Utilities.Extensions;
+using System.Linq;
 
 namespace Lotus.Managers.Hotkeys;
 
@@ -47,7 +50,11 @@ public class ModKeybindings
         // Instant begin game
         Bind(KeyCode.LeftShift)
             .If(p => p.HostOnly().Predicate(() => MatchState.IsCountDown && !HudManager.Instance.Chat.IsOpenOrOpening))
-            .Do(() => GameStartManager.Instance.countDownTimer = 0);
+            .Do(() =>
+            {
+                SoundManager.Instance.StopSound(GameStartManager.Instance.gameStartSound);
+                GameStartManager.Instance.countDownTimer = 0;
+            });
 
         // Restart countdown timer
         Bind(KeyCode.C)
@@ -58,9 +65,9 @@ public class ModKeybindings
                 GameStartManager.Instance.ResetStartState();
             });
 
-        Bind(KeyCode.C)
-            .If(p => p.HostOnly().Predicate(() => EndGameManagerPatch.IsRestarting))
-            .Do(EndGameManagerPatch.CancelPlayAgain);
+        // Bind(KeyCode.C)
+        //     .If(p => p.HostOnly().Predicate(() => EndGameManagerPatch.IsRestarting))
+        //     .Do(EndGameManagerPatch.CancelPlayAgain);
 
         // Reset Game Options
         Bind(KeyCode.LeftControl, KeyCode.Delete)
@@ -70,24 +77,35 @@ public class ModKeybindings
         // Instant call meeting
         Bind(KeyCode.RightShift, KeyCode.M, KeyCode.Return)
             .If(p => p.HostOnly().State(GameState.Roaming))
-            .Do(() => MeetingPrep.PrepMeeting(PlayerControl.LocalPlayer));
+            .Do(() => MeetingPrep.PrepMeeting(PlayerControl.LocalPlayer))
+            .DevOnly();
 
         // Sets kill cooldown to 0
         Bind(KeyCode.X)
             .If(p => p.HostOnly().State(GameState.Roaming))
-            .Do(InstantReduceTimer);
+            .Do(InstantReduceTimer)
+            .DevOnly();
 
+        // Reload T
         Bind(KeyCode.LeftControl, KeyCode.T)
             .If(p => p.State(GameState.InLobby))
             .Do(ReloadTranslations);
 
+        // Change Hud Active
         Bind(KeyCode.F7)
             .If(p => p.State(GameState.InLobby, GameState.Roaming).Predicate(() => MeetingHud.Instance == null))
             .Do(() => HudManager.Instance.gameObject.SetActive(hudActive = !hudActive));
 
+        // Close Options I think.
         Bind(KeyCode.Escape)
             .If(p => p.Predicate(() => GameOptionMenuOpenPatch.MenuBehaviour != null && GameOptionMenuOpenPatch.MenuBehaviour.IsOpen))
             .Do(() => GameOptionMenuOpenPatch.MenuBehaviour.Close());
+
+        // Unblackscreen Everyone
+        Bind(KeyCode.LeftShift, KeyCode.Z, KeyCode.Return)
+            .If(p => p.HostOnly().State(GameState.Roaming))
+            .If(() => ProjectLotus.AdvancedRoleAssignment)
+            .Do(() => Players.GetPlayers().Where(player => !player.IsModded() && !player.IsHost()).ForEach(player => player.ResetPlayerCam()));
     }
 
     private static void DumpLog()

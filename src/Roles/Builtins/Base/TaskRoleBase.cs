@@ -49,12 +49,11 @@ public abstract class TaskRoleBase : CustomRole, IOverridenTaskHolderRole
     }
 
     [RoleAction(LotusActionType.TaskComplete, ActionFlag.WorksAfterDeath | ActionFlag.Unblockable)]
-    protected void InternalTaskComplete(PlayerControl player, Optional<NormalPlayerTask> task)
+    protected void InternalTaskComplete(Optional<NormalPlayerTask> task)
     {
         DevLogger.Log("TRask complete");
-        if (player.PlayerId != MyPlayer.PlayerId) return;
         TasksComplete++;
-        if (player.IsAlive()) this.OnTaskComplete(task);
+        if (MyPlayer.IsAlive()) this.OnTaskComplete(task);
     }
 
     public bool AssignCommonTasks() => HasCommonTasks;

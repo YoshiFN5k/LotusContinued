@@ -30,7 +30,15 @@ public static class RoleUtils
 
     public static string CalculateArrow(PlayerControl source, PlayerControl target, Color? color = null)
     {
-        return !target.IsAlive() ? "" : CalculateArrow(source, target.GetTruePosition(), color);
+        return !target.IsAlive()
+            ? CalculateArrow(source, UnityEngine.Object.FindObjectsOfType<DeadBody>().Where(db => db.ParentId == target.PlayerId).FirstOrDefault()!, color)
+            : CalculateArrow(source, target.GetTruePosition(), color);
+    }
+
+    public static string CalculateArrow(PlayerControl source, DeadBody target, Color? color = null)
+    {
+        if (target == null) return "";
+        return CalculateArrow(source, target.TruePosition, color);
     }
 
     public static string CalculateArrow(PlayerControl source, Vector2 target, Color? color = null)
@@ -129,8 +137,8 @@ public static class RoleUtils
     {
         if (++Game.RecursiveCallCheck > ModConstants.RecursiveDepthLimit)
         {
-            log.Warn($"Infinite Recursion detected during interaction: {interaction}", "InfiniteRecursionDetection");
-            log.Trace($"Infinite Recursion Stack: {new StackTrace()}", "InfiniteRecursionDetection");
+            log.Warn($"(InfiniteRecursionDetection) Infinite Recursion detected during interaction: {interaction}");
+            log.Trace($"(InfiniteRecursionDetection) Infinite Recursion Stack: {new StackTrace()}");
             return InteractionResult.Halt;
         }
         ActionHandle handle = ActionHandle.NoInit();
@@ -145,7 +153,7 @@ public static class RoleUtils
         PlayerControl? randomPlayer = Players.GetPlayers().FirstOrDefault(p => p.PlayerId != target.PlayerId);
         if (randomPlayer == null) return;
 
-        RpcV3.Immediate(target.NetId, RpcCalls.ProtectPlayer).Write(target).Write(0).Send(target.GetClientId());
+        // RpcV3.Immediate(target.NetId, RpcCalls.ProtectPlayer).Write(target).Write(0).Send(target.GetClientId());
         Async.Schedule(() => RpcV3.Immediate(randomPlayer.NetId, RpcCalls.MurderPlayer).Write(target).Write((int)MurderResultFlags.FailedProtected).Send(target.GetClientId()), NetUtils.DeriveDelay(0.1f));
     }
 
@@ -185,6 +193,6 @@ public static class RoleUtils
 
     public static bool RandomSpawn(CustomRole role)
     {
-        return Random.RandomRange(0, 100) < role.Chance;
+        return Random.RandomRange(0, 100) <= role.Chance;
     }
 }

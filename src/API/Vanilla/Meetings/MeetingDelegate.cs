@@ -69,6 +69,15 @@ public class MeetingDelegate
         votes.RemoveAt(index);
     }
 
+    public void ClearAllVotes()
+    {
+        List<byte> keys = new();
+        List<List<Optional<byte>>> votes = new();
+        currentVotes.Keys.ForEach(playerId => keys.Insert(0, playerId));
+        currentVotes.Values.ForEach(playerVotes => votes.Insert(0, playerVotes.ToList()));
+        keys.ForEach((key, index) => votes[index].ForEach(vote => RemoveVote(key, vote)));
+    }
+
     public Dictionary<byte, int> CurrentVoteCount()
     {
         Dictionary<byte, int> counts = new() { { 255, 0 } };

@@ -25,29 +25,26 @@ using VentLib.Version.Updater.Github;
 using Version = VentLib.Version.Version;
 using Lotus.Extensions;
 using VentLib.Options.UI.Controllers;
-using VentLib.Options.UI.Tabs.Vanilla;
-using Lotus.Logging;
 using Lotus.Roles.Internals.Attributes;
+using VentLib.Version.BuiltIn;
 
 [assembly: AssemblyVersion(ProjectLotus.CompileVersion)]
 namespace Lotus;
 
-[BepInPlugin(PluginGuid, "Lotus", VisibleVersion)]
+[BepInPlugin(Id, "Lotus", VisibleVersion)]
 [BepInDependency(Vents.Id)]
 [BepInProcess("Among Us.exe")]
 public class ProjectLotus : BasePlugin, IGitVersionEmitter
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(ProjectLotus));
     private const string Id = "com.discussions.LotusContinued";
-
-    public const string PluginGuid = Id;
     public const string VisibleVersion = $"{MajorVersion}.{MinorVersion}.{PatchVersion}";
     public const string CompileVersion = $"{MajorVersion}.{MinorVersion}.{PatchVersion}.{BuildNumber}";
 
     public const string MajorVersion = "1";
     public const string MinorVersion = "1"; // Update with each release
     public const string PatchVersion = "0";
-    public const string BuildNumber = "0805";
+    public const string BuildNumber = "0813";
 
     public static string PluginVersion = typeof(ProjectLotus).Assembly.GetName().Version!.ToString();
 
@@ -55,15 +52,16 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 
     public static readonly string ModName = "Project Lotus";
     public static readonly string ModColor = "#4FF918";
+    public static readonly string DevVersionStr = "Dev July 30 2024";
     public static bool DevVersion = false;
-    public static readonly string DevVersionStr = "Dev 24.06.2024";
 
-    private static Harmony _harmony;
+    private static Harmony _harmony = null!;
     public static string CredentialsText = null!;
 
     public static ModUpdater ModUpdater = null!;
 
     public static bool FinishedLoading;
+    public static bool AdvancedRoleAssignment = true;
 
     public ProjectLotus()
     {
@@ -119,9 +117,10 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
         // Setup, order matters here
 
         _harmony.PatchAll(Assembly.GetExecutingAssembly());
-        AddonManager.ImportAddons();
 
-        // new GlobalRoleManager();
+        new GlobalRoleManager();
+        GameModeManager.AddGamemodes();
+        AddonManager.ImportAddons();
         GameModeManager.Setup();
         StaticEditor.Register(Assembly.GetExecutingAssembly());
 
@@ -139,6 +138,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
     {
         if (handshake is NoVersion) return HandshakeResult.FailDoNothing;
         if (handshake is AmongUsMenuVersion) return HandshakeResult.FailDoNothing;
+        if (handshake is SickoMenuVersion) return HandshakeResult.FailDoNothing;
         if (handshake is not GitVersion git) return HandshakeResult.DisableRPC;
         if (git.MajorVersion != CurrentVersion.MajorVersion && git.MinorVersion != CurrentVersion.MinorVersion) return HandshakeResult.FailDoNothing;
         return HandshakeResult.PassDoNothing;
@@ -149,7 +149,12 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
         if (player == null) return;
         if (version is AmongUsMenuVersion)
         {
-            PluginDataManager.BanManager.BanWithReason(player, "Cheating - Among Us Menu Auto Ban");
+            PluginDataManager.BanManager.BanWithReason(player, "Cheating - Among Us Menu Auto Ban", $"{player.name} was banned because of the AmongUsMenu detection.");
+            return;
+        }
+        if (version is SickoMenuVersion)
+        {
+            PluginDataManager.BanManager.BanWithReason(player, "Cheating - SickoMenu Auto Ban", $"{player.name} was banned because of the SickoMenu detection.");
             return;
         }
         if (version is not NoVersion)

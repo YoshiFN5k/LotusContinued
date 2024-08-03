@@ -95,6 +95,9 @@ public static class ModConstants
 
         [Localized(nameof(Parried))]
         public static string Parried = "Parried";
+
+        [Localized(nameof(Sniped))]
+        public static string Sniped = "Sniped";
     }
 
     public static class Localization

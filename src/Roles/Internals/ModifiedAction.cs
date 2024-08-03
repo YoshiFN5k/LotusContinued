@@ -7,7 +7,7 @@ public class ModifiedAction : RoleAction
 {
     public ModifiedBehaviour Behaviour { get; }
 
-    public ModifiedAction(ModifiedActionAttribute attribute, MethodInfo method) : base(attribute, method)
+    public ModifiedAction(ModifiedActionAttribute attribute, MethodInfo method, object executor) : base(attribute, method, executor)
     {
         Behaviour = attribute.Behaviour;
     }

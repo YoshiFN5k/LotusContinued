@@ -51,9 +51,10 @@ public class Copycat : CustomRole
 
     protected override void PostSetup()
     {
-        StandardRoles roleHolder = StandardGameMode.Instance?.RoleManager.RoleHolder;
+        StandardRoles roleHolder = StandardGameMode.Instance?.RoleManager?.RoleHolder!;
         if (roleHolder != null)
         {
+            if (FallbackTypes.Keys.Count != 0) return;
             FallbackTypes.AddRange(new Dictionary<Type, Func<CustomRole>>(){
             {typeof(CrewPostor), () => roleHolder.Static.Amnesiac },
             {typeof(Mafioso), () => roleHolder.Static.Amnesiac },
@@ -62,7 +63,7 @@ public class Copycat : CustomRole
             {typeof(Phantom), () => roleHolder.Static.Amnesiac },
         });
         }
-        else log.Fatal("StandardGameMode.Instance?.RoleManager.RoleHolder was null.");
+        else log.Fatal("StandardGameMode.Instance?.RoleManager?.RoleHolder was null.");
 
     }
 
@@ -85,7 +86,7 @@ public class Copycat : CustomRole
         CustomRole role = copyRoleProgress ? attackerRole : ProjectLotus.GameModeManager.CurrentGameMode.RoleManager.GetCleanRole(attackerRole);
 
         log.Trace($"Copycat ({MyPlayer.name}) copying role of {attacker.name} : {role.RoleName}", "Copycat::AssignRole");
-        MatchData.AssignRole(MyPlayer, role);
+        Game.AssignRole(MyPlayer, role);
 
         role = MyPlayer.PrimaryRole();
         role.RoleColor = RoleColor;
@@ -132,11 +133,12 @@ public class Copycat : CustomRole
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         roleModifier.RoleColor(new Color(1f, 0.7f, 0.67f))
-            .VanillaRole(RoleTypes.Shapeshifter)
+            .DesyncRole(RoleTypes.Shapeshifter)
             .Faction(FactionInstances.Neutral)
             .RoleFlags(RoleFlag.CannotWinAlone)
             .RoleAbilityFlags(RoleAbilityFlag.CannotSabotage)
             .SpecialType(SpecialType.Neutral)
+            .IntroSound(AmongUs.GameOptions.RoleTypes.Shapeshifter)
             .OptionOverride(Override.ShapeshiftCooldown, 30f);
 
     [Localized(nameof(Copycat))]
