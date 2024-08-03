@@ -160,8 +160,8 @@ public class Mafioso : Engineer
             else if (!hasVoted)
             {
                 hasVoted = true;
-                handle.Cancel();
-                meetingDelegate.CastVote(MyPlayer, player);
+                // handle.Cancel();
+                // meetingDelegate.CastVote(MyPlayer, player);
             }
         }, () => HandleSkip(handle));
     }
@@ -173,14 +173,13 @@ public class Mafioso : Engineer
         {
             case IFatalIntent:
                 if (Relationship(interaction.Emitter()) is Relation.FullAllies) handle.Cancel();
-                break;
+                return;
             case IHostileIntent:
                 if (Relationship(interaction.Emitter()) is Relation.FullAllies) handle.Cancel();
                 return;
         }
 
         if (!hasVest) return;
-        hasVest = false;
         switch (interaction)
         {
             case DelayedInteraction:
@@ -190,6 +189,7 @@ public class Mafioso : Engineer
             case Transporter.TransportInteraction:
             case LotusInteraction:
                 handle.Cancel();
+                hasVest = false;
                 break;
         }
     }
@@ -239,7 +239,8 @@ public class Mafioso : Engineer
         }
         ShopItem item = currentShopItems[selectedShopItem];
         cashAmount -= item.Cost;
-        if (item.Color != _gunColor && cashAmount > 0 && hasVoted) handle.Cancel();
+        // if (item.Color != _gunColor && cashAmount > 0 && !hasVoted) handle.Cancel();
+        handle.Cancel();
         GetChatHandler().Message(PurchaseItemMessage.Formatted(item.Name, cashAmount)).Send();
         item.Action();
         currentShopItems = shopItems.Where(si => si.Enabled && si.Cost <= cashAmount).ToArray();
