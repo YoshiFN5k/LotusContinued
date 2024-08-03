@@ -7,6 +7,7 @@ using Lotus.Extensions;
 using Lotus.Utilities;
 using VentLib.Utilities;
 using VentLib.Version;
+using VentLib.Version.BuiltIn;
 using Version = VentLib.Version.Version;
 
 namespace Lotus.Patches.Intro;

@@ -38,7 +38,7 @@ public class ReactorSabotage : ISabotage
             return false;
         }
 
-        reactor.Countdown = 10005f;
+        reactor.Countdown = 10000f;
         reactor.IsDirty = true;
         SabotagePatch.CurrentSabotage = null;
         Hooks.SabotageHooks.SabotageFixedHook.Propagate(new SabotageFixHookEvent(fixer, this));

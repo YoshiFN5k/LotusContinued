@@ -17,6 +17,7 @@ public class MiscellaneousOptions
 
     public string AssignedPet = null!;
     public int ChangeNameUsers;
+    public int AllowTeleportInLobby;
     public int ChangeColorAndLevelUsers;
     public bool AutoDisplayLastResults;
     public bool AutoDisplayCOD;
@@ -63,6 +64,16 @@ public class MiscellaneousOptions
             .Builder("Allow /color and /level", _optionColor)
             .Name(MiscOptionTranslations.AllowColorAndLevelCommand)
             .BindInt(b => ChangeColorAndLevelUsers = b)
+            .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
+            .BuildAndRegister());
+
+        AllOptions.Add(new GameOptionBuilder()
+            .Value(v => v.Value(0).Text(GeneralOptionTranslations.OffText).Color(Color.red).Build())
+            .Value(v => v.Value(1).Text(GeneralOptionTranslations.FriendsText).Color(new Color(0.85f, 0.66f, 1f)).Build())
+            .Value(v => v.Value(2).Text(GeneralOptionTranslations.EveryoneText).Color(Color.green).Build())
+            .Builder("Allow /tp in and /tpout", _optionColor)
+            .Name(MiscOptionTranslations.AllowTeleportCommand)
+            .BindInt(b => AllowTeleportInLobby = b)
             .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
             .BuildAndRegister());
 
@@ -120,6 +131,9 @@ public class MiscellaneousOptions
 
         [Localized(nameof(AllowColorAndLevelCommand))]
         public static string AllowColorAndLevelCommand = "Allow /color and /level";
+
+        [Localized(nameof(AllowTeleportCommand))]
+        public static string AllowTeleportCommand = "Allow /tpin and /tpout";
 
         [Localized("AutoDisplayResults")]
         public static string AutoDisplayResultsText = "Auto Display Results";

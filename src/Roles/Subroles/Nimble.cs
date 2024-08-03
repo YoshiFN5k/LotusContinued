@@ -49,5 +49,5 @@ public class Nimble : Subrole
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier).RoleColor(new Color(1f, 0.98f, 0.65f));
+        base.Modify(roleModifier).RoleColor(new Color(1f, 0.98f, 0.65f)).CanVent(true);
 }

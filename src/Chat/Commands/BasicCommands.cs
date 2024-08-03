@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Lotus.API;
@@ -7,8 +8,8 @@ using Lotus.Chat.Patches;
 using Lotus.Factions.Neutrals;
 using Lotus.Logging;
 using Lotus.Managers;
+using Lotus.Options;
 using Lotus.Roles;
-using Lotus.Roles.Interfaces;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Managers.Interfaces;
 using Lotus.Roles.Subroles;
@@ -25,6 +26,7 @@ namespace Lotus.Chat.Commands;
 [Localized("Commands")]
 public class BasicCommands : CommandTranslations
 {
+    [Localized("Color.NotInRange")] public static string ColorNotInRangeMessage = "{0} is not in range of valid colors.";
     [Localized(nameof(Winners))] public static string Winners = "Winners";
     [Localized("Dump.Success")] public static string DumpSuccess = "Successfully dumped log. Check your logs folder for a \"dump.log!\"";
     [Localized("Ids.PlayerIdMessage")] public static string PlayerIdMessage = "{0}'s player ID is {1}";
@@ -69,6 +71,86 @@ public class BasicCommands : CommandTranslations
         });
 
         ChatHandler.Of(text, HostOptionTranslations.RoleInfo).LeftAlign().Send(source);
+    }
+
+    [Command(CommandFlag.LobbyOnly, "name")]
+    public static void Name(PlayerControl source, CommandContext context)
+    {
+        string name = string.Join(" ", context.Args).Trim();
+        if (name.IsNullOrWhiteSpace()) return;
+        int allowedUsers = GeneralOptions.MiscellaneousOptions.ChangeNameUsers;
+        bool permitted = allowedUsers switch
+        {
+            0 => source.IsHost(),
+            1 => source.IsHost() || PluginDataManager.FriendManager.IsFriend(source),
+            2 => true,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        if (!permitted)
+        {
+            ChatHandlers.NotPermitted().Send(source);
+            return;
+        }
+
+        if (name.Length > 25)
+        {
+            ChatHandler.Of($"Name too long ({name.Length} > 25).", CommandError).LeftAlign().Send(source);
+            return;
+        }
+
+        OnChatPatch.EatMessage = true;
+
+        source.RpcSetName(name);
+    }
+
+    [Command(CommandFlag.LobbyOnly, "color", "colour")]
+    public static void SetColor(PlayerControl source, CommandContext context)
+    {
+        int allowedUsers = GeneralOptions.MiscellaneousOptions.ChangeColorAndLevelUsers;
+        bool permitted = allowedUsers switch
+        {
+            0 => source.IsHost(),
+            1 => source.IsHost() || PluginDataManager.FriendManager.IsFriend(source),
+            2 => true,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        if (!permitted)
+        {
+            ChatHandlers.NotPermitted().Send(source);
+            return;
+        }
+
+        int color = -1;
+        bool hasArg0 = context.Args.Length > 0;
+
+        if (hasArg0)
+        {
+            if (int.TryParse(context.Args[0], System.Globalization.NumberStyles.Integer, null, out int result))
+            {
+                color = int.Parse(context.Args[0]);
+            }
+            else
+            {
+                string colorName = context.Args[0];
+                color = ModConstants.ColorNames.ToList().FindIndex(name => name.ToLower().Contains(colorName.ToLower()));
+                if (color == -1)
+                {
+                    ChatHandler.Of($"{ColorNotInRangeMessage.Formatted(colorName)}", ModConstants.Palette.InvalidUsage.Colorize(InvalidUsage)).LeftAlign().Send(source);
+                    return;
+                }
+            }
+        } // assign a random color
+        else color = UnityEngine.Random.RandomRangeInt(0, Palette.PlayerColors.Length - 1);
+
+        if (color > Palette.PlayerColors.Length - 1)
+        {
+            ChatHandler.Of($"{ColorNotInRangeMessage.Formatted(color)} (0-{Palette.PlayerColors.Length - 1})", ModConstants.Palette.InvalidUsage.Colorize(InvalidUsage)).LeftAlign().Send(source);
+            return;
+        }
+
+        source.RpcSetColor((byte)color);
     }
 
     [Command(CommandFlag.HostOnly, "dump")]

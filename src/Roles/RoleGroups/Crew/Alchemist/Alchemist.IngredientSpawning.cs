@@ -50,9 +50,9 @@ public partial class Alchemist
     }
 
     [RoleAction(LotusActionType.SabotagePartialFix)]
-    private void AssistedWithLights(PlayerControl fixer)
+    private void AssistedWithLights()
     {
-        helpedFixLights = helpedFixLights || fixer.PlayerId == MyPlayer.PlayerId;
+        helpedFixLights = true;
     }
 
     [RoleAction(LotusActionType.SabotageFixed)]

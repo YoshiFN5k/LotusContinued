@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using InnerNet;
 using Lotus.Logging;
+using Lotus.Extensions;
 using Lotus.Managers.Models;
 using VentLib.Localization;
 using VentLib.Utilities;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
+using System.Reflection;
 
 namespace Lotus.Managers;
 
@@ -36,11 +38,11 @@ public class BanManager
         banPlayerFile = deserializer.Deserialize<BanPlayerFile>(content);
     }
 
-    public void BanWithReason(PlayerControl player, string reason)
+    public void BanWithReason(PlayerControl player, string internalReason, string displayedReason)
     {
         ClientData? clientData = player.GetClient();
-        if (clientData != null) AddBanPlayer(clientData, reason);
-        AmongUsClient.Instance.KickPlayer(player.GetClientId(), true);
+        if (clientData != null) AddBanPlayer(clientData, internalReason);
+        AmongUsClient.Instance.KickPlayerWithMessage(player, displayedReason, true);
     }
 
     public void AddBanPlayer(ClientData player, string? reason = null)
@@ -53,13 +55,15 @@ public class BanManager
         WriteFile(banPlayerFile);
     }
 
-    public void CheckBanPlayer(ClientData player)
+    public void CheckBanPlayer(PlayerControl player, ClientData client)
     {
         if (!AmongUsClient.Instance.AmHost) return;
-        if (!CheckBanList(player)) return;
+        if (!CheckBanList(client)) return;
 
-        AmongUsClient.Instance.KickPlayer(player.Id, true);
-        LogManager.SendInGame(string.Format(Localizer.Translate("Messages.BanedByBanList"), player.PlayerName));
+        string message = string.Format(Localizer.Translate("Messages.BanedByBanList", assembly: Assembly.GetExecutingAssembly()), client.PlayerName);
+
+        LogManager.SendInGame(message);
+        AmongUsClient.Instance.KickPlayerWithMessage(player, message, true);
     }
 
     public bool CheckBanList(ClientData player)

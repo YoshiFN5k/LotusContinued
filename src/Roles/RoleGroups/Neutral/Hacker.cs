@@ -38,9 +38,9 @@ public class Hacker : Engineer
     private string HackerCounter() => RoleUtils.Counter(sabotageCount, sabotageTotal, RoleColor);
 
     [RoleAction(LotusActionType.SabotagePartialFix)]
-    private void HackerFixes(ISabotage sabotage, PlayerControl fixer)
+    private void HackerFixes(ISabotage sabotage)
     {
-        if (fixer.PlayerId != MyPlayer.PlayerId || !sabotages.Contains(sabotage.SabotageType())) return;
+        if (!sabotages.Contains(sabotage.SabotageType())) return;
         bool result = sabotage is DoorSabotage doorSabotage ? doorSabotage.FixRoom(MyPlayer) : sabotage.Fix(MyPlayer);
         if (result) Game.MatchData.GameHistory.AddEvent(new GenericAbilityEvent(MyPlayer, $"{ModConstants.HColor1.Colorize(MyPlayer.name)} fixed {sabotage.SabotageType()}."));
     }

@@ -26,6 +26,8 @@ using VentLib.Utilities.Extensions;
 using Object = UnityEngine.Object;
 using Lotus.Logging;
 using Lotus.GameModes.Standard;
+using System.Collections.Generic;
+using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
@@ -50,45 +52,44 @@ public class Amnesiac : CustomRole, IVariableRole
     [UIComponent(UI.Indicator)]
     private string Arrows() => hasArrowsToBodies ? Object.FindObjectsOfType<DeadBody>()
         .Where(b => !Game.MatchData.UnreportableBodies.Contains(b.ParentId))
-        .Select(b => RoleUtils.CalculateArrow(MyPlayer, b.TruePosition, RoleColor)).Fuse("") : "";
+        .Select(b => RoleUtils.CalculateArrow(MyPlayer, b, RoleColor)).Fuse("") : "";
 
     [RoleAction(LotusActionType.ReportBody)]
-    public void AmnesiacRememberAction(PlayerControl reporter, NetworkedPlayerInfo reported, ActionHandle handle)
+    public void AmnesiacRememberAction(Optional<NetworkedPlayerInfo> reported, ActionHandle handle)
     {
-        log.Trace($"Reporter: {reporter.name} | Reported: {reported.GetNameWithRole()} | Self: {MyPlayer.name}", "");
+        if (!reported.Exists()) return;
+        log.Trace($"AmnesiacRememberAction | Reported: {reported.Get().GetNameWithRole()} | Self: {MyPlayer.name}", "");
 
-        if (reporter.PlayerId != MyPlayer.PlayerId) return;
-        CustomRole targetRole = reported.GetPrimaryRole();
-        Copycat.FallbackTypes.GetOptional(targetRole.GetType()).IfPresent(r => targetRole = r());
+        CustomRole targetRole = reported.Get().GetPrimaryRole()!;
+        if (!ProjectLotus.AdvancedRoleAssignment) Copycat.FallbackTypes.GetOptional(targetRole.GetType()).IfPresent(r => targetRole = r());
 
-        StandardRoles roleHolder = StandardGameMode.Instance.RoleManager.RoleHolder as StandardRoles;
+        StandardRoles roleHolder = StandardGameMode.Instance.RoleManager.RoleHolder;
 
         if (!stealExactRole)
         {
-            // if (targetRole.SpecialType == SpecialType.NeutralKilling)
-            //     targetRole = CustomRoleManager.Static.Hitman;
-            // else if (targetRole.SpecialType == SpecialType.Neutral)
-            //     targetRole = CustomRoleManager.Static.Opportunist;
-            // else if (targetRole.Faction is Crewmates)
-            //     targetRole = CustomRoleManager.Static.Sheriff;
-            // else
-            //     targetRole = CustomRoleManager.Static.Jester;
             if (targetRole.SpecialType == SpecialType.NeutralKilling)
-                targetRole = roleHolder.Static.AgiTater;
+                targetRole = roleHolder.Static.Hitman;
             else if (targetRole.SpecialType == SpecialType.Neutral)
-                targetRole = roleHolder.Static.Amnesiac;
+                targetRole = roleHolder.Static.Opportunist;
             else if (targetRole.Faction is Crewmates)
-                targetRole = roleHolder.Static.Bastion;
+                targetRole = roleHolder.Static.Sheriff;
             else
-                targetRole = roleHolder.Static.Blackmailer;
+                targetRole = roleHolder.Static.Impostor;
         }
 
         CustomRole newRole = StandardGameMode.Instance.RoleManager.GetCleanRole(targetRole);
 
-        MatchData.AssignRole(MyPlayer, newRole);
+        Game.AssignRole(MyPlayer, newRole);
 
         CustomRole role = MyPlayer.PrimaryRole();
-        role.DesyncRole = RoleTypes.Impostor;
+        if (ProjectLotus.AdvancedRoleAssignment)
+        {
+            role.Assign();
+        }
+        else
+        {
+            role.DesyncRole = RoleTypes.Impostor;
+        }
         arrowComponent?.Delete();
         handle.Cancel();
     }
@@ -104,14 +105,15 @@ public class Amnesiac : CustomRole, IVariableRole
                 .BindBool(b => hasArrowsToBodies = b)
                 .Build());
 
+    protected override List<CustomRole> LinkedRoles() => base.LinkedRoles().Concat(new List<CustomRole>() { _amalgamation }).ToList();
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         roleModifier.RoleColor(new Color(0.51f, 0.87f, 0.99f))
             .RoleFlags(RoleFlag.CannotWinAlone)
             .RoleAbilityFlags(RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.CannotVent)
             .SpecialType(SpecialType.Neutral)
-            .DesyncRole(RoleTypes.Impostor)
-            .Faction(FactionInstances.Neutral)
-            .LinkedRoles(_amalgamation);
+            .DesyncRole(ProjectLotus.AdvancedRoleAssignment ? RoleTypes.Crewmate : RoleTypes.Impostor)
+            .Faction(FactionInstances.Neutral);
 
     [Localized(nameof(Amnesiac))]
     public static class Translations

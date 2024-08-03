@@ -22,9 +22,9 @@ public class Repairman : Engineer
     private List<SabotageType> sabotages = new();
 
     [RoleAction(LotusActionType.SabotagePartialFix)]
-    private void SaboMasterFixes(ISabotage sabotage, PlayerControl fixer)
+    private void SaboMasterFixes(ISabotage sabotage)
     {
-        if (fixer.PlayerId != MyPlayer.PlayerId || !sabotages.Contains(sabotage.SabotageType())) return;
+        if (!sabotages.Contains(sabotage.SabotageType())) return;
         bool result = sabotage is DoorSabotage doorSabotage ? doorSabotage.FixRoom(MyPlayer) : sabotage.Fix(MyPlayer);
         if (result) Game.MatchData.GameHistory.AddEvent(new GenericAbilityEvent(MyPlayer, $"{ModConstants.HColor1.Colorize(MyPlayer.name)} fixed {sabotage.SabotageType()}."));
     }
@@ -64,7 +64,8 @@ public class Repairman : Engineer
 
     protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier)
         .VanillaRole(repairmanCanVent ? RoleTypes.Engineer : RoleTypes.Crewmate)
-        .RoleColor(Color.blue);
+        .RoleColor(Color.blue)
+        .IntroSound(() => ShipStatus.Instance.SabotageSound);
 
     [Localized(nameof(Repairman))]
     internal static class RepairmanTranslations

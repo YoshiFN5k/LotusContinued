@@ -43,8 +43,8 @@ public class Observer : Crewmate
         SyncOptions();
     }
 
-    [RoleAction(LotusActionType.SabotageStarted)]
-    [RoleAction(LotusActionType.SabotageFixed)]
+    [RoleAction(LotusActionType.SabotageStarted, ActionFlag.GlobalDetector)]
+    [RoleAction(LotusActionType.SabotageFixed, ActionFlag.GlobalDetector)]
     private void AdjustSabotageVision(ActionHandle handle)
     {
         log.Trace($"Fixing Player Vision (HasAllTasksComplete = {HasAllTasksComplete}, SabotageImmune = {sabotageImmunity})", "Observer");

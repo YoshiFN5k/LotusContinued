@@ -15,6 +15,8 @@ using Lotus.Roles.Internals.Enums;
 using VentLib.Utilities.Attributes;
 using Hazel;
 using Lotus.Roles.Operations;
+using InnerNet;
+using UnityEngine.ProBuilder;
 
 namespace Lotus.Patches.Systems;
 
@@ -39,7 +41,7 @@ public static class SabotagePatch
     {
         ActionHandle handle = ActionHandle.NoInit();
         ISystemType systemInstance;
-        log.Trace($"Repair System: {systemType} | Player: {player.name} | Amount: {amount}");
+        log.Trace($"Update System: {systemType} | Player: {player.name} | Amount: {amount}");
         switch (systemType)
         {
             case SystemTypes.Sabotage:
@@ -56,7 +58,7 @@ public static class SabotagePatch
                     SystemTypes.LifeSupp => SabotageType.Oxygen,
                     SystemTypes.Reactor => AUSettings.MapId() == 4 ? SabotageType.Helicopter : SabotageType.Reactor,
                     SystemTypes.Laboratory => SabotageType.Reactor,
-                    _ => throw new Exception("Invalid Sabotage Type")
+                    _ => throw new Exception($"Invalid Sabotage Type:{(SystemTypes)amount} {amount}")
                 };
 
                 ISabotage sabo = ISabotage.From(sabotage, player);
@@ -174,18 +176,40 @@ public static class SabotagePatch
         Game.SyncAll();
         return !handle.IsCanceled;
     }
+    internal static void LogItem(string message) => log.Trace(message);
 }
 
 
 [HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.UpdateSystem), typeof(SystemTypes), typeof(PlayerControl), typeof(MessageReader))]
 class WriterSabotagePatch
 {
-
+    internal static SystemTypes[] WatchedSystems = { SystemTypes.Reactor, SystemTypes.Doors, SystemTypes.Sabotage, SystemTypes.Electrical, SystemTypes.LifeSupp, SystemTypes.Laboratory, SystemTypes.Comms };
     internal static bool Prefix(ShipStatus __instance,
         [HarmonyArgument(0)] SystemTypes systemType,
         [HarmonyArgument(1)] PlayerControl player,
         [HarmonyArgument(2)] MessageReader reader)
     {
-        return SabotagePatch.Prefix(__instance, systemType, player, reader.ReadByte());
+        if (!WatchedSystems.Contains(systemType))
+        {
+            SabotagePatch.LogItem($"Skipped Update System: {systemType} | Player: {player.name}");
+            return true;
+        }
+
+        byte amount = reader.ReadByte();
+        bool flag = SabotagePatch.Prefix(__instance, systemType, player, amount);
+        if (!flag) return false;
+        MessageWriter writer = MessageWriter.Get(0);
+        writer.Write(amount);
+        MessageReader newReader = MessageReader.Get(writer.ToByteArray(false));
+
+        ISystemType systemType2;
+        if (__instance.Systems.TryGetValue(systemType, out systemType2))
+        {
+            __instance.logger.Info(string.Format("Player {0} modifying system {1}", player.PlayerId, systemType), null);
+            systemType2.UpdateSystem(player, newReader);
+        }
+        writer.Recycle();
+
+        return false;
     }
 }

@@ -39,7 +39,7 @@ public class TemplateManager
     private Dictionary<string, TemplateUnit>? variables;
     internal Dictionary<string, List<Template>> Commands = null!;
 
-    private List<Template>? allTemplates;
+    private List<Template>? allTemplates = new();
 
     private Dictionary<string, string> registeredTags = new()
     {

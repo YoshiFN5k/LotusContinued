@@ -13,7 +13,7 @@ public class RpcV3WrapperPatches
     {
 
         __instance.SetName(name);
-        RpcV3 rpcV3 = (RpcV3)RpcV3.Immediate(__instance.NetId, RpcCalls.SetName, SendOption.None).Write(name);
+        RpcV3 rpcV3 = (RpcV3)RpcV3.Immediate(__instance.NetId, RpcCalls.SetName).Write(__instance.Data.NetId).Write(name);
         rpcV3.Send();
 
         return false;

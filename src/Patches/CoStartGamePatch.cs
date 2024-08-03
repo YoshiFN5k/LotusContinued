@@ -8,6 +8,8 @@ using Lotus.Managers;
 using Lotus.Roles.Managers.Interfaces;
 using Lotus.Options;
 using VentLib.Utilities.Extensions;
+using UnityEngine;
+using Lotus.Utilities;
 
 namespace Lotus.Patches;
 
@@ -18,15 +20,20 @@ class CoStartGamePatch
 
     public static void Prefix(AmongUsClient __instance)
     {
-        if (GeneralOptions.MiscellaneousOptions.ColoredNameMode) Players.GetPlayers().ForEach(player =>
+        SetRolePatch.RoleAssigned = new();
+        Players.GetPlayers().ForEach(player =>
         {
             if (player == null) return;
+            SetRolePatch.RoleAssigned[player.PlayerId] = false;
+            if (!GeneralOptions.MiscellaneousOptions.ColoredNameMode) return;
             string colorName = player.Data.ColorName.Trim('(', ')');
             player.RpcSetName(colorName);
             Api.Local.SetName(player, colorName, true);
         });
 
         Game.Setup();
+        Game.CurrentGameMode.Setup();
+        log.Trace("Setup Game!");
     }
 
     public static void Postfix(AmongUsClient __instance)
@@ -37,13 +44,12 @@ class CoStartGamePatch
         try
         {
             Game.State = GameState.InIntro;
-            Players.GetPlayers().Do(p => Game.MatchData.Roles.PrimaryRoleDefinitions[p.PlayerId] = IRoleManager.Current.FallbackRole);
-            Game.CurrentGameMode.Setup();
+            Players.GetPlayers().Do(p => Game.MatchData.Roles.MainRoles[p.PlayerId] = IRoleManager.Current.FallbackRole());
+            Players.GetPlayers().Do(p => Game.MatchData.Roles.SubRoles[p.PlayerId] = new List<Roles.CustomRole>());
         }
         catch (Exception exception)
         {
             FatalErrorHandler.ForceEnd(exception, "Setup Phase");
         }
-
     }
 }

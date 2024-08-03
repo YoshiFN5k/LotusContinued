@@ -81,16 +81,16 @@ public class Archangel : CustomRole
         switch (roleChangeWhenTargetDies)
         {
             case GARoleChange.Jester:
-                MatchData.AssignRole(MyPlayer, roleHolder.Static.Jester);
+                Game.AssignRole(MyPlayer, roleHolder.Static.Jester);
                 break;
             case GARoleChange.Opportunist:
-                MatchData.AssignRole(MyPlayer, roleHolder.Static.Opportunist);
+                Game.AssignRole(MyPlayer, roleHolder.Static.Opportunist);
                 break;
             case GARoleChange.SchrodingerCat:
-                MatchData.AssignRole(MyPlayer, roleHolder.Static.Copycat);
+                Game.AssignRole(MyPlayer, roleHolder.Static.Copycat);
                 break;
             case GARoleChange.Crewmate:
-                MatchData.AssignRole(MyPlayer, roleHolder.Static.Crewmate);
+                Game.AssignRole(MyPlayer, roleHolder.Static.Crewmate);
                 break;
             case GARoleChange.None:
             default:
@@ -142,6 +142,7 @@ public class Archangel : CustomRole
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         roleModifier
             .SpecialType(SpecialType.Neutral)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
             .RoleColor("#B3FFFF"); // RoleColor takes a string too and automatically converts
 
     private enum GARoleChange

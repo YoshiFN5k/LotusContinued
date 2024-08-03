@@ -40,7 +40,7 @@ public class Mare : Vanilla.Impostor
     [RoleAction(LotusActionType.Attack)]
     public new bool TryKill(PlayerControl target) => (canKillWithoutSabotage || abilityEnabled) && base.TryKill(target);
 
-    [RoleAction(LotusActionType.SabotageStarted, priority: Priority.Last)]
+    [RoleAction(LotusActionType.SabotageStarted, ActionFlag.GlobalDetector, priority: Priority.Last)]
     private void MareSabotageCheck(ISabotage sabotage, ActionHandle handle)
     {
         if (!activationSabo.HasFlag(sabotage.SabotageType()) || handle.IsCanceled) return;
@@ -50,9 +50,10 @@ public class Mare : Vanilla.Impostor
         SyncOptions();
     }
 
-    [RoleAction(LotusActionType.SabotageFixed)]
+    [RoleAction(LotusActionType.SabotageFixed, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath)]
     private void MareSabotageFix()
     {
+        if (!abilityEnabled) return;
         abilityEnabled = false;
         if (redNameDuringSabotage) MyPlayer.NameModel().GetComponentHolder<NameHolder>().Remove(coloredName);
         SyncOptions();

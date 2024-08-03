@@ -20,7 +20,7 @@ public class AssignRoleOnDeathPatch
     {
         RpcV3.Immediate(player.NetId, RpcCalls.SetRole)
             .Write((ushort)(player.GetVanillaRole().IsImpostor() ? RoleTypes.ImpostorGhost : RoleTypes.CrewmateGhost))
-            .Write(true)
+            .Write(ProjectLotus.AdvancedRoleAssignment)
             .Send(player.GetClientId());
         player.Data.DefaultOutfit.PetId = "pet_EmptyPet";
         log.Debug($"Dead Player {player.name} => {player.Data.Role.Role}");

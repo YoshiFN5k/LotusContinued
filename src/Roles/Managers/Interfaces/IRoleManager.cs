@@ -12,7 +12,7 @@ public interface IRoleManager
 {
     public static RoleManager Current => ProjectLotus.GameModeManager.CurrentGameMode.RoleManager;
 
-    public CustomRole FallbackRole { get; }
+    public abstract CustomRole FallbackRole();
 
     public IEnumerable<CustomRole> AllCustomRoles();
 
@@ -56,7 +56,7 @@ public interface IRoleManager
 
     public CustomRole RoleFromQualifier(string qualifier)
     {
-        return AllCustomRoles().FirstOrDefault(r => QualifierFromRole(r) == qualifier, FallbackRole);
+        return AllCustomRoles().FirstOrDefault(r => QualifierFromRole(r) == qualifier, FallbackRole());
     }
 
     public static string QualifierFromRole(CustomRole role)

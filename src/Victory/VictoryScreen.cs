@@ -34,9 +34,9 @@ public static class VictoryScreen
         {
             bool wasAlive = p.IsAlive();
             RoleTypes roleType = winningPlayerIds.Contains(p.PlayerId) ^ !impostorsWin ? RoleTypes.ImpostorGhost : RoleTypes.CrewmateGhost;
-            DevLogger.Log($"Setting PLayer: {p.name} => {roleType}");
+            DevLogger.Log($"Setting Player: {p.name} => {roleType}");
             p.CRpcSetRole(roleType);
-            p.CoSetRole(roleType, true);
+            p.StartCoroutine(p.CoSetRole(roleType, ProjectLotus.AdvancedRoleAssignment));
             p.Data.PlayerName = p.name;
             p.Data.IsDead = !wasAlive;
         });

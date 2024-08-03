@@ -1,12 +1,13 @@
 namespace Lotus.RPC;
 
-public enum ModCalls: uint
+public enum ModCalls : uint
 {
     VerifyAddons,
     SendOptionPreview,
-    SetPrimaryRole,
-    SetSecondaryRole,
+    SetCustomRole,
+    AddSubrole,
     Debug,
+    SetKillCooldown,
 
 
     SetChatName = 93

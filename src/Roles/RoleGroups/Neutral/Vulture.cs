@@ -22,6 +22,7 @@ using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using static Lotus.Roles.RoleGroups.Neutral.Vulture.Translations.Options;
 using Object = UnityEngine.Object;
+using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
@@ -50,12 +51,13 @@ public class Vulture : CustomRole
     [UIComponent(UI.Indicator)]
     private string Arrows() => hasArrowsToBodies ? Object.FindObjectsOfType<DeadBody>()
         .Where(b => !Game.MatchData.UnreportableBodies.Contains(b.ParentId))
-        .Select(b => RoleUtils.CalculateArrow(MyPlayer, b.TruePosition, RoleColor)).Fuse("") : "";
+        .Select(b => RoleUtils.CalculateArrow(MyPlayer, b, RoleColor)).Fuse("") : "";
 
     [RoleAction(LotusActionType.ReportBody)]
-    private void EatBody(NetworkedPlayerInfo body, ActionHandle handle)
+    private void EatBody(Optional<NetworkedPlayerInfo> body, ActionHandle handle)
     {
-        Game.MatchData.UnreportableBodies.Add(body.PlayerId);
+        if (!body.Exists()) return;
+        Game.MatchData.UnreportableBodies.Add(body.Get().PlayerId);
 
         if (++bodyCount >= bodyAmount) ManualWin.Activate(MyPlayer, ReasonType.RoleSpecificWin, 100);
 
@@ -103,6 +105,7 @@ public class Vulture : CustomRole
             .VanillaRole(canUseVents ? RoleTypes.Engineer : RoleTypes.Crewmate)
             .CanVent(canUseVents)
             .SpecialType(SpecialType.Neutral)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
             .OptionOverride(Override.CrewLightMod, () => AUSettings.ImpostorLightMod(), () => impostorVision);
 
     [Localized(nameof(Vulture))]

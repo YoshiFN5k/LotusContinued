@@ -15,6 +15,7 @@ using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Options.UI;
 using Lotus.API.Player;
+using Lotus.Managers.History.Events;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -49,7 +50,7 @@ public class Sniper : Shapeshifter
     private void StartSniping()
     {
         startingLocation = MyPlayer.GetTruePosition();
-        DevLogger.Log($"Starting position: {startingLocation}");
+        // DevLogger.Log($"Starting position: {startingLocation}");
     }
 
     [RoleAction(LotusActionType.Unshapeshift)]
@@ -59,7 +60,7 @@ public class Sniper : Shapeshifter
         currentBulletCount--;
 
         Vector2 targetPosition = (MyPlayer.GetTruePosition() - startingLocation).normalized;
-        DevLogger.Log($"Target Position: {targetPosition}");
+        // DevLogger.Log($"Target Position: {targetPosition}");
         int kills = 0;
 
         foreach (PlayerControl target in Players.GetAllPlayers().Where(p => p.PlayerId != MyPlayer.PlayerId && p.Relationship(MyPlayer) is not Relation.FullAllies))
@@ -67,14 +68,14 @@ public class Sniper : Shapeshifter
             DevLogger.Log(target.name);
             Vector3 targetPos = target.transform.position - (Vector3)MyPlayer.GetTruePosition();
             Vector3 targetDirection = targetPos.normalized;
-            DevLogger.Log($"Target direction: {targetDirection}");
+            // DevLogger.Log($"Target direction: {targetDirection}");
             float dotProduct = Vector3.Dot(targetPosition, targetDirection);
-            DevLogger.Log($"Dot Product: {dotProduct}");
+            // DevLogger.Log($"Dot Product: {dotProduct}");
             float error = !preciseShooting ? targetPos.magnitude : Vector3.Cross(targetPosition, targetPos).magnitude;
-            DevLogger.Log($"Error: {error}");
+            // DevLogger.Log($"Error: {error}");
             if (dotProduct < 0.98 || (error >= 1.0 && preciseShooting)) continue;
             float distance = Vector2.Distance(MyPlayer.transform.position, target.transform.position);
-            InteractionResult result = MyPlayer.InteractWith(target, new RangedInteraction(new FatalIntent(true), distance, this));
+            InteractionResult result = MyPlayer.InteractWith(target, new RangedInteraction(new FatalIntent(true, () => new CustomDeathEvent(target, MyPlayer, ModConstants.DeathNames.Sniped)), distance, this));
             if (result is InteractionResult.Halt) continue;
             kills++;
             MyPlayer.RpcMark();
@@ -114,7 +115,7 @@ public class Sniper : Shapeshifter
                 .KeyName("Player Piercing", Translations.Options.PlayerPiercing)
                 .Value(v => v.Text(ModConstants.Infinity).Color(ModConstants.Palette.InfinityColor).Value(-1).Build())
                 .BindInt(v => playerPiercing = v)
-                .AddIntRange(1, 15, 1, 2)
+                .AddIntRange(1, ModConstants.MaxPlayers, 1, 2)
                 .Build());
 
     [Localized(nameof(Sniper))]

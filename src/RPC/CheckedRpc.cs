@@ -14,6 +14,7 @@ public static class CheckedRpc
     // TODO Shapeshift queue so that i dont need to stacktrace shapeshifting
     public static void CRpcShapeshift(this PlayerControl player, PlayerControl target, bool animate)
     {
+        log.Trace("CRpcShapeshift");
         if (!player.IsAlive()) return;
         if (AmongUsClient.Instance.AmClient) player.Shapeshift(target, animate);
 
@@ -37,7 +38,7 @@ public static class CheckedRpc
     public static void CRpcSetRole(this PlayerControl player, RoleTypes role)
     {
         if (!AmongUsClient.Instance.AmHost) return;
-        if (player.IsHost()) player.CoSetRole(role, true);
-        RpcV3.Immediate(player.NetId, RpcCalls.SetRole).Write((ushort)role).Write(true).Send();
+        if (player.IsHost()) player.StartCoroutine(player.CoSetRole(role, ProjectLotus.AdvancedRoleAssignment));
+        RpcV3.Immediate(player.NetId, RpcCalls.SetRole).Write((ushort)role).Write(ProjectLotus.AdvancedRoleAssignment).Send();
     }
 }

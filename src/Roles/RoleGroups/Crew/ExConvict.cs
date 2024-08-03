@@ -80,5 +80,5 @@ public class ExConvict : Crewmate
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier).RoleColor(new Color(0.43f, 0f, 0.2f));
+        base.Modify(roleModifier).RoleColor(new Color(0.43f, 0f, 0.2f)).RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 }

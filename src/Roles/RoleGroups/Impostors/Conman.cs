@@ -13,6 +13,7 @@ using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
 using static Lotus.Roles.RoleGroups.Impostors.Conman.ConmanTranslations.ConmanOptionTranslations;
 using Lotus.API.Player;
+using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -28,7 +29,7 @@ public class Conman : Impostor
     private void ResetKilledPlayers() => killedPlayers.Clear();
 
     [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector)]
-    public void ReportBodyAbility(NetworkedPlayerInfo reported) => triggerAbility = killedPlayers.Contains(reported.PlayerId);
+    public void ReportBodyAbility(Optional<NetworkedPlayerInfo> reported) => triggerAbility = reported.Exists() ? killedPlayers.Contains(reported.Get().PlayerId) : false;
 
     [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)

@@ -9,11 +9,9 @@ using Lotus.GUI.Name.Interfaces;
 using Lotus.Victory;
 using Lotus.Extensions;
 using VentLib.Utilities.Extensions;
-using System.Linq;
+using VentLib.Networking.RPC.Attributes;
 using Lotus.Roles;
-using Lotus.Roles.Interfaces;
-using Lotus.Factions.Impostors;
-using Lotus.Managers;
+using Lotus.RPC;
 
 namespace Lotus.API.Odyssey;
 
@@ -58,18 +56,19 @@ public static class Game
         return player == null ? "Unknown" : player.name;
     }
 
-    public static ulong GetGameID(this PlayerControl player) => GameIDs.GetOrCompute(player.PlayerId, () => _gameID++);
     public static ulong GetGameID(byte playerId) => GameIDs.GetOrCompute(playerId, () => _gameID++);
+    public static ulong GetGameID(this PlayerControl player) => GetGameID(player.PlayerId);
 
     public static WinDelegate GetWinDelegate() => _winDelegate;
 
     public static void Setup()
     {
-        CurrentGameMode.MatchData = new MatchData();
         _winDelegate = new WinDelegate();
         RandomSpawn = new RandomSpawn();
         NameModels.Clear();
+        MatchData.Cleanup();
         Players.GetPlayers().Do(p => NameModels.Add(p.PlayerId, new SimpleNameModel(p)));
+        GameIDs.ForEach(kv => GameIDs.Remove(kv.Key));
 
         Hooks.GameStateHooks.GameStartHook.Propagate(new GameStateHookEvent(MatchData, CurrentGameMode));
         ProjectLotus.GameModeManager.StartGame(_winDelegate);
@@ -82,6 +81,12 @@ public static class Game
         Hooks.GameStateHooks.GameEndHook.Propagate(new GameStateHookEvent(MatchData, CurrentGameMode));
         State = GameState.InLobby;
     }
+
+    [ModRPC((uint)ModCalls.SetCustomRole, RpcActors.Host, RpcActors.NonHosts, MethodInvocation.ExecuteBefore)]
+    public static void AssignRole(PlayerControl player, CustomRole roleDefinition, bool sendToClient = false) => MatchData.AssignRole(player, roleDefinition, sendToClient);
+
+    [ModRPC((uint)ModCalls.AddSubrole, RpcActors.Host, RpcActors.NonHosts, MethodInvocation.ExecuteBefore)]
+    public static void AssignSubRole(PlayerControl player, CustomRole role, bool sendToClient = false) => MatchData.AssignSubRole(player, role, sendToClient);
 }
 
 public enum GameState

@@ -104,7 +104,8 @@ public class Ninja : Vanilla.Impostor
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .VanillaRole(activationType is ActivationType.Shapeshift ? RoleTypes.Shapeshifter : RoleTypes.Impostor)
-            .OptionOverride(new IndirectKillCooldown(KillCooldown, () => Mode is NinjaMode.Hunting));
+            .OptionOverride(new IndirectKillCooldown(KillCooldown, () => Mode is NinjaMode.Hunting))
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     public enum NinjaMode
     {

@@ -19,7 +19,6 @@ public class Freezer : Vanilla.Shapeshifter
     [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target) => base.TryKill(target);
 
-    [RoleAction(LotusActionType.ReportBody)]
     [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector)]
     private void OnBodyReport()
     {

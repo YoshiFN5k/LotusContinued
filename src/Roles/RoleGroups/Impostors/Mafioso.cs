@@ -26,14 +26,16 @@ using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
+using Lotus.API.Vanilla.Sabotages;
 using static Lotus.Roles.RoleGroups.Impostors.Mafioso.MafiaTranslations;
 using static Lotus.Roles.RoleGroups.Impostors.Mafioso.MafiaTranslations.MafiaOptionTranslations;
+using Lotus.Patches.Systems;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
 public class Mafioso : Engineer
 {
-
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Mafioso));
     internal static Color CashColor = new(1f, 0.82f, 0.18f);
     private static Color _gunColor = new(0.55f, 0.28f, 0.16f);
     private static Color _vestColor = new(1f, 0.9f, 0.3f);
@@ -96,8 +98,7 @@ public class Mafioso : Engineer
         VentCooldown = 0f;
         VentDuration = 120f;
         _colorizedCash = TranslationUtil.Colorize(CashText, CashColor);
-        shopItems = new ShopItem[]
-        {
+        shopItems = [
             new(GunItem, _gunColor, modifyShopCosts ? gunCost : 5, true, () =>
             {
                 hasGun = true;
@@ -107,7 +108,7 @@ public class Mafioso : Engineer
             new(BulletItem, _bulletColor, modifyShopCosts ? bulletCost : 1, false, () => bulletCount++),
             new(VestItem, _vestColor, modifyShopCosts ? vestCost : 3, true, () => hasVest = true),
             new(RevealerItem, _revealerColor, modifyShopCosts ? revealerCost : 9, true, () => hasRevealer = true)
-        };
+        ];
         if (gunCooldown.Duration <= -1) gunCooldown.Duration = AUSettings.KillCooldown();
         MyPlayer.NameModel().GCH<RoleHolder>().First().GameStates()[2] = GameState.Roaming;
     }
@@ -144,9 +145,10 @@ public class Mafioso : Engineer
     }
 
     [RoleAction(LotusActionType.ReportBody)]
-    private void OnReportBody(NetworkedPlayerInfo deadPlayer)
+    private void OnReportBody(Optional<NetworkedPlayerInfo> deadPlayer)
     {
-        if (!killedPlayers.Contains(deadPlayer.PlayerId)) cashAmount += cashFromBodies;
+        if (!deadPlayer.Exists()) return;
+        if (!killedPlayers.Contains(deadPlayer.Get().PlayerId)) cashAmount += cashFromBodies;
     }
 
     [RoleAction(LotusActionType.Vote)]
@@ -157,13 +159,14 @@ public class Mafioso : Engineer
             if (p.PlayerId == MyPlayer.PlayerId) HandleSelfVote(handle);
             else if (!hasVoted)
             {
+                hasVoted = true;
                 handle.Cancel();
                 meetingDelegate.CastVote(MyPlayer, player);
             }
         }, () => HandleSkip(handle));
     }
 
-    [RoleAction(LotusActionType.Interaction)]
+    [RoleAction(LotusActionType.Interaction, ActionFlag.GlobalDetector)]
     private void HandleInteraction(Interaction interaction, ActionHandle handle)
     {
         switch (interaction.Intent)
@@ -191,6 +194,14 @@ public class Mafioso : Engineer
         }
     }
 
+    [RoleAction(LotusActionType.SabotageStarted, ActionFlag.GlobalDetector)]
+    [RoleAction(LotusActionType.SabotageFixed, ActionFlag.GlobalDetector)]
+    private void AdjustSabotageVision(ActionHandle handle)
+    {
+        log.Trace($"Fixing Player Vision");
+        Async.Schedule(SyncOptions, handle.ActionType is LotusActionType.SabotageStarted ? 4f : 0.2f);
+    }
+
     private void HandleReveal()
     {
         PlayerControl? closestPlayer = MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault(p => Relationship(p) is not Relation.FullAllies);
@@ -208,7 +219,7 @@ public class Mafioso : Engineer
 
     private void HandleSelfVote(ActionHandle handle)
     {
-        if (!hasVoted) return;
+        if (hasVoted) return;
         if (currentShopItems.Length == 0) return;
         handle.Cancel();
         if (selectedShopItem == byte.MaxValue) selectedShopItem = 0;
@@ -235,8 +246,7 @@ public class Mafioso : Engineer
     }
 
     private ChatHandler GetChatHandler() => ChatHandler.Of(title: RoleColor.Colorize(RoleName)).Player(MyPlayer).LeftAlign();
-
-
+    public override bool CanVent() => true;
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub.KeyName("Modify Shop Costs", ModifyShopCosts)
@@ -282,8 +292,9 @@ public class Mafioso : Engineer
         base.Modify(roleModifier)
             .RoleColor(Color.red)
             .Faction(FactionInstances.Impostors)
-            .RoleAbilityFlags(RoleAbilityFlag.IsAbleToKill)
-            .OptionOverride(Override.CrewLightMod, () => AUSettings.ImpostorLightMod());
+            .RoleAbilityFlags(RoleAbilityFlag.IsAbleToKill | RoleAbilityFlag.UsesPet)
+            .OptionOverride(Override.CrewLightMod, () => AUSettings.ImpostorLightMod())
+            .OptionOverride(Override.CrewLightMod, () => AUSettings.ImpostorLightMod() * 5, () => SabotagePatch.CurrentSabotage != null && SabotagePatch.CurrentSabotage.SabotageType() is SabotageType.Lights);
 
     [Localized(nameof(Mafioso))]
     internal static class MafiaTranslations

@@ -59,15 +59,28 @@ public class Pelican : NeutralKillingBase
     {
         InteractionResult result = MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(MyPlayer));
         MyPlayer.RpcMark(target);
-        if (result is InteractionResult.Halt) return false;
+        if (result is InteractionResult.Halt)
+        {
+            log.Trace($"(Pelican.TryKill) Could not gulp {target.name}. Result is halt.");
+            return false;
+        }
+        log.Trace($"(Pelican.TryKill) Swallowed {target.name}");
 
-        TeleportPlayer(target);
-        LiveString swallowedText = new(Translations.DeathName, RoleColor);
+        LiveString swallowedText = new(Translations.DeathName.ToUpper(), RoleColor);
         gulpedPlayers[target.PlayerId] = target.NameModel().GCH<TextHolder>().Add(new TextComponent(swallowedText, GameState.Roaming, ViewMode.Additive, target));
         _gulpedPlayerStat.Update(MyPlayer.UniquePlayerId(), i => i + 1);
+        TeleportPlayer(target);
 
-        RpcV3.Immediate(MyPlayer.NetId, RpcCalls.SetScanner, SendOption.None).Write(true).Write(++MyPlayer.scannerCount).Send(MyPlayer.GetClientId());
-        Async.Schedule(() => RpcV3.Immediate(MyPlayer.NetId, RpcCalls.SetScanner, SendOption.None).Write(false).Write(++MyPlayer.scannerCount).Send(MyPlayer.GetClientId()), 0.8f);
+        if (MyPlayer.AmOwner)
+        {
+            MyPlayer.SetScanner(true, ++MyPlayer.scannerCount);
+            Async.Schedule(() => MyPlayer.SetScanner(false, ++MyPlayer.scannerCount), 0.8f);
+        }
+        else
+        {
+            RpcV3.Immediate(MyPlayer.NetId, RpcCalls.SetScanner, SendOption.None).Write(true).Write(++MyPlayer.scannerCount).Send(MyPlayer.GetClientId());
+            Async.Schedule(() => RpcV3.Immediate(MyPlayer.NetId, RpcCalls.SetScanner, SendOption.None).Write(false).Write(++MyPlayer.scannerCount).Send(MyPlayer.GetClientId()), 0.8f);
+        }
 
         CheckPelicanEarlyWin();
 
@@ -90,7 +103,7 @@ public class Pelican : NeutralKillingBase
         Utils.Teleport(target.NetTransform, MyPlayer.GetTruePosition());
     }
 
-    [RoleAction(LotusActionType.MeetingCalled)]
+    [RoleAction(LotusActionType.MeetingCalled, ActionFlag.GlobalDetector)]
     public void KillGulpedPlayers()
     {
         gulpedPlayers.Keys.Filter(Players.PlayerById).Where(p => p.IsAlive()).ForEach(p =>
@@ -108,7 +121,7 @@ public class Pelican : NeutralKillingBase
         if (gulpedPlayers.ContainsKey(player.PlayerId)) handle.Cancel();
     }
 
-    [RoleAction(LotusActionType.SabotageStarted)]
+    [RoleAction(LotusActionType.SabotageStarted, ActionFlag.GlobalDetector)]
     public void PreventSabotageFromSwallowedPlayers(ISabotage sabotage, ActionHandle handle)
     {
         if (sabotage.Caller().Compare(s => gulpedPlayers.ContainsKey(s.PlayerId))) handle.Cancel();
@@ -145,16 +158,20 @@ public class Pelican : NeutralKillingBase
     {
         PlayerControl player = teleportedHookEvent.Player;
         if (!gulpedPlayers.ContainsKey(player.PlayerId)) return;
-        if (teleportedHookEvent.NewLocation == lastLocation) return;
+        if (teleportedHookEvent.NewLocation == lastLocation)
+        {
+            log.Trace($"(PelicanEat) Player: {player.name} has been teleported outside the map by ({MyPlayer.name}) during the game, and is currently held captive.");
+            return;
+        }
         if (teleportedHookEvent.NewLocation is { x: < -1000, y: < -1000 })
         {
             LiveString swallowedText = new(Translations.DeathName, RoleColor);
             gulpedPlayers[player.PlayerId] = player.NameModel().GCH<TextHolder>().Add(new TextComponent(swallowedText, GameState.Roaming, ViewMode.Additive, player));
-            log.Trace($"Player: {player.name} has teleported into the Pelican ({MyPlayer.name}) and is going to be eaten.", "PelicanEnter");
+            log.Trace($"(PelicanEnter) Player: {player.name} has teleported into the Pelican ({MyPlayer.name}) and is going to be eaten.");
             return;
         }
 
-        log.Trace($"Player: {player.name} has teleported out of the Pelican ({MyPlayer.name})", "PelicanEscape");
+        log.Trace($"(PelicanEscape) Player: {player.name} has teleported out of the Pelican ({MyPlayer.name})");
         if (allowPelicanEscape)
         {
             gulpedPlayers.GetValueOrDefault(player.PlayerId)?.Delete();

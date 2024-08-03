@@ -22,8 +22,8 @@ using static Lotus.Roles.RoleGroups.Crew.Medium.Translations;
 using Object = UnityEngine.Object;
 
 namespace Lotus.Roles.RoleGroups.Crew;
-
-public partial class Medium : Crewmate, IModdable
+// IModdable
+public class Medium : Crewmate
 {
     public static HashSet<Type> MediumBannedModifiers = new() { typeof(Oblivious) };
     public override HashSet<Type> BannedModifiers() => MediumBannedModifiers;
@@ -37,11 +37,15 @@ public partial class Medium : Crewmate, IModdable
     [UIComponent(UI.Indicator)]
     private string Arrows() => hasArrowsToBodies ? Object.FindObjectsOfType<DeadBody>()
         .Where(b => !Game.MatchData.UnreportableBodies.Contains(b.ParentId))
-        .Select(b => RoleUtils.CalculateArrow(MyPlayer, b.TruePosition, RoleColor)).Fuse("") : "";
+        .Select(b => RoleUtils.CalculateArrow(MyPlayer, b, RoleColor)).Fuse("") : "";
 
 
     [RoleAction(LotusActionType.RoundStart)]
-    private void ClearReportedPlayer() => reportedPlayer = byte.MaxValue;
+    private void ClearReportedPlayer()
+    {
+        reportedPlayer = byte.MaxValue;
+        connectionEstablished = false;
+    }
 
     [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
     private void AnyPlayerDeath(PlayerControl player, IDeathEvent deathEvent)
@@ -50,15 +54,18 @@ public partial class Medium : Crewmate, IModdable
     }
 
     [RoleAction(LotusActionType.ReportBody)]
-    private void MediumDetermineRole(NetworkedPlayerInfo reported)
+    private void MediumDetermineRole(Optional<NetworkedPlayerInfo> reported)
     {
-        killerDictionary.GetOptional(reported.PlayerId).FlatMap(o => o)
+        if (!reported.Exists()) return;
+        byte targetId = reported.Get().PlayerId;
+        killerDictionary.GetOptional(targetId).FlatMap(o => o)
             .IfPresent(killerRole => Async.Schedule(() => MediumSendMessage(killerRole), 2f));
-        reportedPlayer = reported.PlayerId;
+        reportedPlayer = targetId;
+        EstablishMediumConnection(); // this wasnt here in 1.0.0 so.
     }
 
 
-    [RoleAction(LotusActionType.Chat)]
+    [RoleAction(LotusActionType.Chat, ActionFlag.GlobalDetector)]
     private void RelayMessagesToMedium(PlayerControl chatter, string message)
     {
         if (!connectionEstablished || chatter.PlayerId != reportedPlayer) return;
@@ -71,7 +78,7 @@ public partial class Medium : Crewmate, IModdable
         PlayerControl? deadPlayer = Players.FindPlayerById(reportedPlayer);
         if (deadPlayer == null) return;
         MediumSendMessage(MediumConnection.Formatted(deadPlayer.name)).Send(MyPlayer);
-        MediumSendMessage(MediumConnectionGhost.Formatted(MyPlayer.name)).Send(MyPlayer);
+        MediumSendMessage(MediumConnectionGhost.Formatted(MyPlayer.name)).Send(deadPlayer);
         connectionEstablished = true;
     }
 

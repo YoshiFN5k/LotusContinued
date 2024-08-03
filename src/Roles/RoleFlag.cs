@@ -15,6 +15,6 @@ public enum RoleFlag
     IsSubrole = 128,
     DoNotTranslate = 256,
 
-    VariationRole = Hidden | Unassignable | IncrementChanceByFives | RemoveRoleMaximum | DontRegisterOptions,
+    VariationRole = Hidden | Unassignable | RemoveRolePercent | IncrementChanceByFives | RemoveRoleMaximum | DontRegisterOptions,
     TransformationRole = Hidden | Unassignable | RemoveRolePercent | RemoveRoleMaximum | DontRegisterOptions,
 }

@@ -17,10 +17,12 @@ using VentLib.Utilities.Optionals;
 using static Lotus.Roles.RoleGroups.Crew.Crusader.CrusaderTranslations.CrusaderOptions;
 using Lotus.Roles.Internals.Enums;
 using static Lotus.Utilities.TranslationUtil;
+using Lotus.Patches.Systems;
+using Lotus.API.Vanilla.Sabotages;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
-public class Crusader : Crewmate, ISabotagerRole
+public class Crusader : Crewmate
 {
     private Optional<byte> protectedPlayer = Optional<byte>.Null();
     private bool protectAgainstHelpfulInteraction;
@@ -77,10 +79,10 @@ public class Crusader : Crewmate, ISabotagerRole
             .DesyncRole(RoleTypes.Impostor)
             .RoleFlags(RoleFlag.CannotWinAlone)
             .RoleColor(new Color(0.78f, 0.36f, 0.22f))
+            .RoleAbilityFlags(RoleAbilityFlag.CannotVent | RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.IsAbleToKill)
             .OptionOverride(new IndirectKillCooldown(() => AUSettings.KillCooldown()))
-            .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod());
-
-    public bool CanSabotage() => false;
+            .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod())
+            .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod() / 5, () => (SabotagePatch.CurrentSabotage?.SabotageType() ?? SabotageType.Communications) is SabotageType.Lights);
 
     [Localized(nameof(Crusader))]
     internal static class CrusaderTranslations

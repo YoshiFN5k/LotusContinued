@@ -130,6 +130,8 @@ public class Arsonist : NeutralKillingBase
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(1f, 0.4f, 0.2f))
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
+            .IntroSound(AmongUs.GameOptions.RoleTypes.Crewmate)
             .RoleAbilityFlags(RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.CannotVent);
 
     [Localized(nameof(Arsonist))]

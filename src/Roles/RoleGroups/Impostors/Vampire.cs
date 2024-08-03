@@ -69,10 +69,12 @@ public class Vampire : Impostor, IVariableRole
                 .AddFloatRange(2.5f, 60f, 2.5f, 2, GeneralOptionTranslations.SecondsSuffix)
                 .Build());
 
+    protected override List<CustomRole> LinkedRoles() => base.LinkedRoles().Concat(new List<CustomRole>() { _vampiress }).ToList();
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .OptionOverride(new IndirectKillCooldown(KillCooldown))
-            .LinkedRoles(_vampiress);
+            .IntroSound(AmongUs.GameOptions.RoleTypes.Shapeshifter);
 
     [Localized(nameof(Vampire))]
     public static class VampireTranslations

@@ -37,7 +37,7 @@ public class Mystic : Crewmate, ISubrole
     private bool isSubrole;
     private bool restrictedToCrew;
 
-    public string? Identifier() => null;
+    public string? Identifier() => "ī";
 
     protected override void PostSetup()
     {
@@ -101,10 +101,10 @@ public class Mystic : Crewmate, ISubrole
                 })
                 .ShowSubOptionPredicate(b => (bool)b)
                 .SubOption(sub2 => sub2.KeyName("Restricted to Crewmates", TranslationUtil.Colorize(Translations.Options.RestrictedToCrewmates, FactionInstances.Crewmates.Color))
-                    .AddOnOffValues()
+                    .AddBoolean()
                     .BindBool(b => restrictedToCrew = b)
                     .Build())
-                .AddOnOffValues(false)
+                .AddBoolean(false)
                 .Build())
             .SubOption(sub => sub
                 .KeyName("Flash Duration", Translations.Options.FlashDuration)
@@ -115,7 +115,7 @@ public class Mystic : Crewmate, ISubrole
             .SubOption(sub => sub
                 .KeyName("Send Audio Alert", Translations.Options.SendAudioAlert)
                 .BindBool(v => sendAudioAlert = v)
-                .AddOnOffValues()
+                .AddBoolean()
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier)

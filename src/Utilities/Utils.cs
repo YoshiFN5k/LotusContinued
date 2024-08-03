@@ -19,6 +19,7 @@ using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using Lotus.Roles;
 using Lotus.Roles.RoleGroups.Vanilla;
+using Lotus.Roles.Managers.Interfaces;
 
 namespace Lotus.Utilities;
 
@@ -41,20 +42,32 @@ public static class Utils
     {
         if (p.GetPrimaryRole()?.RealRole.IsImpostor() ?? true) return false;
         CustomRole? primaryDefinition = p.GetPrimaryRole();
-        return primaryDefinition != null && primaryDefinition is Crewmate;
+        return primaryDefinition.GetType() != IRoleManager.Current.FallbackRole().GetType() && primaryDefinition is Crewmate;
     }
 
     public static void Teleport(CustomNetworkTransform nt, Vector2 location)
     {
         Vector2 currentLocation = nt.lastPosSent;
-        Hooks.PlayerHooks.PlayerTeleportedHook.Propagate(new PlayerTeleportedHookEvent(nt.myPlayer, currentLocation, location));
-        TeleportDeferred(nt, location).Send();
+        if (Game.State is not GameState.InLobby) Hooks.PlayerHooks.PlayerTeleportedHook.Propagate(new PlayerTeleportedHookEvent(nt.myPlayer, currentLocation, location));
+        float delay = 0f;
+        if (nt.myPlayer.petting)
+        {
+            if (AmongUsClient.Instance.AmHost) nt.myPlayer.MyPhysics.CancelPet();
+            else
+            {
+                delay = NetUtils.DeriveDelay(0.1f);
+                nt.myPlayer.MyPhysics.CancelPet();
+                RpcV3.Immediate(nt.myPlayer.MyPhysics.NetId, RpcCalls.CancelPet, SendOption.None).Send();
+            }
+        }
+        if (delay <= 0f) TeleportDeferred(nt, location).Send();
+        else Async.Schedule(() => TeleportDeferred(nt, location).Send(), delay);
     }
 
     public static MonoRpc TeleportDeferred(CustomNetworkTransform transform, Vector2 location)
     {
-        if (AmongUsClient.Instance.AmHost) transform.SnapTo(location);
-        return RpcV3.Immediate(transform.NetId, RpcCalls.SnapTo, SendOption.None).Write(location).Write(transform.lastSequenceId);
+        if (AmongUsClient.Instance.AmHost) transform.SnapTo(location, (ushort)(transform.lastSequenceId + 328));
+        return RpcV3.Immediate(transform.NetId, (byte)RpcCalls.SnapTo, SendOption.None).Write(location).Write((ushort)(transform.lastSequenceId + 8));
     }
 
     public static string GetSubRolesText(byte id, bool disableColor = false)

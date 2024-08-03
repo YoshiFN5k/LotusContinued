@@ -82,7 +82,14 @@ public class HM2 : MonoBehaviour
     public void Open()
     {
         HudManager.Instance.SetHudActive(false);
-        GameStartManager.Instance.StartButton.gameObject.SetActive(false);
+        if (AmongUsClient.Instance.AmHost)
+        {
+            GameStartManager.Instance.StartButton.gameObject.SetActive(false);
+        }
+        else
+        {
+            GameStartManager.Instance.StartButtonClient.gameObject.SetActive(false);
+        }
         HudManager.Instance.gameObject.transform.Find("LobbyInfoPane/AspectSize").gameObject.SetActive(false);
         historyButton.SetDisabled();
 
@@ -95,7 +102,14 @@ public class HM2 : MonoBehaviour
     public void Close()
     {
         HudManager.Instance.SetHudActive(true);
-        GameStartManager.Instance.StartButton.gameObject.SetActive(true);
+        if (AmongUsClient.Instance.AmHost)
+        {
+            GameStartManager.Instance.StartButton.gameObject.SetActive(true);
+        }
+        else
+        {
+            GameStartManager.Instance.StartButtonClient.gameObject.SetActive(true);
+        }
         HudManager.Instance.gameObject.transform.Find("LobbyInfoPane/AspectSize").gameObject.SetActive(true);
         historyButton.SetEnabled();
 

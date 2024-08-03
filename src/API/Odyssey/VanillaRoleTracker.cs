@@ -39,7 +39,7 @@ public class VanillaRoleTracker
         public TeamInfo(byte myPlayer)
         {
             this.myPlayer = myPlayer;
-            Game.MatchData.Roles.PrimaryRoleDefinitions.GetOptional(myPlayer).IfPresent(role => MyRole = role.RealRole);
+            Game.MatchData.Roles.MainRoles.GetOptional(myPlayer).IfPresent(role => MyRole = role.RealRole);
         }
 
         public void AddVanillaCrewmate(byte playerId)

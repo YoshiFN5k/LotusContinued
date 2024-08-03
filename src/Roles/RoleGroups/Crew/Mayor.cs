@@ -103,7 +103,9 @@ public class Mayor : Crewmate
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier).RoleColor(new Color(0.13f, 0.3f, 0.26f));
+        base.Modify(roleModifier).RoleColor(new Color(0.13f, 0.3f, 0.26f))
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
+            .IntroSound(AmongUs.GameOptions.RoleTypes.Crewmate);
 
     [Localized(nameof(Mayor))]
     internal static class Translations

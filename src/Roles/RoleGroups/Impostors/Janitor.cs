@@ -61,13 +61,14 @@ public class Janitor : Impostor
     }
 
     [RoleAction(LotusActionType.ReportBody)]
-    private void JanitorCleanBody(NetworkedPlayerInfo target, ActionHandle handle)
+    private void JanitorCleanBody(Optional<NetworkedPlayerInfo> target, ActionHandle handle)
     {
+        if (!target.Exists()) return;
         if (cleanCooldown.NotReady()) return;
         handle.Cancel();
         cleanCooldown.Start();
 
-        byte playerId = target.Object.PlayerId;
+        byte playerId = target.Get().PlayerId;
 
         foreach (DeadBody deadBody in Object.FindObjectsOfType<DeadBody>())
             if (deadBody.ParentId == playerId)

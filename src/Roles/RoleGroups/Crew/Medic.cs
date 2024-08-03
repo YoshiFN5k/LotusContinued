@@ -20,6 +20,7 @@ using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using static Lotus.Options.GeneralOptionTranslations;
 using static Lotus.Roles.RoleGroups.Crew.Medic.MedicTranslations;
+using Lotus.API.Vanilla.Meetings;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -58,7 +59,7 @@ public class Medic : Crewmate
 
     [SuppressMessage("ReSharper", "AssignmentInConditionalExpression")]
     [RoleAction(LotusActionType.Vote)]
-    private void HandleMedicVote(Optional<PlayerControl> votedPlayer, ActionHandle handle)
+    private void HandleMedicVote(Optional<PlayerControl> votedPlayer, MeetingDelegate _, ActionHandle handle)
     {
         if (confirmedVote) return;
         // If guarded player is selected, and mode is any meeting then skip

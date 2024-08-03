@@ -30,7 +30,7 @@ public class Diseased : Subrole
         killer.NameModel().GCH<IndicatorHolder>().Add(new SimpleIndicatorComponent(Identifier(), RoleColor, GameState.Roaming, killer));
 
         CustomStatus status = CustomStatus.Of(RoleName).Description(Translations.DiseasedAffectDescription).Color(RoleColor).Build();
-        MatchData.AddStatus(killer, status, MyPlayer);
+        Game.MatchData.AddStatus(killer, status, MyPlayer);
     }
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>

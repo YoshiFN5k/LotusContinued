@@ -28,7 +28,7 @@ public class CastVotePatch
         Optional<PlayerControl> voted = Utils.PlayerById(suspectPlayerId);
         log.Trace($"{voter.GetNameWithRole()} voted for {voted.Map(v => v.name)}");
 
-        ActionHandle handle = RoleOperations.Current.Trigger(LotusActionType.Vote, voter, MeetingDelegate.Instance, voted);
+        ActionHandle handle = RoleOperations.Current.Trigger(LotusActionType.Vote, voter, voted, MeetingDelegate.Instance);
 
         if (!handle.IsCanceled)
         {

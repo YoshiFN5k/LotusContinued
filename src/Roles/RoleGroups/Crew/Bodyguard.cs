@@ -22,6 +22,8 @@ using VentLib.Utilities.Optionals;
 using static Lotus.Roles.RoleGroups.Crew.Medic.MedicTranslations;
 using static Lotus.Roles.RoleGroups.Crew.Medic.MedicTranslations.MedicOptionTranslations;
 using static Lotus.Utilities.TranslationUtil;
+using Lotus.API.Vanilla.Meetings;
+using System.Linq;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -51,7 +53,7 @@ public class Bodyguard : Crewmate
 
     [SuppressMessage("ReSharper", "AssignmentInConditionalExpression")]
     [RoleAction(LotusActionType.Vote)]
-    private void HandleMedicVote(Optional<PlayerControl> votedPlayer, ActionHandle handle)
+    private void HandleMedicVote(Optional<PlayerControl> votedPlayer, MeetingDelegate _, ActionHandle handle)
     {
         if (confirmedVote) return;
         // If guarded player is selected, and mode is any meeting then skip
@@ -140,15 +142,20 @@ public class Bodyguard : Crewmate
 
         if (result is InteractionResult.Proceed) Game.MatchData.GameHistory.AddEvent(new KillEvent(MyPlayer, interactor));
 
+        if (!interactor.PrimaryRole().GetActions(LotusActionType.Attack).ToList().IsEmpty())
+        {
+            if (interactor.InteractWith(MyPlayer, LotusInteraction.FatalInteraction.Create(this)) is InteractionResult.Proceed)
+                Game.MatchData.GameHistory.AddEvent(new KillEvent(interactor, MyPlayer));
+        }
 
-        interactor.PrimaryRole().GetActions(LotusActionType.Attack)
-            .FirstOrOptional()
-            .Handle(t => t.Item1.Execute(t.Item2, new object[] { MyPlayer }),
-            () =>
-            {
-                if (interactor.InteractWith(MyPlayer, LotusInteraction.FatalInteraction.Create(this)) is InteractionResult.Proceed)
-                    Game.MatchData.GameHistory.AddEvent(new KillEvent(interactor, MyPlayer));
-            });
+        // interactor.PrimaryRole().GetActions(LotusActionType.Attack)
+        //     .FirstOrOptional()
+        //     .Handle(t => t.Item1.Execute(t.Item2, new object[] { MyPlayer }),
+        //     () =>
+        //     {
+        //         if (interactor.InteractWith(MyPlayer, LotusInteraction.FatalInteraction.Create(this)) is InteractionResult.Proceed)
+        //             Game.MatchData.GameHistory.AddEvent(new KillEvent(interactor, MyPlayer));
+        //     });
     }
 
     private ChatHandler CHandler(string message) => new ChatHandler()

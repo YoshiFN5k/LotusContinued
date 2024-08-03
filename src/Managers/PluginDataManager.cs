@@ -14,51 +14,46 @@ public static class PluginDataManager
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(PluginDataManager));
 
-    private const string LegacyDataDirectoryTOHPath = "./TOR_DATA";
     private const string ModifiableDataDirectoryPath = "./LOTUS_DATA";
     private const string ModifiableDataDirectoryPathOld = "./TOHTOR_DATA";
-    private static readonly string HiddenDataDirectoryPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "/TownOfHostTheOtherRoles");
+    private static readonly string ModifiableHiddenDataDirectoryPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "/ProjectLotus");
+    private static readonly string LegacyHiddenDataDirectoryPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "/TownOfHostTheOtherRoles");
     private const string TitleDirectory = "Titles";
 
-    private const string TOHTemplateFile = "template.txt";
-    private const string TemplateFile = "Templates.txt";
-    private const string TemplateFile2 = "Templates.yaml";
-
-    private const string WordListFile = "BannedWords.yaml";
+    private const string ModdedPlayerFile = "ModdedPlayers.yaml";
     private const string BannedPlayerFile = "BannedPlayers.yaml";
+    private const string WordListFile = "BannedWords.yaml";
+    private const string TemplateFile = "Templates.yaml";
 
     private const string FriendListFile = "Friends.txt";
-    private const string TemplateCommandFile = "TemplateCommands.txt";
 
-    public static readonly DirectoryInfo LegacyDataDirectoryTOH;
     public static readonly DirectoryInfo ModifiableDataDirectory;
     public static readonly DirectoryInfo HiddenDataDirectory;
 
     public static TemplateManager TemplateManager;
-
-    public static ChatManager ChatManager;
     public static FriendManager FriendManager;
-    public static BanManager BanManager;
-
     public static TitleManager TitleManager;
+    public static ChatManager ChatManager;
+    public static ModManager ModManager;
+    public static BanManager BanManager;
 
 
     static PluginDataManager()
     {
         MigrateOldDirectory();
+        MigrateOldHiddenDirectory();
 
         ModifiableDataDirectory = new DirectoryInfo(ModifiableDataDirectoryPath);
-        HiddenDataDirectory = new DirectoryInfo(HiddenDataDirectoryPath);
-        LegacyDataDirectoryTOH = new DirectoryInfo(LegacyDataDirectoryTOHPath);
+        HiddenDataDirectory = new DirectoryInfo(ModifiableHiddenDataDirectoryPath);
         if (!ModifiableDataDirectory.Exists) ModifiableDataDirectory.Create();
         if (!HiddenDataDirectory.Exists) HiddenDataDirectory.Create();
 
-        TemplateManager = TryLoad(() => new TemplateManager(ModifiableDataDirectory.GetFile(TemplateFile2)), "Template Manager")!;
-
-        ChatManager = TryLoad(() => new ChatManager(ModifiableDataDirectory.GetFile(WordListFile)), "Chat Manager")!;
-        FriendManager = TryLoad(() => new FriendManager(ModifiableDataDirectory.GetFile(FriendListFile)), "Friend Manager")!;
+        TemplateManager = TryLoad(() => new TemplateManager(ModifiableDataDirectory.GetFile(TemplateFile)), "Template Manager")!;
         TitleManager = TryLoad(() => new TitleManager(ModifiableDataDirectory.GetDirectory(TitleDirectory)), "Title Manager")!;
+        FriendManager = TryLoad(() => new FriendManager(ModifiableDataDirectory.GetFile(FriendListFile)), "Friend Manager")!;
         BanManager = TryLoad(() => new BanManager(ModifiableDataDirectory.GetFile(BannedPlayerFile)), "Ban Manager")!;
+        ModManager = TryLoad(() => new ModManager(ModifiableDataDirectory.GetFile(ModdedPlayerFile)), "Mod Manager")!;
+        ChatManager = TryLoad(() => new ChatManager(ModifiableDataDirectory.GetFile(WordListFile)), "Chat Manager")!;
     }
 
     private static T? TryLoad<T>(Func<T> loadFunction, string name)
@@ -70,7 +65,7 @@ public static class PluginDataManager
         }
         catch (Exception exception)
         {
-            log.Exception( $"Failed to load {name}", exception);
+            log.Exception($"Failed to load {name}", exception);
             return default;
         }
     }
@@ -82,6 +77,20 @@ public static class PluginDataManager
         try
         {
             oldDirectory.MoveTo(ModifiableDataDirectoryPath);
+        }
+        catch
+        {
+            // ignored
+        }
+    }
+
+    private static void MigrateOldHiddenDirectory()
+    {
+        DirectoryInfo oldDirectory = new(LegacyHiddenDataDirectoryPath);
+        if (!oldDirectory.Exists) return;
+        try
+        {
+            oldDirectory.MoveTo(ModifiableHiddenDataDirectoryPath);
         }
         catch
         {

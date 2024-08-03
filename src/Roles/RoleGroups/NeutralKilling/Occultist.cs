@@ -22,6 +22,7 @@ using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
+using Lotus.GameModes.Standard;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 
@@ -53,7 +54,7 @@ public class Occultist : NeutralKillingBase
         if (cursedPlayers.ContainsKey(target.PlayerId)) return false;
 
         CustomStatus status = CustomStatus.Of(RoleName).Description(Translations.CursedStatusDescription).Color(RoleColor).Build();
-        cursedPlayers.Add(target.PlayerId, MatchData.AddStatus(target, status, MyPlayer));
+        cursedPlayers.Add(target.PlayerId, Game.MatchData.AddStatus(target, status, MyPlayer));
         indicators.GetValueOrDefault(target.PlayerId)?.Delete();
         indicators[target.PlayerId] = target.NameModel().GCH<IndicatorHolder>().Add(new SimpleIndicatorComponent("†", Color.red, GameState.InMeeting));
 
@@ -98,7 +99,7 @@ public class Occultist : NeutralKillingBase
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(0.39f, 0.47f, 0.87f))
-            .RoleAbilityFlags(RoleAbilityFlag.CannotSabotage)
+            .RoleAbilityFlags(RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.UsesPet)
             .OptionOverride(new IndirectKillCooldown(KillCooldown, () => isCursingMode));
 
 

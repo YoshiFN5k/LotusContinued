@@ -35,14 +35,12 @@ class TaskTextPatch
             if (!ReferenceEquals(role, _role)) roleText = $"{role.RoleName}:\n{role.Blurb}";
             _role = role;
             List<CustomRole> srs = player.SecondaryRoles();
-            if (srs.Count != subroleCount || _subroles != srs) subroleText = srs.Select(sr => sr.ColoredRoleName()).Fuse();
+            if (srs.Count != subroleCount || _subroles != srs) subroleText = srs.Count == 1 ? srs.Select(sr => sr.RoleColor.Colorize($"{sr.RoleName}:\n{sr.Blurb}")).Fuse() : srs.Select(sr => sr.ColoredRoleName()).Fuse();
             subroleCount = srs.Count;
             _subroles = srs;
         }
 
         if (ReferenceEquals(_role, null)) return;
-
-
 
         string modifiedText = __instance.taskText.text;
         int impostorTaskIndex = modifiedText.IndexOf(":</color>", StringComparison.Ordinal);

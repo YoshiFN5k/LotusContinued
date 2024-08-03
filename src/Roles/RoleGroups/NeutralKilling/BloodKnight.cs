@@ -67,7 +67,7 @@ public class BloodKnight : NeutralKillingBase
     protected override RoleModifier Modify(RoleModifier roleModifier)
     {
         return base.Modify(roleModifier) // call base because we're utilizing some settings setup by NeutralKillingBase
-            .RoleName("Blood Knight")
+            .RoleName("BloodKnight")
             .RoleColor(new Color(0.47f, 0f, 0f)) // Using Color() because it's easier to edit and get an idea for actual color
             .CanVent(canVent);
     }

@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Linq;
+using System.Reflection;
 using Lotus.Roles;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Enums;
@@ -27,26 +29,69 @@ public class LotusAction
 
     public virtual void Execute(object[] args)
     {
+        if (Executer == null)
+            throw new InvalidOperationException("Executer is not set.");
+
+        var executer = Executer as CustomRole;
+
+        if (executer?.MyPlayer == null)
+            throw new InvalidOperationException("MyPlayer is not set in the instance.");
         log.Trace($"RoleAction(type={ActionType}, executer={Executer}, priority={Priority}, method={Method}))", "RoleAction::Execute");
         Profiler.Sample sample1 = Profilers.Global.Sampler.Sampled($"Action::{ActionType}");
         Profiler.Sample sample2 = Profilers.Global.Sampler.Sampled((Method.ReflectedType?.FullName ?? "") + "." + Method.Name);
-        Method.InvokeAligned(Executer, args);
+        try
+        {
+            Method.Invoke(Executer, args);
+        }
+        catch (TargetParameterCountException _)
+        {
+            var expectedParameters = Method.GetParameters();
+            var actualParameters = args.Length;
+            log.Exception($"Expected parameters: {expectedParameters.Length}, Actual parameters: {actualParameters}");
+
+            log.Exception($"Expected parameter types: {string.Join(", ", expectedParameters.Select(p => p.ParameterType.Name))}");
+            log.Exception($"Received arguments: {string.Join(", ", args.Select(a => a?.GetType().Name ?? "null"))}");
+            log.Exception($"Parameter count mismatch: expected {Method.GetParameters().Length}, received {args.Length}");
+            throw;
+        }
+        catch (ArgumentException _)
+        {
+            var expectedParameters = Method.GetParameters();
+            var actualParameters = args.Length;
+            log.Exception($"Expected parameters: {expectedParameters.Length}, Actual parameters: {actualParameters}");
+
+            log.Exception($"Expected parameter types: {string.Join(", ", expectedParameters.Select(p => p.ParameterType.Name))}");
+            log.Exception($"Received arguments: {string.Join(", ", args.Select(a => a?.GetType().Name ?? "null"))}");
+            log.Exception($"Parameter count mismatch: expected {Method.GetParameters().Length}, received {args.Length}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            log.Exception($"Error invoking method: {ex}");
+            throw;
+        }
         sample1.Stop();
         sample2.Stop();
     }
 
     public virtual void Execute(AbstractBaseRole role, object[] args)
     {
-        log.Trace($"RoleAction(type={ActionType}, executer={Executer ?? role}, priority={Priority}, method={Method}))", "RoleAction::Execute");
+        if (role == null)
+            throw new InvalidOperationException("Executer is not set and role is not provided.");
+
+        log.Trace($"RoleAction(type={ActionType}, specificExecutor={role}, priority={Priority}, method={Method}))", "RoleAction::Execute");
         Profiler.Sample sample1 = Profilers.Global.Sampler.Sampled($"Action::{ActionType}");
         Profiler.Sample sample2 = Profilers.Global.Sampler.Sampled((Method.ReflectedType?.FullName ?? "") + "." + Method.Name);
-        Method.InvokeAligned(Executer ?? role, args);
+        Method.InvokeAligned(role, args);
         sample1.Stop();
         sample2.Stop();
     }
 
     public virtual void ExecuteFixed(object? role = null)
     {
+        if (Executer == null && role == null)
+            throw new InvalidOperationException("Executer is not set and role is not provided.");
+
         Method.Invoke(Executer ?? role, null);
     }
 

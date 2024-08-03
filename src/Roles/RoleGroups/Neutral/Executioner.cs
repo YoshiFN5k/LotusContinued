@@ -69,16 +69,16 @@ public class Executioner : CustomRole
         switch ((ExeRoleChange)roleChangeWhenTargetDies)
         {
             case ExeRoleChange.Jester:
-                MatchData.AssignRole(MyPlayer, roleHolder.Static.Jester);
+                Game.AssignRole(MyPlayer, roleHolder.Static.Jester);
                 break;
             case ExeRoleChange.Opportunist:
-                MatchData.AssignRole(MyPlayer, roleHolder.Static.Opportunist);
+                Game.AssignRole(MyPlayer, roleHolder.Static.Opportunist);
                 break;
             case ExeRoleChange.SchrodingersCat:
-                MatchData.AssignRole(MyPlayer, roleHolder.Static.SchrodingersCat);
+                Game.AssignRole(MyPlayer, roleHolder.Static.SchrodingersCat);
                 break;
             case ExeRoleChange.Crewmate:
-                MatchData.AssignRole(MyPlayer, roleHolder.Static.Crewmate);
+                Game.AssignRole(MyPlayer, roleHolder.Static.Crewmate);
                 break;
             case ExeRoleChange.None:
             default:
@@ -110,7 +110,12 @@ public class Executioner : CustomRole
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        roleModifier.RoleColor(new Color(0.55f, 0.17f, 0.33f)).Faction(FactionInstances.Neutral).RoleFlags(RoleFlag.CannotWinAlone).SpecialType(SpecialType.Neutral);
+        roleModifier
+            .RoleColor(new Color(0.55f, 0.17f, 0.33f))
+            .Faction(FactionInstances.Neutral)
+            .RoleFlags(RoleFlag.CannotWinAlone)
+            .SpecialType(SpecialType.Neutral)
+            .IntroSound(AmongUs.GameOptions.RoleTypes.Shapeshifter);
 
     private enum ExeRoleChange
     {

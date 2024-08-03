@@ -1,5 +1,6 @@
 using Lotus.API.Odyssey;
 using Lotus.API.Player;
+using Lotus.Managers.History.Events;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Internals.Enums;
 using UnityEngine;
@@ -23,7 +24,9 @@ public class Bait : Subrole
 
     public override string Identifier() => "★";
 
-    protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier).RoleColor(new Color(0f, 0.7f, 0.7f));
+    protected override RoleModifier Modify(RoleModifier roleModifier) => base
+        .Modify(roleModifier)
+        .RoleColor(new Color(0f, 0.7f, 0.7f));
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddRestrictToCrew(base.RegisterOptions(optionStream));

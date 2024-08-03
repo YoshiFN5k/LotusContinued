@@ -28,7 +28,7 @@ public static class SetRecommendationsPatch
 {
     public static bool Prefix(NormalGameOptionsV08 __instance, int numPlayers, bool isOnline, RulesPresets rulesPresets)
     {
-        numPlayers = Mathf.Clamp(numPlayers, 4, 15);
+        numPlayers = Mathf.Clamp(numPlayers, 4, ModConstants.MaxPlayers);
         __instance.PlayerSpeedMod = __instance.MapId == 4 ? 1.25f : 1f; //AirShipなら1.25、それ以外は1
         __instance.CrewLightMod = 0.5f;
         __instance.ImpostorLightMod = 1.75f;
@@ -50,10 +50,16 @@ public static class SetRecommendationsPatch
         __instance.roleOptions.SetRoleRate(RoleTypes.Scientist, 0, 0);
         __instance.roleOptions.SetRoleRate(RoleTypes.GuardianAngel, 0, 0);
         __instance.roleOptions.SetRoleRate(RoleTypes.Engineer, 0, 0);
+        __instance.roleOptions.SetRoleRate(RoleTypes.Tracker, 0, 0);
+        __instance.roleOptions.SetRoleRate(RoleTypes.Phantom, 0, 0);
+        __instance.roleOptions.SetRoleRate(RoleTypes.Noisemaker, 0, 0);
         __instance.roleOptions.SetRoleRecommended(RoleTypes.Shapeshifter);
         __instance.roleOptions.SetRoleRecommended(RoleTypes.Scientist);
         __instance.roleOptions.SetRoleRecommended(RoleTypes.GuardianAngel);
         __instance.roleOptions.SetRoleRecommended(RoleTypes.Engineer);
+        __instance.roleOptions.SetRoleRecommended(RoleTypes.Tracker);
+        __instance.roleOptions.SetRoleRecommended(RoleTypes.Phantom);
+        __instance.roleOptions.SetRoleRecommended(RoleTypes.Noisemaker);
 
         /*if (OldOptions.CurrentGameMode == CustomGameMode.HideAndSeek) //HideAndSeek
         {

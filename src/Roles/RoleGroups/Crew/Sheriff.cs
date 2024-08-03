@@ -30,6 +30,7 @@ using VentLib.Options;
 using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
+using Lotus.GameModes.Standard;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -78,7 +79,7 @@ public class Sheriff : Crewmate
 
     public Sheriff()
     {
-        ProjectLotus.GameModeManager.CurrentGameMode?.RoleManager?.RoleHolder?.AddOnFinishCall(PopulateSheriffOptions);
+        StandardRoles.Callbacks.Add(PopulateSheriffOptions);
     }
 
     protected override void Setup(PlayerControl player)
@@ -181,14 +182,15 @@ public class Sheriff : Crewmate
         base.Modify(roleModifier)
             .DesyncRole(isSheriffDesync ? RoleTypes.Impostor : RoleTypes.Crewmate)
             .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod(), () => isSheriffDesync)
-            .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod() / 5, () => isSheriffDesync && SabotagePatch.CurrentSabotage?.SabotageType() is SabotageType.Lights)
+            .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod() / 5, () => isSheriffDesync && SabotagePatch.CurrentSabotage != null && SabotagePatch.CurrentSabotage.SabotageType() is SabotageType.Lights)
             .OptionOverride(Override.KillCooldown, () => shootCooldown.Duration)
-            .RoleAbilityFlags(RoleAbilityFlag.CannotVent | RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.IsAbleToKill)
-            .RoleColor(new Color(0.97f, 0.8f, 0.27f));
+            .RoleAbilityFlags(RoleAbilityFlag.CannotVent | RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.IsAbleToKill | RoleAbilityFlag.UsesPet)
+            .RoleColor(new Color(0.97f, 0.8f, 0.27f))
+            .IntroSound(RoleTypes.Crewmate);
 
     private void PopulateSheriffOptions()
     {
-        ProjectLotus.GameModeManager.CurrentGameMode.RoleManager.RoleHolder.AllRoles.OrderBy(r => r.EnglishRoleName).ForEach(r =>
+        StandardGameMode.Instance.RoleManager.RoleHolder.AllRoles.OrderBy(r => r.EnglishRoleName).ForEach(r =>
         {
             RoleTypeBuilders.FirstOrOptional(b => b.predicate(r)).Map(i => i.builder)
                 .IfPresent(builder =>
@@ -208,7 +210,7 @@ public class Sheriff : Crewmate
             rtb.builder.BindInt(i => rtb.allKillable = i == 1);
             Option option = rtb.builder.Build();
             RoleOptions.AddChild(option);
-            GlobalRoleManager.RoleOptionManager.Register(option, OptionLoadMode.LoadOrCreate);
+            GeneralOptions.RoleOptionManager.Register(option, OptionLoadMode.LoadOrCreate);
         });
     }
 

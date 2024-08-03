@@ -43,7 +43,6 @@ public class Blackmailer : Shapeshifter
     [RoleAction(LotusActionType.Shapeshift)]
     public void Blackmail(PlayerControl target, ActionHandle handle)
     {
-        if (target.PlayerId == MyPlayer.PlayerId) return;
         handle.Cancel();
         blackmailingText?.Delete();
         blackmailedPlayer = Optional<PlayerControl>.NonNull(target);
@@ -59,7 +58,7 @@ public class Blackmailer : Shapeshifter
         blackmailingText?.Delete();
     }
 
-    [RoleAction(LotusActionType.MeetingCalled)]
+    [RoleAction(LotusActionType.MeetingCalled, ActionFlag.WorksAfterDeath | ActionFlag.GlobalDetector)]
     public void NotifyBlackmailed()
     {
         List<PlayerControl> allPlayers = showBlackmailedToAll
@@ -82,7 +81,7 @@ public class Blackmailer : Shapeshifter
         blackmailingText?.Delete();
     }
 
-    [RoleAction(LotusActionType.Chat)]
+    [RoleAction(LotusActionType.Chat, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath)]
     public void InterceptChat(PlayerControl speaker, GameState state, bool isAlive)
     {
         if (!isAlive || state is not GameState.InMeeting) return;
@@ -129,7 +128,7 @@ public class Blackmailer : Shapeshifter
             public static string WarningsUntilDeath = "Warnings Until Death";
 
             [Localized(nameof(ShowBlackmailedToAll))]
-            public static string ShowBlackmailedToAll = "SHow Blackmailed to All";
+            public static string ShowBlackmailedToAll = "Show Blackmailed to All";
         }
     }
 }

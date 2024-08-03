@@ -9,6 +9,7 @@ using Lotus.Roles.Internals.Enums;
 using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
+using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.Subroles;
 
@@ -24,8 +25,10 @@ public class Sleuth : Subrole
     public override string Identifier() => "◯";
 
     [RoleAction(LotusActionType.ReportBody)]
-    private void SleuthReportBody(NetworkedPlayerInfo deadBody)
+    private void SleuthReportBody(Optional<NetworkedPlayerInfo> target)
     {
+        if (!target.Exists()) return;
+        NetworkedPlayerInfo deadBody = target.Get();
         if (deadBody.Object != null) deadBody.Object.NameModel().GetComponentHolder<RoleHolder>().Last().AddViewer(MyPlayer);
 
         ulong gameId = Game.GetGameID(deadBody.PlayerId);

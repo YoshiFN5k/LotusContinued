@@ -3,13 +3,15 @@ using Lotus.Options.General;
 using VentLib.Localization.Attributes;
 using VentLib.Options.UI;
 using VentLib.Utilities.Attributes;
+using VentLib.Options;
 
 namespace Lotus.Options;
 
 [Localized(ModConstants.Options)]
 [LoadStatic]
-public class GeneralOptions
+public static class GeneralOptions
 {
+    public static OptionManager RoleOptionManager = OptionManager.GetManager(file: "roleoptions.txt");
     public static AdminOptions AdminOptions;
     public static DebugOptions DebugOptions;
     public static GameplayOptions GameplayOptions;
@@ -23,6 +25,7 @@ public class GeneralOptions
     static GeneralOptions()
     {
         AdminOptions = new AdminOptions();
+        // AllOptions.AddRange(AdminOptions.AllOptions);
 
         GameplayOptions = new GameplayOptions();
         AllOptions.AddRange(GameplayOptions.AllOptions);
@@ -37,10 +40,10 @@ public class GeneralOptions
         AllOptions.AddRange(MayhemOptions.AllOptions);
 
         MiscellaneousOptions = new MiscellaneousOptions();
-        AllOptions.AddRange(MiscellaneousOptions.AllOptions);
+        // AllOptions.AddRange(MiscellaneousOptions.AllOptions);
 
         DebugOptions = new DebugOptions();
-        AllOptions.AddRange(DebugOptions.AllOptions);
+        // AllOptions.AddRange(DebugOptions.AllOptions);
 
         AllOptions.AddRange(RoleOptions.LoadMadmateOptions().AllOptions);
         AllOptions.AddRange(RoleOptions.LoadNeutralOptions().AllOptions);

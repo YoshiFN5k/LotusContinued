@@ -18,8 +18,8 @@ using VentLib.Options.UI;
 using VentLib.Utilities;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
-
-public partial class SerialKiller : Impostor, IModdable
+// IModdable
+public class SerialKiller : Impostor
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(SerialKiller));
     private bool paused = true;

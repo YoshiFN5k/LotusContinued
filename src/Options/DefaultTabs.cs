@@ -15,14 +15,14 @@ public class DefaultTabs
     public static GameOptionTab ImpostorsTab = new("Impostor Settings", () => AssetLoader.LoadSprite("Lotus.assets.TabIcons.ImpostorsIcon.png", 300, true));
 
     public static GameOptionTab CrewmateTab = new("Crewmate Settings", () => AssetLoader.LoadSprite("Lotus.assets.TabIcons.CrewmatesIcon.png", 300, true));
-
+    // TODO: add title colors for these other tabs
     public static GameOptionTab NeutralTab = new("Neutral Settings", () => AssetLoader.LoadSprite("Lotus.assets.TabIcons.NeutralsIcon.png", 300, true));
 
     //public static GameOptionTab SubrolesTab = new("Subrole Settings", "Lotus.assets.TabIcon_Addons.png");
 
     public static GameOptionTab MiscTab = new("Misc Settings", () => AssetLoader.LoadSprite("Lotus.assets.TabIcons.MiscIcon.png", 300, true));
 
-    public static GameOptionTab HiddenTab = new("Hidden", () => AssetLoader.LoadSprite("Lotus.assets.TabIcon_Addons.png"));
+    public static GameOptionTab HiddenTab = new("Hidden", () => AssetLoader.LoadSprite("Lotus.assets.TabIcon_Addons.png", 300, true));
 
     public static List<GameOptionTab> All = new() { ImpostorsTab, CrewmateTab, NeutralTab, MiscTab };
 

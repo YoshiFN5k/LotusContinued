@@ -52,6 +52,12 @@ public class Hotkey
         return this;
     }
 
+    public Hotkey DevOnly()
+    {
+        predicates.Add(() => ProjectLotus.DevVersion);
+        return this;
+    }
+
     public void Update()
     {
         if (!keyCodes.Any(Input.GetKeyDown)) return;
@@ -90,7 +96,7 @@ public class Hotkey
         {
             return () =>
             {
-                if (isHostOnly && !AmongUsClient.Instance.AmHost) return false;
+                if (isHostOnly && !AmongUsClient.Instance.AmHost || !isHostOnly && AmongUsClient.Instance.AmHost) return false;
                 if (!gameStates.IsEmpty() && !gameStates.Contains(Game.State)) return false;
                 return predicate?.Invoke() ?? true;
             };

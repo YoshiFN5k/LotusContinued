@@ -21,6 +21,8 @@ using VentLib.Utilities;
 using VentLib.Utilities.Debug.Profiling;
 using VentLib.Utilities.Extensions;
 using static VentLib.Utilities.Debug.Profiling.Profilers;
+using VentLib.Networking.RPC;
+using Lotus.GameModes.Standard;
 
 namespace Lotus.Patches.Intro;
 
@@ -29,7 +31,6 @@ namespace Lotus.Patches.Intro;
 class IntroDestroyPatch
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(IntroDestroyPatch));
-
     public static void Postfix(IntroCutscene __instance)
     {
         Profiler.Sample destroySample = Global.Sampler.Sampled();
@@ -38,18 +39,25 @@ class IntroDestroyPatch
 
         string pet = GeneralOptions.MiscellaneousOptions.AssignedPet;
         while (pet == "Random") pet = ModConstants.Pets.Values.ToList().GetRandom();
+        log.Trace("Intro Scene Ending", "IntroCutscene");
 
         Profiler.Sample fullSample = Global.Sampler.Sampled("Setup ALL Players");
         Players.GetPlayers().ForEach(p =>
         {
             Profiler.Sample executeSample = Global.Sampler.Sampled("Execution Pregame Setup");
             Async.Execute(PreGameSetup(p, pet));
+            if (ProjectLotus.AdvancedRoleAssignment)
+                Async.Schedule(() =>
+                {
+                    p.PrimaryRole().Assign();
+                    p.RpcResetAbilityCooldown();
+                }, 0.175f);
             executeSample.Stop();
         });
+        Async.Schedule(() => Players.GetPlayers().ForEach(p => Async.Execute(ReverseEngineeredRPC.UnshfitButtonTrigger(p))), NetUtils.DeriveDelay(2f));
         fullSample.Stop();
 
         Profiler.Sample propSample = Global.Sampler.Sampled("Propagation Sample");
-        log.Trace("Intro Scene Ending", "IntroCutscene");
         RoleOperations.Current.TriggerForAll(LotusActionType.RoundStart, null, true);
         propSample.Stop();
 
@@ -64,7 +72,7 @@ class IntroDestroyPatch
         FrozenPlayer frozenPlayer = new(player);
         Game.MatchData.FrozenPlayers[frozenPlayer.GameID] = frozenPlayer;
 
-        if (player.GetVanillaRole().IsImpostor())
+        if (player.GetVanillaRole().IsImpostor() && Game.CurrentGameMode is StandardGameMode)
         {
             float cooldown = GeneralOptions.GameplayOptions.GetFirstKillCooldown(player);
             log.Trace($"Fixing First Kill Cooldown for {player.name} (Cooldown={cooldown}s)", "Fix First Kill Cooldown");
@@ -74,7 +82,7 @@ class IntroDestroyPatch
 
         if (GeneralOptions.MayhemOptions.RandomSpawn) Game.RandomSpawn.Spawn(player);
 
-        player.RpcSetRoleDesync(RoleTypes.Shapeshifter, -3);
+        // if (!ProjectLotus.AdvancedRoleAssignment) player.RpcSetRoleDesync(RoleTypes.Shapeshifter, -3);
         yield return new WaitForSeconds(0.15f);
         if (player == null) yield break;
 
@@ -101,7 +109,11 @@ class IntroDestroyPatch
         if (!hasPet) player.CRpcShapeshift(player, false);
 
         INameModel nameModel = player.NameModel();
-        Players.GetPlayers().ForEach(p => nameModel.RenderFor(p, force: true));
+        if (SelectRolesPatch.desyncedIntroText.TryGetValue(player.PlayerId, out VentLib.Utilities.Collections.Remote<GUI.Name.Components.TextComponent>? value) && value != null)
+        {
+            value.Delete();
+        }
+        Players.GetPlayers().ForEach(p => nameModel.RenderFor(p, GameState.Roaming, force: true));
         player.SyncAll();
     }
 }

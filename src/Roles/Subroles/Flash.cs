@@ -8,6 +8,8 @@ using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Options.UI;
 using VentLib.Utilities.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Lotus.Roles.Subroles;
 
@@ -43,10 +45,11 @@ public class Flash : Subrole, IVariantSubrole
                 .BindFloat(f => playerSpeedIncrease = f)
                 .Build());
 
+    protected override List<CustomRole> LinkedRoles() => base.LinkedRoles().Concat(new List<CustomRole>() { _escalation }).ToList();
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
-            .RoleColor(Color.yellow)
-            .LinkedRoles(_escalation);
+            .RoleColor(Color.yellow);
 
     [Localized(nameof(Flash))]
     private static class Translations

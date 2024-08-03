@@ -9,13 +9,13 @@ using VentLib.Utilities.Optionals;
 namespace Lotus.Managers.Templates.Models;
 
 // ReSharper disable once CollectionNeverUpdated.Global
-public class Template: TemplateUnit
+public class Template : TemplateUnit
 {
     public string? Title { get; set; }
     public string? Tag { get; set; }
     public List<string>? Aliases { get; set; }
     public List<TTrigger>? Triggers { get; set; }
-    public List<TAction> Actions { get; set; } = new();
+    public List<TAction>? Actions { get; set; } = new();
     public bool AliasOnly { get; set; } = false;
 
     public Template()

@@ -112,7 +112,7 @@ public class Escort : Crewmate
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier).RoleColor(new Color(1f, 0.73f, 0.92f));
+        base.Modify(roleModifier).RoleColor(new Color(1f, 0.73f, 0.92f)).RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
 
     public class BlockDelegate

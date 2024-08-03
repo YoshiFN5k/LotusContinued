@@ -18,6 +18,7 @@ using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
+using Lotus.API.Vanilla.Meetings;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -31,7 +32,8 @@ public class Tracker : Crewmate
     private Cooldown trackBodyDuration;
 
     private byte trackedPlayer = byte.MaxValue;
-    private MeetingPlayerSelector meetingPlayerSelector = new();
+    [NewOnSetup]
+    private MeetingPlayerSelector meetingPlayerSelector;
     private FixedUpdateLock fixedUpdateLock;
 
     private string arrowCache = "";
@@ -53,7 +55,7 @@ public class Tracker : Crewmate
         if (canTrackBodies is TrackBodyValue.OnPet && trackBodyDuration.IsReady()) return "";
         return Object.FindObjectsOfType<DeadBody>()
             .Where(db => canTrackUnreportableBodies || !Game.MatchData.UnreportableBodies.Contains(db.ParentId))
-            .Select(db => RoleUtils.CalculateArrow(MyPlayer, db.TruePosition, Color.gray))
+            .Select(db => RoleUtils.CalculateArrow(MyPlayer, db, Color.gray))
             .Fuse();
     }
 
@@ -66,7 +68,7 @@ public class Tracker : Crewmate
     }
 
     [RoleAction(LotusActionType.Vote)]
-    public void SelectTrackedPlayer(Optional<PlayerControl> player, ActionHandle handle)
+    public void SelectTrackedPlayer(Optional<PlayerControl> player, MeetingDelegate _, ActionHandle handle)
     {
         VoteResult result = meetingPlayerSelector.CastVote(player);
         if (result.VoteResultType is not VoteResultType.None) handle.Cancel();
@@ -120,7 +122,8 @@ public class Tracker : Crewmate
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
-            .RoleColor(new Color(0.82f, 0.24f, 0.82f));
+            .RoleColor(new Color(0.82f, 0.24f, 0.82f))
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     private static class Translations
     {

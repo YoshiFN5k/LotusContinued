@@ -7,11 +7,12 @@ using Lotus.GameModes;
 using Lotus.Roles;
 using Lotus.Roles.Operations;
 using Lotus.Roles.Managers.Interfaces;
+using Lotus.Managers;
 
 namespace Lotus.Roles.Managers;
 public abstract class RoleManager : IRoleManager
 {
-    public CustomRole FallbackRole { get; }
+    public abstract CustomRole FallbackRole();
     public RoleHolder RoleHolder { get; }
 
     public RoleManager()
@@ -21,7 +22,10 @@ public abstract class RoleManager : IRoleManager
 
     public abstract IEnumerable<CustomRole> AllCustomRoles();
 
-    public virtual void RegisterRole(CustomRole role) { }
+    public virtual void RegisterRole(CustomRole role)
+    {
+        GlobalRoleManager.Instance.RegisterRole(role);
+    }
 
     public IEnumerable<CustomRole> QueryMetadata(Predicate<object> metadataQuery) => AllCustomRoles().Where(rd => rd.Metadata.Select(m => m.Value).Any(obj => metadataQuery(obj)));
 
@@ -60,7 +64,7 @@ public abstract class RoleManager : IRoleManager
 
     public CustomRole RoleFromQualifier(string qualifier)
     {
-        return AllCustomRoles().FirstOrDefault(r => QualifierFromRole(r) == qualifier, FallbackRole);
+        return AllCustomRoles().FirstOrDefault(r => QualifierFromRole(r) == qualifier, FallbackRole());
     }
 
     public static string QualifierFromRole(CustomRole role)

@@ -58,7 +58,15 @@ public class ElectricSabotage : ISabotage
         RoleOperations.Current.TriggerForAll(LotusActionType.SabotageStarted, sabotageCaller, handle, this);
         if (handle.IsCanceled) return;
 
-        ShipStatus.Instance.UpdateSystem(SabotageType().ToSystemType(), sabotageCaller, 128);
+        byte b2 = 4;
+        for (int i = 0; i < 5; i++)
+        {
+            if (BoolRange.Next(0.5f))
+            {
+                b2 |= (byte)(1 << i);
+            }
+        }
+        ShipStatus.Instance.UpdateSystem(SabotageType().ToSystemType(), sabotageCaller, (byte)(b2 | 128));
         caller.OrElseSet(() => sabotageCaller);
         SabotagePatch.CurrentSabotage = this;
     }

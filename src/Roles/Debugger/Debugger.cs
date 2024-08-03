@@ -116,6 +116,6 @@ public class Debugger : CustomRole
         roleModifier
             .RoleColor(new Color(0.84f, 1f, 0.64f))
             .VanillaRole(RoleTypes.Impostor)
-            .OptionOverride(Override.KillCooldown, () => killCooldown);
-
+            .OptionOverride(Override.KillCooldown, () => killCooldown)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 }

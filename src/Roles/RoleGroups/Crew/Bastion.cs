@@ -42,7 +42,7 @@ public class Bastion : Engineer
     }
 
     [RoleAction(LotusActionType.VentEntered, ActionFlag.GlobalDetector)]
-    private void EnterVent(Vent vent, PlayerControl player, ActionHandle handle)
+    private void EnterVent(PlayerControl player, Vent vent, ActionHandle handle)
     {
         bool isBombed = bombedVents.Remove(vent.Id);
         log.Trace($"Bombed Vent Check: (player={player.name}, isBombed={isBombed})", "BastionAbility");

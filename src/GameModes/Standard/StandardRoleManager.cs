@@ -8,6 +8,7 @@ using Lotus.Roles;
 using Lotus.Roles.Builtins;
 using Lotus.Roles.Exceptions;
 using Lotus.Roles.Operations;
+using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 
@@ -19,24 +20,24 @@ public class StandardRoleManager : Roles.Managers.RoleManager
     private readonly Dictionary<Assembly, Dictionary<ulong, CustomRole>> rolesbyAssembly = new();
 
     protected OrderedDictionary<string, CustomRole> OrderedCustomRoles { get; } = new();
-    public CustomRole DefaultDefinition => EmptyRole.Instance;
-    public new StandardRoles RoleHolder { get; }
+    public override CustomRole FallbackRole() => EmptyRole.Instance;
+    public StandardRoles RoleHolder { get; }
     internal virtual bool IsGlobal => false;
-    public override IEnumerable<CustomRole> AllCustomRoles() => OrderedCustomRoles.GetValues().Concat(GlobalRoleManager.Instance.AllCustomRoles());
+    public override IEnumerable<CustomRole> AllCustomRoles() => OrderedCustomRoles.GetValues();
 
     public StandardRoleManager()
     {
         RoleHolder = new(this);
         RoleHolder.AllRoles.ForEach(RegisterRole);
+        Async.Schedule(() =>
+        {
+            RoleHolder.Intialized = true;
+        }, 0.5f);
     }
 
     public override void RegisterRole(CustomRole role)
     {
-        if (!IsGlobal && role.GlobalRoleID.StartsWith("G"))
-        {
-            GlobalRoleManager.Instance.RegisterRole(role);
-            return;
-        }
+        base.RegisterRole(role);
         ulong roleID = role.RoleID;
 
         // log.Debug($"Registering Role Definition (name={role.EnglishRoleName}, RoleID={role.RoleID}, Assembly={role.Assembly.GetName().Name}, AddonID={role.Addon?.UUID ?? 0})");

@@ -27,7 +27,8 @@ public static class OnChatPatch
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     internal static bool Prefix(ChatController __instance, PlayerControl sourcePlayer, string chatText)
     {
-        log.Log(LogLevel.All, $"{sourcePlayer.name} => {chatText}");
+        log.Log(LogLevel.All, $"{sourcePlayer.name} => {chatText.Replace("\\", "(backwards slash here)")}"); // fix "\" crash. cant believe this crashes the game.
+        if (!AmongUsClient.Instance.AmHost) return true;
         if (UtilsSentList.Contains(sourcePlayer.PlayerId))
         {
             UtilsSentList.RemoveAt(UtilsSentList.FindIndex(b => b == sourcePlayer.PlayerId));

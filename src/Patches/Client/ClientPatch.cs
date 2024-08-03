@@ -1,10 +1,11 @@
 using HarmonyLib;
+using Hazel;
+using Il2CppSystem.Collections.Generic;
 using InnerNet;
+using Lotus.Logging;
 using Lotus.Managers;
-
 // ReSharper disable FieldCanBeMadeReadOnly.Local
 // ReSharper disable InconsistentNaming
-
 
 namespace Lotus.Patches.Client;
 
@@ -25,7 +26,7 @@ class BanMenuSetVisiblePatch
 [HarmonyPatch(typeof(InnerNetClient), nameof(InnerNetClient.CanBan))]
 class InnerNetClientCanBanPatch
 {
-    public static bool Prefix(InnerNet.InnerNetClient __instance, ref bool __result)
+    public static bool Prefix(InnerNetClient __instance, ref bool __result)
     {
         __result = __instance.AmHost;
         return false;

@@ -13,6 +13,7 @@ using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using static Lotus.Roles.RoleGroups.Impostors.Creeper.CreeperTranslations.CreeperOptionTranslations;
+using Lotus.Roles.Internals;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -37,8 +38,9 @@ public class Creeper : Shapeshifter
 
     [RoleAction(LotusActionType.OnPet)]
     [RoleAction(LotusActionType.Shapeshift)]
-    private void CreeperExplode()
+    private void CreeperExplode(ActionHandle handle)
     {
+        handle.Cancel();
         if (gracePeriod.NotReady()) return;
         RoleUtils.GetPlayersWithinDistance(MyPlayer, explosionRadius).ForEach(p =>
         {
@@ -70,6 +72,10 @@ public class Creeper : Shapeshifter
                 .AddFloatRange(0, 60, 2.5f, 4, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(gracePeriod.SetDuration)
                 .Build());
+
+    protected override RoleModifier Modify(RoleModifier roleModifier) =>
+        base.Modify(roleModifier)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     [Localized(nameof(Creeper))]
     internal static class CreeperTranslations

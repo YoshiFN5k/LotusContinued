@@ -42,13 +42,13 @@ public abstract class LotusAddon
     {
     }
 
-    public void ExportRoleDefinitions(IEnumerable<AbstractBaseRole> roleDefinitions, params Type[] baseGameModes)
+    public void ExportCustomRoles(IEnumerable<CustomRole> roleDefinitions, params Type[] baseGameModes)
     {
-        if (baseGameModes.Length == 0) ExportRoleDefinitions(roleDefinitions, StandardGameMode.Instance);
-        else ExportRoleDefinitions(roleDefinitions, baseGameModes.Select(gm => ProjectLotus.GameModeManager.GetGameMode(gm) ?? StandardGameMode.Instance).ToArray());
+        if (baseGameModes.Length == 0) ExportCustomRoles(roleDefinitions, StandardGameMode.Instance);
+        else ExportCustomRoles(roleDefinitions, baseGameModes.Select(gm => ProjectLotus.GameModeManager.GetGameMode(gm) ?? StandardGameMode.Instance).ToArray());
     }
 
-    public void ExportRoleDefinitions(IEnumerable<AbstractBaseRole> roleDefinitions, params IGameMode[] baseGameModes)
+    public void ExportCustomRoles(IEnumerable<CustomRole> roleDefinitions, params IGameMode[] baseGameModes)
     {
         IGameMode[] targetGameModes = ProjectLotus.GameModeManager.GameModes.Where(gm => baseGameModes.Any(bgm => bgm.GetType().IsInstanceOfType(gm))).ToArray();
         roleDefinitions.ForEach(r =>
@@ -64,6 +64,7 @@ public abstract class LotusAddon
         foreach (IGameMode gamemode in gamemodes)
         {
             log.Trace($"Exporting GameMode: {gamemode.Name}", "ExportGameModes");
+            // ProjectLotus.GameModeManager.AddGamemodeSettingToOptions(gamemode.MainTab().GetOptions());
             ProjectLotus.GameModeManager.GameModes.Add(gamemode);
         }
     }

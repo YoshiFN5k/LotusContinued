@@ -94,7 +94,7 @@ public class CheckEndGamePatch
     {
         Deferred = false;
         BeginWin = false;
-        log.Info("Ending Game", "DelayedWin");
+        log.Info("Ending Game");
         GameManager.Instance.RpcEndGame(reason, false);
         Async.Schedule(() => GameManager.Instance.EndGame(), 0.1f);
     }

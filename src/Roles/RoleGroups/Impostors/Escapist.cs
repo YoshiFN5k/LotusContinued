@@ -81,4 +81,8 @@ public class Escapist : Impostor
                 .AddOnOffValues()
                 .BindBool(b => clearMarkAfterMeeting = b)
                 .Build());
+
+    protected override RoleModifier Modify(RoleModifier roleModifier) =>
+        base.Modify(roleModifier)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 }

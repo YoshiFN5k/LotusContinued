@@ -148,10 +148,10 @@ public class SabotageOptions
     }
 
     private GameOptionBuilder Builder(string key) => new GameOptionBuilder()
+        .Value(v => v.Text(SabotageOptionTranslations.DefaultValue).Value(-1).Color(Color.cyan).Build())
         .AddIntRange(5, 120, 5, 0, GeneralOptionTranslations.SecondsSuffix)
         .Key(key)
-        .Color(_optionColor)
-        .Value(v => v.Text(SabotageOptionTranslations.DefaultValue).Value(-1).Color(Color.cyan).Build());
+        .Color(_optionColor);
 
     [Localized("Sabotage")]
     private static class SabotageOptionTranslations

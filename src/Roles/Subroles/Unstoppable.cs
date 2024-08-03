@@ -29,7 +29,7 @@ public class Unstoppable : Subrole
     [RoleAction(LotusActionType.Interaction, ActionFlag.GlobalDetector, priority: Priority.First)]
     public void InterceptAnyInteraction(PlayerControl target, PlayerControl player, Interaction interaction, ActionHandle handle)
     {
-        DevLogger.Log($"PLayer: {player.name} INteraction: {interaction.Intent}");
+        DevLogger.Log($"Player: {player.name} Interaction: {interaction.Intent}");
         if (player.PlayerId != MyPlayer.PlayerId) return;
         if (interaction is not LotusInteraction lotusInteraction) return;
         if (lotusInteraction.Intent is not IFatalIntent fatalIntent) return;

@@ -87,7 +87,7 @@ public class Necromancer : UndeadRole
         player.NameModel().GetComponentHolder<CooldownHolder>().Clear();
         player.NameModel().GetComponentHolder<CooldownHolder>().Add(new CooldownComponent(convertCooldown, GameState.Roaming, ViewMode.Additive, player));
 
-        MatchData.AssignRole(player, this);
+        Game.AssignRole(player, this);
         Necromancer necromancer = player.PrimaryRole<Necromancer>();
         necromancer.isFirstConvert = false;
         Game.MatchData.GameHistory.AddEvent(new RoleChangeEvent(player, necromancer));
@@ -103,7 +103,7 @@ public class Necromancer : UndeadRole
 
         deathknightOriginal = target.PrimaryRole();
         Game.MatchData.Roles.AddSubrole(target.PlayerId, deathknightOriginal);
-        MatchData.AssignRole(target, _deathknight);
+        Game.AssignRole(target, _deathknight);
         myDeathknight = target.PrimaryRole<Deathknight>();
         target.NameModel().GetComponentHolder<RoleHolder>()[^1]
             .SetViewerSupplier(() => Players.GetAllPlayers().Where(p => p.PlayerId == target.PlayerId || p.Relationship(target) is Relation.FullAllies).ToList());
@@ -136,10 +136,12 @@ public class Necromancer : UndeadRole
                 .BindBool(b => immuneToPartialConverted = b)
                 .Build());
 
+    protected override List<CustomRole> LinkedRoles() => base.LinkedRoles().Concat(new List<CustomRole>() { _deathknight }).ToList();
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(0.61f, 0.53f, 0.67f))
             .CanVent(false)
             .OptionOverride(new IndirectKillCooldown(convertCooldown.Duration))
-            .LinkedRoles(_deathknight);
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 }

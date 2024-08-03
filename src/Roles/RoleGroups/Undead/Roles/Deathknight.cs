@@ -84,6 +84,10 @@ public class Deathknight : UndeadRole
                 .AddOnOffValues()
                 .Build());
 
+    protected override RoleType GetRoleType() => RoleType.Transformation;
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier).RoleColor(new Color(0.34f, 0.34f, 0.39f)).RoleFlags(RoleFlag.TransformationRole);
+        base.Modify(roleModifier).RoleColor(new Color(0.34f, 0.34f, 0.39f))
+            .RoleFlags(RoleFlag.TransformationRole)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 }

@@ -57,6 +57,10 @@ public class Disperser : Impostor
                 .BindBool(b => disperserDispersed = b)
                 .Build());
 
+    protected override RoleModifier Modify(RoleModifier roleModifier) =>
+        base.Modify(roleModifier)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
+
 
     [Localized(nameof(Disperser))]
     private static class Translations

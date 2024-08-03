@@ -30,7 +30,13 @@ public class Hitman : NeutralKillingBase
 
     private void GameEnd(WinDelegate winDelegate)
     {
+        if (MyPlayer == null) return;
         if (!MyPlayer.IsAlive()) return;
+        if (Game.MatchData.GameHistory.GetCauseOfDeath(MyPlayer.PlayerId).Exists())
+        {
+            StaticLogger.Debug($"{MyPlayer.name} was found alive, but a cause of death existed so we do not assign them as a winner.");
+            return;
+        }
         if (winDelegate.GetWinReason().ReasonType is ReasonType.SoloWinner && !AdditionalWinRoles.Contains(winDelegate.GetWinners()[0].PrimaryRole().EnglishRoleName)) return;
         winDelegate.AddAdditionalWinner(MyPlayer);
     }

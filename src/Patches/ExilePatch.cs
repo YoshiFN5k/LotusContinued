@@ -6,10 +6,13 @@ using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
 using Lotus.API.Vanilla.Meetings;
 using Lotus.Roles.Internals;
-using Lotus.Extensions;
 using Lotus.Managers.History.Events;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Operations;
+using Lotus.API.Player;
+using VentLib.Utilities.Extensions;
+using Lotus.RPC;
+using VentLib.Utilities;
 
 namespace Lotus.Patches;
 
@@ -81,6 +84,8 @@ static class ExileControllerWrapUpPatch
     /// </summary>
     private static void BeginRoundStart()
     {
+        Players.GetAlivePlayers().ForEach(p => Async.Execute(ReverseEngineeredRPC.UnshfitButtonTrigger(p)));
+
         try
         {
             Game.RenderAllForAll(force: true);
@@ -92,8 +97,8 @@ static class ExileControllerWrapUpPatch
 
         Game.State = GameState.Roaming;
         ActionHandle handle = ActionHandle.NoInit();
-        log.Debug("Triggering RoundStart Action!!", "Exile::BeginRoundStart");
-        RoleOperations.Current.TriggerForAll(LotusActionType.RoundStart, null, handle);
+        log.Debug("Triggering RoundStart Action!!");
+        RoleOperations.Current.TriggerForAll(LotusActionType.RoundStart, null, handle, false);
         Hooks.GameStateHooks.RoundStartHook.Propagate(new GameStateHookEvent(Game.MatchData, ProjectLotus.GameModeManager.CurrentGameMode));
         Game.SyncAll();
     }

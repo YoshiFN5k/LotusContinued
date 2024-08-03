@@ -39,7 +39,11 @@ public partial class Alchemist : Crewmate
     public int ExtraVotes;
     public bool QuickFixSabotage;
 
-    protected override void Setup(PlayerControl player) => VisionMod = AUSettings.CrewLightMod();
+    protected override void Setup(PlayerControl player)
+    {
+        base.Setup(player);
+        VisionMod = AUSettings.CrewLightMod();
+    }
 
     protected override void PostSetup()
     {
@@ -70,5 +74,6 @@ public partial class Alchemist : Crewmate
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(1f, 0.93f, 0.74f))
-            .OptionOverride(Override.CrewLightMod, () => VisionMod);
+            .OptionOverride(Override.CrewLightMod, () => VisionMod)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 }

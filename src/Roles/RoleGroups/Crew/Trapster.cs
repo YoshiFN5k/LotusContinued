@@ -16,6 +16,7 @@ using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using static Lotus.Roles.RoleGroups.Crew.Trapster.TrapsterTranslations.TrapsterOptionTranslations;
+using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -46,13 +47,12 @@ public class Trapster : Crewmate
         }, trappedDuration);
     }
 
-    [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector)]
-    private void PreventReportingOfBody(PlayerControl reporter, NetworkedPlayerInfo body, ActionHandle handle)
+    [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath)]
+    private void PreventReportingOfBody(PlayerControl reporter, Optional<NetworkedPlayerInfo> body, ActionHandle handle)
     {
         if (reporter.PlayerId != trappedPlayer) return;
-        if (body.PlayerId != MyPlayer.PlayerId) return;
+        if (body.Exists()) if (body.Get().PlayerId != MyPlayer.PlayerId) return;
         handle.Cancel();
-
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>

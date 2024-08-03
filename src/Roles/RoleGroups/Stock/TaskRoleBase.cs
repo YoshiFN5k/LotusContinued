@@ -20,7 +20,7 @@ using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.RoleGroups.Stock;
 
-public abstract class TaskRoleBase : CustomRole, IOverridenTaskHolderRole
+public abstract class TaskRoleBase : CustomRole, IOverridenTaskHolderRole, ITaskHolderRole
 {
     public int TotalTasks => initialized ? tasks : taskSupplier?.Invoke() ?? 0;
     public int CompleteTasks => TasksComplete;
@@ -49,13 +49,12 @@ public abstract class TaskRoleBase : CustomRole, IOverridenTaskHolderRole
     }
 
     [RoleAction(LotusActionType.TaskComplete, ActionFlag.WorksAfterDeath, Blockable = false)]
-    protected void InternalTaskComplete(PlayerControl player, Optional<NormalPlayerTask> task)
+    protected void InternalTaskComplete(Optional<NormalPlayerTask> task)
     {
         DevLogger.Log("TRask complete");
-        if (player.PlayerId != MyPlayer.PlayerId) return;
         TasksComplete++;
-        if (player.IsAlive()) this.OnTaskComplete(task);
-        Game.MatchData.GameHistory.AddEvent(new TaskCompleteEvent(player));
+        if (MyPlayer.IsAlive()) this.OnTaskComplete(task);
+        Game.MatchData.GameHistory.AddEvent(new TaskCompleteEvent(MyPlayer));
     }
 
     public bool AssignCommonTasks() => HasCommonTasks;
@@ -96,8 +95,8 @@ public abstract class TaskRoleBase : CustomRole, IOverridenTaskHolderRole
         return builder.SubOption(sub => sub
             .KeyName($"Override {EnglishRoleName}'s Tasks", CrewmateTranslations.CrewmateOptionTranslations.OverrideRoleTasks.Formatted(RoleColor.Colorize(RoleName)))
             .Bind(v => HasOverridenTasks = (bool)v)
-            .ShowSubOptionPredicate(v => (bool)v)
-            .AddOnOffValues(false)
+            .ShowSubOptionPredicate(v => (bool)v == true)
+            .AddBoolean(false)
             .SubOption(sub2 => sub2
                 .KeyName("Allow Common Tasks", CrewmateTranslations.CrewmateOptionTranslations.AllowCommonTasks)
                 .Bind(v => HasCommonTasks = (bool)v)

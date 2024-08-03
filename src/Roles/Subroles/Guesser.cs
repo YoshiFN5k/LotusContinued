@@ -17,6 +17,7 @@ using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using Lotus.GameModes.Standard;
+using Lotus.API.Vanilla.Meetings;
 
 namespace Lotus.Roles.Subroles;
 
@@ -34,8 +35,8 @@ public class Guesser : CustomRole
     protected int CorrectGuesses;
     protected string? GuesserMessage;
 
-    [RoleAction((LotusActionType.RoundStart))]
-    [RoleAction((LotusActionType.RoundEnd))]
+    [RoleAction(LotusActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundEnd)]
     public void ResetPreppedPlayer()
     {
         hasMadeGuess = false;
@@ -48,7 +49,7 @@ public class Guesser : CustomRole
     }
 
     [RoleAction(LotusActionType.Vote)]
-    public void SelectPlayerToGuess(Optional<PlayerControl> player, ActionHandle handle)
+    public void SelectPlayerToGuess(Optional<PlayerControl> player, MeetingDelegate _, ActionHandle handle)
     {
         if (skippedVote || hasMadeGuess) return;
         handle.Cancel();
@@ -114,11 +115,11 @@ public class Guesser : CustomRole
     }
 
     [RoleAction(LotusActionType.Chat)]
-    public void DoGuesserVoting(PlayerControl player, string message, GameState state)
+    public void DoGuesserVoting(string message, GameState state, bool isAlive)
     {
         DevLogger.Log($"Message: {message} | Guessing player: {guessingPlayer}");
+        if (!isAlive) return;
         if (state is not GameState.InMeeting) return;
-        if (player.PlayerId != MyPlayer.PlayerId) return;
         if (guessingPlayer == byte.MaxValue) return;
         if (!(message.StartsWith("/role") || message.StartsWith("/r"))) return;
         string[] split = message.Replace("/role", "/r").Split(" ");
@@ -154,7 +155,7 @@ public class Guesser : CustomRole
     protected ChatHandler GuesserHandler(string message) => ChatHandler.Of(message, RoleColor.Colorize(Translations.GuesserTitle)).LeftAlign();
 
     [Localized(nameof(Guesser))]
-    private class Translations
+    public static class Translations
     {
         [Localized(nameof(Guesser))]
         public static string GuesserTitle = "Guesser";

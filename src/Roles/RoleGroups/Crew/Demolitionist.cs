@@ -44,10 +44,10 @@ public class Demolitionist : Crewmate
     }
 
     [RoleAction(LotusActionType.ReportBody, ActionFlag.WorksAfterDeath | ActionFlag.GlobalDetector)]
-    public void DieOnBodyReport(PlayerControl reporter, NetworkedPlayerInfo body, ActionHandle handle)
+    public void DieOnBodyReport(PlayerControl reporter, Optional<NetworkedPlayerInfo> body, ActionHandle handle)
     {
         if (reporter.PlayerId != killerId) return;
-        if (body.PlayerId != MyPlayer.PlayerId) return;
+        if (body.Exists()) if (body.Get().PlayerId != MyPlayer.PlayerId) return;
         ExplodePlayer(reporter);
         handle.Cancel();
     }

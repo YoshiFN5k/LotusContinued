@@ -15,6 +15,7 @@ using UnityEngine;
 using VentLib.Networking.RPC;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
+using AmongUs.GameOptions;
 
 namespace Lotus.Managers;
 
@@ -70,7 +71,7 @@ internal class BlackscreenResolver
         if (unpatchable.Count == 0) return;
 
         bool updated = !TryGetDeadPlayer(out PlayerControl? deadPlayer);
-        if (deadPlayer == null) deadPlayer = EmergencyKillHost();
+        if (deadPlayer == null && !ProjectLotus.AdvancedRoleAssignment) deadPlayer = EmergencyKillHost();
 
         if (updated)
         {
@@ -78,14 +79,15 @@ internal class BlackscreenResolver
             deferredTime = 0.1f;
         }
 
-        log.Debug($"Resetting player cameras using \"{deadPlayer.name}\" as camera player", "BlackscreenResolver");
+        log.Debug($"Resetting player cameras using \"{deadPlayer?.name ?? "themselves"}\" as camera player", "BlackscreenResolver");
         Async.Schedule(() => PerformCameraReset(deadPlayer), deferredTime);
     }
 
     private void PerformCameraReset(PlayerControl deadPlayer)
     {
         log.Debug("Performing Camera Reset", "BlackscreenResolver");
-        if (deadPlayer == null) deadPlayer = EmergencyKillHost();
+        if (deadPlayer == null && !ProjectLotus.AdvancedRoleAssignment) deadPlayer = EmergencyKillHost();
+        if (deadPlayer == null && ProjectLotus.AdvancedRoleAssignment) resetCameraPosition = PlayerControl.LocalPlayer.GetTruePosition();
 
         unpatchable.Filter(b => Utils.PlayerById(b)).ForEach(p =>
         {
@@ -94,7 +96,7 @@ internal class BlackscreenResolver
             Async.Schedule(() => Utils.Teleport(p.NetTransform, originalPosition), 1f);
         });
 
-        Async.Schedule(() => Utils.Teleport(deadPlayer.NetTransform, resetCameraPosition), 1f);
+        Async.Schedule(() => Utils.Teleport(deadPlayer.NetTransform, resetCameraPosition), 0.5f);
     }
 
     private HashSet<byte> StoreAndSendFallbackData()
@@ -171,14 +173,19 @@ internal class BlackscreenResolver
 
     private PlayerControl EmergencyKillHost()
     {
+        if (Game.State is GameState.InLobby or GameState.InIntro) return null!;
         resetCameraPosition = PlayerControl.LocalPlayer.GetTruePosition();
         LogManager.SendInGame("Unable to get an eligible dead player for blackscreen patching. " +
                               "Unfortunately there's nothing further we can do at this point other than killing (you) the host." +
                               "The reasons for this are very complicated, but a lot of code went into preventing this from happening, but it's never guarantees this scenario won't occur.", LogLevel.Fatal);
-        PlayerControl.LocalPlayer.MurderPlayer(PlayerControl.LocalPlayer, MurderResultFlags.DecisionByHost);
+        PlayerControl.LocalPlayer.MurderPlayer(PlayerControl.LocalPlayer, MurderResultFlags.Succeeded);
         Game.MatchData.UnreportableBodies.Add(PlayerControl.LocalPlayer.PlayerId);
         playerStates[0] = (true, false);
-        Async.Schedule(() => PlayerControl.LocalPlayer.RpcVaporize(PlayerControl.LocalPlayer), 6f);
+        Async.Schedule(() =>
+        {
+            if (Game.State is GameState.InIntro or GameState.InLobby) return;
+            PlayerControl.LocalPlayer.RpcVaporize(PlayerControl.LocalPlayer);
+        }, 6f);
         return PlayerControl.LocalPlayer;
     }
 

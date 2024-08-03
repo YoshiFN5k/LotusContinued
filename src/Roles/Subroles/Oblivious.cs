@@ -25,11 +25,11 @@ public class Oblivious : Subrole
     {
         if (!passOnDeath) return;
         killer = realKiller.FlatMap(k => new UnityOptional<PlayerControl>(k.MyPlayer)).OrElse(killer);
-        MatchData.AssignSubRole(killer, (StandardGameMode.Instance.RoleManager.RoleHolder as StandardRoles).Mods.Oblivious);
+        Game.AssignSubRole(killer, StandardGameMode.Instance.RoleManager.RoleHolder.Mods.Oblivious);
     }
 
     [RoleAction(LotusActionType.ReportBody, priority: Priority.VeryLow)]
-    private void CancelReportBody(ActionHandle handle) => handle.Cancel();
+    private void CancelReportBody(Optional<NetworkedPlayerInfo> deadBody, ActionHandle handle) => handle.Cancel(); // easiest role lol
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)

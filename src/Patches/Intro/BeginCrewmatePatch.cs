@@ -1,12 +1,15 @@
 using System.Linq;
+using System.Reflection;
 using AmongUs.GameOptions;
 using HarmonyLib;
 using Lotus.API;
+using Lotus.API.Odyssey;
 using Lotus.Extensions;
 using Lotus.Logging;
 using Lotus.Roles;
 using Lotus.Roles.Builtins;
 using Lotus.Roles.Internals.Enums;
+using Lotus.Roles.Managers.Interfaces;
 using UnityEngine;
 using VentLib.Localization;
 
@@ -22,7 +25,10 @@ class BeginCrewmatePatch
         //チーム表示変更
         DevLogger.Log("Begin Crewmate");
         CustomRole role = PlayerControl.LocalPlayer.PrimaryRole();
-        if (role is EmptyRole) return;
+        if (role.GetType() == IRoleManager.Current.FallbackRole().GetType()) return;
+
+        if (role.IntroSound != null) PlayerControl.LocalPlayer.Data.Role.IntroSound = role.IntroSound();
+        else PlayerControl.LocalPlayer.Data.Role.IntroSound = GetIntroSound(role.RealRole);
 
         switch (role.Metadata.GetOrDefault(LotusKeys.AuxiliaryRoleType, SpecialType.None))
         {
@@ -36,7 +42,7 @@ class BeginCrewmatePatch
                 __instance.BackgroundBar.material.color = role.RoleColor;
                 break;
             case SpecialType.Madmate:
-                __instance.TeamTitle.text = Localizer.Translate("Roles.Madmate.RoleName");
+                __instance.TeamTitle.text = Localizer.Translate("Roles.Madmate.RoleName", assembly: Assembly.GetExecutingAssembly());
                 __instance.TeamTitle.color = ModConstants.Palette.MadmateColor;
                 __instance.ImpostorText.text = "";
                 StartFadeIntro(__instance, Palette.CrewmateBlue, Palette.ImpostorRed);
@@ -52,7 +58,7 @@ class BeginCrewmatePatch
         __instance.ImpostorText.gameObject.SetActive(false);
     }
 
-    private static AudioClip? GetIntroSound(RoleTypes roleType)
+    public static AudioClip? GetIntroSound(RoleTypes roleType)
     {
         return RoleManager.Instance.AllRoles.FirstOrDefault(role => role.Role == roleType)?.IntroSound;
     }

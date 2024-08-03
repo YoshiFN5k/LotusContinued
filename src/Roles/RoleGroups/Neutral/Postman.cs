@@ -27,6 +27,7 @@ using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using Object = UnityEngine.Object;
 using Lotus.API.Player;
+using Lotus.Logging;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
@@ -46,7 +47,6 @@ public class Postman : Crewmate
     private PlayerControl trackedPlayer;
     private bool completedDelivery = true;
     [NewOnSetup] private List<Remote<IndicatorComponent>> components;
-
 
     public override bool TasksApplyToTotal() => false;
 
@@ -82,9 +82,10 @@ public class Postman : Crewmate
         if (DateTime.Now.Subtract(lastCheck).TotalSeconds < UpdateTimeout) return;
         lastCheck = DateTime.Now;
         if (trackedPlayer.IsAlive())
+        {
             if (RoleUtils.GetPlayersWithinDistance(MyPlayer, 0.8f).All(p => p.PlayerId != trackedPlayer.PlayerId)) return;
-            else if (!trackedPlayer.IsAlive())
-                if (Object.FindObjectsOfType<DeadBody>().All(b => Vector2.Distance(b.TruePosition, MyPlayer.GetTruePosition()) > 0.8)) return;
+        }
+        else if (Object.FindObjectsOfType<DeadBody>().All(b => Vector2.Distance(b.TruePosition, MyPlayer.GetTruePosition()) > 0.8)) return;
 
 
         completedDelivery = true;
@@ -95,6 +96,8 @@ public class Postman : Crewmate
     [RoleAction(LotusActionType.RoundEnd)]
     private void AnnounceGameWin()
     {
+        if (!completedDelivery && targetDiesMode == 0 && (!trackedPlayer?.IsAlive() ?? false))
+            AssignNewTarget();
         if (!completedDelivery || TasksComplete != TotalTasks) return;
         Async.Schedule(() => ChatHandler.Of(_postmanAnnouncement).Send(), 1f);
     }
@@ -110,7 +113,12 @@ public class Postman : Crewmate
     {
         components.ForEach(c => c.Delete());
         components.Clear();
-        List<PlayerControl> candidates = Players.GetAlivePlayers().Where(p => p.PlayerId != MyPlayer.PlayerId).ToList();
+        List<byte> bodies = new List<byte>();
+        Object.FindObjectsOfType<DeadBody>().ForEach(delegate (DeadBody body)
+        {
+            bodies.Add(body.ParentId);
+        });
+        List<PlayerControl> candidates = Players.GetPlayers().Where(p => p.PlayerId != MyPlayer.PlayerId && (!p.Data.IsDead || (p.Data.IsDead && bodies.Contains(p.PlayerId)))).ToList();
         if (candidates.Count == 0) return;
         completedDelivery = false; // Important
 

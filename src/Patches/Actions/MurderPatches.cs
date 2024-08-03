@@ -38,10 +38,15 @@ public static class MurderPatches
         if (!AmongUsClient.Instance.AmHost) return false;
         if (__instance == null || target == null) return false;
 
-        log.Debug($"{__instance.GetNameWithRole()} => {target.GetNameWithRole()}", "CheckMurder");
+        log.Debug($"(CheckMurder) {__instance.GetNameWithRole()} => {target.GetNameWithRole()}");
 
+        if (__instance.Data.Disconnected || !target)
+        {
+            log.Trace($"Unable to kill {target.name}. Bad Kill.", "CheckMurder");
+            return false;
+        }
 
-        if (target.Data == null || target.inVent || target.inMovingPlat)
+        if (target.Data == null || target.inVent || target.inMovingPlat || target.Data.Disconnected)
         {
             log.Trace($"Unable to kill {target.name}. Invalid Status", "CheckMurder");
             return false;
@@ -59,7 +64,12 @@ public static class MurderPatches
 
         if (__instance.PlayerId == target.PlayerId) return false;
 
-        if (!MurderLocks.GetOrCompute(__instance.PlayerId, TimeoutSupplier).IsUnlocked()) return false;
+        if (!MurderLocks.GetOrCompute(__instance.PlayerId, TimeoutSupplier).IsUnlocked())
+        {
+            log.Trace("Kill was canceled because it's been 0.25 seconds since the last kill.");
+            return false;
+        }
+        Lock(__instance.PlayerId);
 
         RoleOperations.Current.Trigger(LotusActionType.Attack, __instance, target);
         return false;
@@ -68,7 +78,7 @@ public static class MurderPatches
     [QuickPrefix(typeof(PlayerControl), nameof(PlayerControl.MurderPlayer))]
     public static void SaveAttacker(PlayerControl __instance, MurderResultFlags resultFlags)
     {
-        if (resultFlags == MurderResultFlags.Succeeded | resultFlags == MurderResultFlags.DecisionByHost)
+        if (resultFlags.HasFlag(MurderResultFlags.Succeeded) || resultFlags.HasFlag(MurderResultFlags.DecisionByHost) && !__instance.protectedByGuardianThisRound)
             LastAttacker = __instance;
     }
 
@@ -81,7 +91,7 @@ public static class MurderPatches
 
         MurderPatches.Lock(__instance.PlayerId);
 
-        log.Trace($"{__instance.GetNameWithRole()} => {target.GetNameWithRole()}{(target.protectedByGuardianId != -1 ? "(Protected)" : "")}", "MurderPlayer");
+        log.Trace($"(MurderPlayer) {__instance.GetNameWithRole()} => {target.GetNameWithRole()}{(target.protectedByGuardianId != -1 ? "(Protected)" : "")}");
 
         IDeathEvent deathEvent = Game.MatchData.GameHistory.GetCauseOfDeath(target.PlayerId)
             .OrElseGet(() => __instance.PlayerId == target.PlayerId
@@ -91,7 +101,6 @@ public static class MurderPatches
 
         Game.MatchData.GameHistory.AddEvent(deathEvent);
         Game.MatchData.GameHistory.SetCauseOfDeath(target.PlayerId, deathEvent);
-
 
         RoleOperations.Current.TriggerForAll(LotusActionType.PlayerDeath, target, __instance, deathEvent.Instigator(), deathEvent);
 

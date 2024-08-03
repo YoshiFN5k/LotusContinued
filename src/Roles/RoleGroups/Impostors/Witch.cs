@@ -23,6 +23,7 @@ using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
+using Lotus.GameModes.Standard;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -55,7 +56,7 @@ public class Witch : Vanilla.Impostor
         if (cursedPlayers.ContainsKey(target.PlayerId)) return false;
 
         CustomStatus status = CustomStatus.Of(RoleName).Description(Translations.CursedStatusDescription).Color(RoleColor).Build();
-        cursedPlayers.Add(target.PlayerId, MatchData.AddStatus(target, status, MyPlayer));
+        cursedPlayers.Add(target.PlayerId, Game.MatchData.AddStatus(target, status, MyPlayer));
         indicators.GetValueOrDefault(target.PlayerId)?.Delete();
         indicators[target.PlayerId] = target.NameModel().GCH<IndicatorHolder>().Add(new SimpleIndicatorComponent("†", Color.red, GameState.InMeeting));
 
@@ -87,6 +88,7 @@ public class Witch : Vanilla.Impostor
     }
 
 
+
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub.KeyName("Freely Switch Modes", Translations.Options.FreelySwitchModes)
@@ -100,7 +102,8 @@ public class Witch : Vanilla.Impostor
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
-            .OptionOverride(new IndirectKillCooldown(KillCooldown, () => isCursingMode));
+            .OptionOverride(new IndirectKillCooldown(KillCooldown, () => isCursingMode))
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
 
     [Localized(nameof(Witch))]

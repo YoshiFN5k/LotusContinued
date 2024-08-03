@@ -122,7 +122,7 @@ public class Herbalist : Crewmate
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
-            .RoleColor(new Color(0.18f, 0.84f, 0.13f));
+            .RoleColor(new Color(0.18f, 0.84f, 0.13f)).RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     [Localized(nameof(Herbalist))]
     private static class Translations

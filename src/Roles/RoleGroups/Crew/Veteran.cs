@@ -100,7 +100,8 @@ public class Veteran : Crewmate
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .VanillaRole(RoleTypes.Crewmate)
-            .RoleColor(new Color(0.6f, 0.5f, 0.25f));
+            .RoleColor(new Color(0.6f, 0.5f, 0.25f))
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
 
 

@@ -86,7 +86,7 @@ public class Werewolf : NeutralKillingBase
 
     protected override RoleModifier Modify(RoleModifier roleModifier)
     {
-        RoleAbilityFlag flags = RoleAbilityFlag.CannotSabotage;
+        RoleAbilityFlag flags = RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.UsesPet;
         if (!(canVentNormally || canVentDuringRampage)) flags |= RoleAbilityFlag.CannotVent;
 
         return base.Modify(roleModifier)

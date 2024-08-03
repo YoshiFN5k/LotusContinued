@@ -4,7 +4,7 @@ using Lotus.API.Odyssey;
 
 namespace Lotus.Managers.Templates.Models.Units.Conditionals;
 
-public class TConditionStatuses: StringListConditionalUnit
+public class TConditionStatuses : StringListConditionalUnit
 {
     private HashSet<string>? statusesLower;
 
@@ -21,6 +21,6 @@ public class TConditionStatuses: StringListConditionalUnit
     {
         if (player == null) return true;
         statusesLower ??= Values.Select(r => r.ToLower()).ToHashSet();
-        return statusesLower.Any(status => MatchData.GetStatuses(player)?.Any(st => st.Name.ToLower().Equals(status.ToLower())) ?? false);
+        return statusesLower.Any(status => Game.MatchData.GetStatuses(player)?.Any(st => st.Name.ToLower().Equals(status.ToLower())) ?? false);
     }
 }

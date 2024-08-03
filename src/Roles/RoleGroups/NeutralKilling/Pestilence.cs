@@ -25,7 +25,7 @@ namespace Lotus.Roles.RoleGroups.NeutralKilling;
 public class Pestilence : NeutralKillingBase
 {
     /// <summary>
-    /// A list of roles that the pestilence is immune against, this should only be populated by external addons if they want to add an immunity to pestilence lazily
+    /// A list of roles that the Pestilence is immune against, this should only be populated by external addons if they want to add an immunity to pestilence lazily
     /// </summary>
     public static List<Type> ImmuneRoles = new();
 
@@ -120,6 +120,8 @@ public class Pestilence : NeutralKillingBase
                     .BindBool(b => immuneToArsonist = b)
                     .Build())
                 .Build());
+
+    protected override RoleType GetRoleType() => RoleType.Transformation;
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)

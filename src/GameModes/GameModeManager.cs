@@ -11,6 +11,7 @@ using VentLib.Options.Events;
 using VentLib.Options.UI.Tabs;
 using VentLib.Utilities.Extensions;
 using Lotus.Options;
+using Lotus.Addons;
 
 namespace Lotus.GameModes;
 
@@ -35,7 +36,7 @@ public class GameModeManager
     }
 
     private IGameMode? currentGameMode;
-    private GameOption gamemodeOption = null!;
+    internal GameOption gamemodeOption = null!;
 
     public GameModeManager()
     {
@@ -53,16 +54,17 @@ public class GameModeManager
     public IGameMode GetGameMode(int id) => GameModes[id];
     public IGameMode? GetGameMode(Type type) => GameModes.FirstOrDefault(t => t.GetType() == type);
 
-    public void Setup()
+    public void AddGamemodes()
     {
-        GameOptionBuilder builder = new GameOptionBuilder();
-
-        GameModes.AddRange(new List<IGameMode>()
+        new List<IGameMode>()
         {
             new StandardGameMode()
-        });
+        }.ForEach(gm => GameModes.Add(gm));
+    }
 
-        // currentGameMode = GameModes[0];
+    public void Setup()
+    {
+        GameOptionBuilder builder = new();
 
         for (int i = 0; i < GameModes.Count; i++)
         {
@@ -72,22 +74,30 @@ public class GameModeManager
         }
 
         gamemodeOption = builder.Name("GameMode").IsHeader(true).BindInt(SetGameMode).BuildAndRegister();
-        DefaultTabs.GeneralTab.AddOption(new GameOptionTitleBuilder()
-            .Title("Gamemode Selection")
-            .Build());
-        DefaultTabs.GeneralTab.AddOption(gamemodeOption);
-        GeneralOptions.AllOptions.ForEach(DefaultTabs.GeneralTab.AddOption);
-        // GameOptionController.RegisterEventHandler(ce =>
-        // {
-        //     if (ce is not OptionOpenEvent) return;
-        //     GameOptionController.ClearTabs();
-        //     currentGameMode?.EnabledTabs().ForEach(GameOptionController.AddTab);
-        // });
+        GameModes.ForEach(gm => AddGamemodeSettingToOptions(gm.MainTab().GetOptions()));
     }
 
     public void StartGame(WinDelegate winDelegate)
     {
         CurrentGameMode.CoroutineManager.Start();
         CurrentGameMode.SetupWinConditions(winDelegate);
+    }
+
+    internal void AddGamemodeSettingToOptions(List<GameOption> options)
+    {
+        // Add gamemode switcher at top
+        options.Insert(0, gamemodeOption);
+        options.Insert(0, new GameOptionTitleBuilder()
+            .Title("Gamemode Selection")
+            .Build());
+
+        // Add Admin Options
+        options.InsertRange(2, GeneralOptions.AdminOptions.AllOptions);
+
+        // Add Miscellaneous Options
+        options.AddRange(GeneralOptions.MiscellaneousOptions.AllOptions);
+
+        // Add Debug Options
+        options.AddRange(GeneralOptions.DebugOptions.AllOptions);
     }
 }
