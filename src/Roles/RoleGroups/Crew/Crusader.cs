@@ -82,7 +82,7 @@ public class Crusader : Crewmate
             .RoleAbilityFlags(RoleAbilityFlag.CannotVent | RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.IsAbleToKill)
             .OptionOverride(new IndirectKillCooldown(() => AUSettings.KillCooldown()))
             .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod())
-            .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod() / 5, () => (SabotagePatch.CurrentSabotage?.SabotageType() ?? SabotageType.Communications) is SabotageType.Lights);
+            .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod() / 5, () => SabotagePatch.CurrentSabotage != null && SabotagePatch.CurrentSabotage.SabotageType() is SabotageType.Lights);
 
     [Localized(nameof(Crusader))]
     internal static class CrusaderTranslations
