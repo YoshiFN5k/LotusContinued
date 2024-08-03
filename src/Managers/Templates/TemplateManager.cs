@@ -67,6 +67,7 @@ public class TemplateManager
 
     internal bool CheckAndRunCommand(PlayerControl source, string input)
     {
+        input = input.Trim();
         if (input.Length < 2 || !input.StartsWith("/")) return false;
         input = input[1..];
 
