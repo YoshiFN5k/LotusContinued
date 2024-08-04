@@ -73,7 +73,7 @@ public class GameModeManager
             builder.Value(v => v.Text(gameMode.Name).Value(index).Build());
         }
 
-        gamemodeOption = builder.Name("GameMode").IsHeader(true).BindInt(SetGameMode).BuildAndRegister();
+        gamemodeOption = builder.Name("GameMode").IsHeader(true).BindInt(SetGameMode).BuildAndRegister(GeneralOptions.MainOptionManager);
         GameModes.ForEach(gm => AddGamemodeSettingToOptions(gm.MainTab().GetOptions()));
     }
 

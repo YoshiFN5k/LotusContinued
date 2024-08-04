@@ -190,7 +190,7 @@ public abstract class AbstractBaseRole
                     RoleOptions.Tab = DefaultTabs.MiscTab;
             }
         }
-        RoleOptions.Register(GeneralOptions.RoleOptionManager, OptionLoadMode.LoadOrCreate);
+        RoleOptions.Register(GlobalRoleManager.RoleOptionManager, OptionLoadMode.LoadOrCreate);
 
     finished:
 

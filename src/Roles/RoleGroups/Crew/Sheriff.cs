@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
 using Lotus.API.Odyssey;
-using Lotus.Factions;
 using Lotus.GUI;
 using Lotus.GUI.Name;
 using Lotus.Managers.History.Events;
@@ -25,7 +24,6 @@ using Lotus.Roles.Overrides;
 using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Logging;
 using VentLib.Options;
 using VentLib.Options.UI;
 using VentLib.Utilities;
@@ -210,7 +208,7 @@ public class Sheriff : Crewmate
             rtb.builder.BindInt(i => rtb.allKillable = i == 1);
             Option option = rtb.builder.Build();
             RoleOptions.AddChild(option);
-            GeneralOptions.RoleOptionManager.Register(option, OptionLoadMode.LoadOrCreate);
+            GlobalRoleManager.RoleOptionManager.Register(option, OptionLoadMode.LoadOrCreate);
         });
     }
 

@@ -11,12 +11,15 @@ using Lotus.Roles.Builtins;
 using Lotus.Roles.Exceptions;
 using Lotus.Roles.Managers.Interfaces;
 using Lotus.Roles.Operations;
+using VentLib.Options;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 namespace Lotus.Managers;
 public class GlobalRoleManager
 {
+    public static OptionManager RoleOptionManager = OptionManager.GetManager(file: "roleoptions.txt");
+
     private readonly Dictionary<Assembly, Dictionary<ulong, CustomRole>> rolesbyAssembly = new();
     protected OrderedDictionary<string, CustomRole> OrderedCustomRoles { get; } = new();
     public static GlobalRoleManager Instance = null!;

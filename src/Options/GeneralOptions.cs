@@ -11,7 +11,7 @@ namespace Lotus.Options;
 [LoadStatic]
 public static class GeneralOptions
 {
-    public static OptionManager RoleOptionManager = OptionManager.GetManager(file: "roleoptions.txt");
+    public static OptionManager MainOptionManager = OptionManager.GetManager(file: "options.txt");
     public static AdminOptions AdminOptions;
     public static DebugOptions DebugOptions;
     public static GameplayOptions GameplayOptions;
