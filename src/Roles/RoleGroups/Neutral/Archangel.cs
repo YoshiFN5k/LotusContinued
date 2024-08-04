@@ -55,7 +55,7 @@ public class Archangel : CustomRole
     protected override void PostSetup()
     {
         base.PostSetup();
-        List<PlayerControl> eligiblePlayers = Players.GetAllPlayers().Where(p => p.PrimaryRole() is not Archangel).ToList();
+        List<PlayerControl> eligiblePlayers = Players.GetAllPlayers().Where(p => p.PlayerId != MyPlayer.PlayerId).ToList();
         if (eligiblePlayers.Any()) target = eligiblePlayers.GetRandom();
 
         if (target == null) return;
@@ -170,14 +170,14 @@ public class Archangel : CustomRole
         base.RegisterOptions(optionStream)
             .Tab(DefaultTabs.NeutralTab)
             .SubOption(sub => sub
-                .KeyName("Protect Duration", ProtectCooldown)
+                .KeyName("Protect Duration", ProtectDuration)
                 .BindFloat(v => protectDuration.Duration = v)
-                .AddFloatRange(2.5f, 180f, 2.5f, 11, GeneralOptionTranslations.SecondsSuffix)
+                .AddFloatRange(2.5f, 180f, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
-                .KeyName("Protect Cooldown", ProtectDuration)
+                .KeyName("Protect Cooldown", ProtectCooldown)
                 .BindFloat(v => protectCooldown.Duration = v)
-                .AddFloatRange(2.5f, 180f, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
+                .AddFloatRange(2.5f, 180f, 2.5f, 11, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
                 .KeyName("Target Knows They have an Archangel", TargetKnowsArchAngelExists)
@@ -202,8 +202,8 @@ public class Archangel : CustomRole
                 .KeyName("Should Cancel Which Interactions", ShouldCancelWhichInteractions)
                 .Value(v => v.Text(GeneralOptionTranslations.AllText).Color(Color.green).Value(true).Build())
                 .Value(v => v.Text(GeneralOptionTranslations.CustomText).Color(new Color(0.73f, 0.58f, 1f)).Value(false).Build())
-                .BindBool(v => shouldCancelAllInteractions = (bool)v)
-                .ShowSubOptionPredicate(v => (bool)v == true)
+                .BindBool(v => shouldCancelAllInteractions = v)
+                .ShowSubOptionPredicate(v => (bool)v == false)
                 .SubOption(sub1 => sub1
                     .KeyName("Cancel Indirect", InteractionFormatter.Formatted(Indirect))
                     .AddBoolean()

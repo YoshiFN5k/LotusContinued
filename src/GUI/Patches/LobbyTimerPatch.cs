@@ -33,8 +33,8 @@ public class LobbyTimerPatch
     public static DateTime lobbyStart;
     public static void Postfix(GameStartManager __instance)
     {
-        lobbyStart = DateTime.Now;
         if (!AmongUsClient.Instance.AmHost || !GameData.Instance || AmongUsClient.Instance.NetworkMode == NetworkModes.LocalGame) return; // Not host or no instance or LocalGame
+        lobbyStart = DateTime.Now;
         HudManager.Instance.ShowLobbyTimer(600);
         HudManager.Instance.LobbyTimerExtensionUI.timerText.transform.parent.transform.Find("LabelBackground").gameObject.SetActive(false);
         HudManager.Instance.LobbyTimerExtensionUI.timerText.transform.parent.transform.Find("Icon").gameObject.SetActive(false);
