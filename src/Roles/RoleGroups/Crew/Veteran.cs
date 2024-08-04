@@ -23,8 +23,8 @@ namespace Lotus.Roles.RoleGroups.Crew;
 public class Veteran : Crewmate
 {
     [UIComponent(UI.Cooldown)]
-    private Cooldown veteranCooldown;
-    private Cooldown veteranDuration;
+    private Cooldown veteranCooldown = null!;
+    private Cooldown veteranDuration = null!;
 
     private int totalAlerts;
     private int remainingAlerts;
@@ -49,8 +49,7 @@ public class Veteran : Crewmate
     {
         if (remainingAlerts <= 0 || veteranCooldown.NotReady() || veteranDuration.NotReady()) return;
         VeteranAlertCounter().DebugLog("Veteran Alert Counter: ");
-        veteranDuration.Start();
-        Async.Schedule(() => veteranCooldown.Start(), veteranDuration.Duration);
+        veteranDuration.StartThenRun(() => veteranCooldown.Start());
         remainingAlerts--;
     }
 
@@ -102,10 +101,6 @@ public class Veteran : Crewmate
             .VanillaRole(RoleTypes.Crewmate)
             .RoleColor(new Color(0.6f, 0.5f, 0.25f))
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
-
-
-
-
 
     private class VettedEvent : KillEvent, IRoleEvent
     {

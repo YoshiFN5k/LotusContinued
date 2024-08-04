@@ -19,7 +19,7 @@ public static class DebugExtensions
 
     public static void Start()
     {
-        if (!ProjectLotus.DevVersion) return;
+
     }
 
     public static void DebugLog(this object obj, string prefixText = "", string tag = "DebugLog", ConsoleColor color = ConsoleColor.DarkGray)

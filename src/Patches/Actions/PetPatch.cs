@@ -31,7 +31,7 @@ public class PetPatch
     [QuickPostfix(typeof(PlayerPhysics), nameof(PlayerPhysics.HandleRpc))]
     public static void InterceptPet(PlayerPhysics __instance, [HarmonyArgument(0)] byte callId)
     {
-        if (!AmongUsClient.Instance.AmHost || callId != PetCallId) return;
+        if (!AmongUsClient.Instance.AmHost || callId != PetCallId || Game.State is not GameState.Roaming) return;
 
         byte playerId = __instance.myPlayer.PlayerId;
 

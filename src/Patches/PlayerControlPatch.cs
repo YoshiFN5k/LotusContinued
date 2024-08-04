@@ -49,7 +49,7 @@ public static class ResetForMeetingPatch
 
             __instance.RemoveProtection();
             __instance.NetTransform.enabled = true;
-            __instance.MyPhysics.ResetMoveState();
+            __instance.MyPhysics.ResetMoveState(true);
             for (int index = 0; index < __instance.currentRoleAnimations.Count; ++index)
             {
                 if ((Object)__instance.currentRoleAnimations[index] != null &&
@@ -60,6 +60,8 @@ public static class ResetForMeetingPatch
                 }
             }
 
+            __instance.isKilling = false;
+            __instance.inMovingPlat = false;
             __instance.currentRoleAnimations.Clear();
         }
         catch (Exception exception)

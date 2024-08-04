@@ -68,6 +68,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 #if DEBUG
         DevVersion = true;
         RpcMonitor.Enable();
+        DebugExtensions.Start();
 #endif
         Instance = this;
 
@@ -78,8 +79,6 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
         ModUpdater = ModUpdater.Default();
         ModUpdater.EstablishConnection();
         ModUpdater.RegisterReleaseCallback(BeginUpdate, true);
-
-        DebugExtensions.Start();
 
 #if !DEBUG
         Profilers.Global.SetActive(false);
@@ -93,7 +92,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
         Assembly ventAssembly = typeof(Vents).Assembly;
 
         if (release.ContainsDLL($"{ventAssembly.GetName().Name!}.dll"))
-            ModUpdateMenu.AddUpdateItem("VentFramework", null, ex => ModUpdater.Update(ventAssembly, ex)!);
+            ModUpdateMenu.AddUpdateItem("VentFrameworkContinued", null, ex => ModUpdater.Update(ventAssembly, ex)!);
     }
 
     public static NormalGameOptionsV08 NormalOptions => GameOptionsManager.Instance.currentNormalGameOptions;

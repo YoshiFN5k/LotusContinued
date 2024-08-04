@@ -82,14 +82,9 @@ public class Amnesiac : CustomRole, IVariableRole
         Game.AssignRole(MyPlayer, newRole);
 
         CustomRole role = MyPlayer.PrimaryRole();
-        if (ProjectLotus.AdvancedRoleAssignment)
-        {
-            role.Assign();
-        }
-        else
-        {
-            role.DesyncRole = RoleTypes.Impostor;
-        }
+        if (ProjectLotus.AdvancedRoleAssignment) role.Assign();
+        else role.DesyncRole = RoleTypes.Impostor;
+
         arrowComponent?.Delete();
         handle.Cancel();
     }

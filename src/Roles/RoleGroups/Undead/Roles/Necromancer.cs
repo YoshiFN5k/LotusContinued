@@ -85,7 +85,7 @@ public class Necromancer : UndeadRole
         player.GetSubroles().Remove(deathknightOriginal);
         myDeathknight = null;
         player.NameModel().GetComponentHolder<CooldownHolder>().Clear();
-        player.NameModel().GetComponentHolder<CooldownHolder>().Add(new CooldownComponent(convertCooldown, GameState.Roaming, ViewMode.Additive, player));
+        player.NameModel().GetComponentHolder<CooldownHolder>().Add(new CooldownComponent(convertCooldown, GameState.Roaming, ViewMode.Additive, viewers: player));
 
         Game.AssignRole(player, this);
         Necromancer necromancer = player.PrimaryRole<Necromancer>();
