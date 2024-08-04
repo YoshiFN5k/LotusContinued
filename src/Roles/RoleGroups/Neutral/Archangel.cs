@@ -28,6 +28,7 @@ using Lotus.Roles.Interactions.Interfaces;
 using Lotus.Roles.Events;
 using Lotus.Roles.Interactions;
 using VentLib.Utilities.Collections;
+using Lotus.Victory;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
@@ -74,6 +75,7 @@ public class Archangel : CustomRole
             viewers = [MyPlayer];
 
         indicatorRemote = target.NameModel().GCH<IndicatorHolder>().Add(new IndicatorComponent(new LiveString(Identifier, RoleColor), [GameState.Roaming, GameState.InMeeting], viewers: viewers));
+        Game.GetWinDelegate().AddSubscriber(OnGameEnd);
     }
 
     [RoleAction(LotusActionType.RoundStart)]
@@ -164,6 +166,13 @@ public class Archangel : CustomRole
     {
         if (shouldCancelAllInteractions) return true;
         else return cancels.Contains(cancelCheck);
+    }
+
+    private void OnGameEnd(WinDelegate winDelegate)
+    {
+        if (MyPlayer.PrimaryRole() is not Archangel) return;
+        if (target == null) return;
+        if (winDelegate.GetWinners().Any(p => p.PlayerId == target.PlayerId)) winDelegate.AddAdditionalWinner(MyPlayer);
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>

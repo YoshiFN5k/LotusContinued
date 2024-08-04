@@ -48,5 +48,7 @@ public static class GeneralOptions
         AllOptions.AddRange(RoleOptions.LoadMadmateOptions().AllOptions);
         AllOptions.AddRange(RoleOptions.LoadNeutralOptions().AllOptions);
         AllOptions.AddRange(RoleOptions.LoadSubroleOptions().AllOptions);
+
+        AllOptions.ForEach(o => o.Register(MainOptionManager));
     }
 }

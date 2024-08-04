@@ -117,7 +117,7 @@ public class AdminOptions
                 })
                 .Build())
             .SubOption(sub2 => sub2
-                .AddIntRange(0, 20, 2, 5, GeneralOptionTranslations.SecondsSuffix)
+                .AddIntRange(4, 20, 2, 3, GeneralOptionTranslations.SecondsSuffix)
                 .Name(AdminOptionTranslations.AutoStartGameCountdown)
                 .BindInt(i => AutoStartGameCountdown = i)
                 .Build())
