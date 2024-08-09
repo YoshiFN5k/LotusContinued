@@ -63,7 +63,7 @@ public class StandardGameMode : GameMode
         RoleOperations.Assign(role, player, addAsMainRole, sendToClient);
     }
 
-    public override IEnumerable<GameOptionTab> EnabledTabs() => DefaultTabs.All;
+    public override IEnumerable<GameOptionTab> EnabledTabs() => DefaultTabs.StandardTabs;
     public override MainSettingTab MainTab() => DefaultTabs.GeneralTab;
 
     public override void Setup()
