@@ -87,8 +87,9 @@ public class GraphicsMenu : MonoBehaviour, IBaseOptionMenuComponent
         resolutionSlider.OnValueChange = new UnityEvent();
         resolutionSlider.OnValueChange.AddListener((Action)(() =>
         {
-            temporaryResolutionIndex = Mathf.RoundToInt(resolutionSlider.Value * 9);
-            (int width, int height) = ResolutionUtils.ResolutionsSixteenNine[temporaryResolutionIndex];
+            int resolutionCount = ResolutionUtils.AllResolutions.Length - 1;
+            temporaryResolutionIndex = Mathf.Clamp(Mathf.FloorToInt(resolutionSlider.Value * resolutionCount), 0, resolutionCount);
+            (int width, int height) = ResolutionUtils.AllResolutions[temporaryResolutionIndex];
             resolutionText.text = $"{width} x {height}";
             if (!opening) applyGameObject.SetActive(true);
         }));
@@ -157,7 +158,7 @@ public class GraphicsMenu : MonoBehaviour, IBaseOptionMenuComponent
 
     private void SetResolution(bool fullscreen)
     {
-        (int width, int height) = ResolutionUtils.ResolutionsSixteenNine[ResolutionUtils.ResolutionIndex];
+        (int width, int height) = ResolutionUtils.AllResolutions[ResolutionUtils.ResolutionIndex];
         ResolutionManager.SetResolution(width, height, fullscreen);
     }
 
@@ -184,7 +185,7 @@ public class GraphicsMenu : MonoBehaviour, IBaseOptionMenuComponent
         tab.Content.gameObject.SetActive(true);
         anchor.gameObject.SetActive(true);
         applyButton.gameObject.SetActive(false);
-        resolutionSlider.SetValue(ResolutionUtils.ResolutionIndex / 9f);
+        resolutionSlider.SetValue(ResolutionUtils.ResolutionIndex / (ResolutionUtils.AllResolutions.Length - 1));
         resolutionSlider.OnValidate();
 
         int fpsIndex = VideoOptions.FpsLimits.IndexOf(i => ClientOptions.VideoOptions.TargetFps == (int)i);
@@ -197,7 +198,7 @@ public class GraphicsMenu : MonoBehaviour, IBaseOptionMenuComponent
         Async.Schedule(() =>
         {
             fpsSlider.GetComponentInChildren<TextMeshPro>().text = "Max Framerate";
-            (int width, int height) = ResolutionUtils.ResolutionsSixteenNine[ResolutionUtils.ResolutionIndex];
+            (int width, int height) = ResolutionUtils.AllResolutions[ResolutionUtils.ResolutionIndex];
             resolutionText.text = $"{width} x {height}";
         }, 0.0001f);
         Async.Schedule(() => opening = false, 0.1f);
