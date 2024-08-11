@@ -20,7 +20,7 @@ public class DefaultTabs
 
     //public static GameOptionTab SubrolesTab = new("Subrole Settings", "Lotus.assets.TabIcon_Addons.png");
 
-    public static GameOptionTab MiscTab = new("Misc Settings", () => AssetLoader.LoadSprite("Lotus.assets.TabIcons.MiscIcon.png", 300, true));
+    public static GameOptionTab MiscTab = new("Misc Settings", () => AssetLoader.LoadSprite("Lotus.assets.TabIcons.MiscIconNew.png", 270, true));
 
     public static GameOptionTab HiddenTab = new("Hidden", () => AssetLoader.LoadSprite("Lotus.assets.GeneralIcon.png", 300, true));
 

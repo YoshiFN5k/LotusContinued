@@ -22,7 +22,7 @@ public class AssetLoader
         try
         {
             Stream? stream = assembly.GetManifestResourceStream(path);
-            if (stream == null) throw new NullReferenceException("Resource stream was null.");
+            if (stream == null) throw new NullReferenceException($"Resource stream was null. Path: {path}");
             Texture2D texture = new(1, 1, TextureFormat.ARGB32, true, linear);
             stream.CopyTo(memoryStream);
             ImageConversion.LoadImage(texture, memoryStream.ToArray());

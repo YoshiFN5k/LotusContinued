@@ -39,6 +39,8 @@ public static class ModConstants
 
     public const string DiscordInvite = "https://discord.gg/projectlotus";
 
+    public const string LinkTree = "linktr.ee/lotusau";
+
     public static class Palette
     {
         public static Color InfinityColor = new(0.77f, 0.71f, 1f);

@@ -27,6 +27,9 @@ using Lotus.Extensions;
 using VentLib.Options.UI.Controllers;
 using Lotus.Roles.Internals.Attributes;
 using VentLib.Version.BuiltIn;
+#if !DEBUG
+using VentLib.Utilities.Debug.Profiling;
+#endif
 
 [assembly: AssemblyVersion(ProjectLotus.CompileVersion)]
 namespace Lotus;
