@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Lotus.GUI.Menus.Patches;
 
-[HarmonyPatch(typeof(RolesSettingsMenu), nameof(RolesSettingsMenu.Start))]
+[HarmonyPatch(typeof(RolesSettingsMenu), nameof(RolesSettingsMenu.InitialSetup))]
 public static class RolesSettingsMenuPatch
 {
     public static void Postfix(RolesSettingsMenu __instance)

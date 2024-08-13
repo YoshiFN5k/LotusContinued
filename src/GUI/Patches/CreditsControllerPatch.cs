@@ -11,16 +11,9 @@ using Object = UnityEngine.Object;
 
 namespace Lotus.GUI.Patches;
 
-// because like all of the credits methods are private...
-// we have to use some hacky methods to get access to them
-[HarmonyPatch]
+[HarmonyPatch(typeof(CreditsController), nameof(CreditsController.Start))]
 class CreditsControllerStartPatch
 {
-    static MethodBase TargetMethod()
-    {
-        return typeof(CreditsController).GetMethod("Start", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy)!;
-    }
-
     static void PassCreditsController(GameObject mainObject)
     {
         mainObject.transform.parent.FindChild("FollowUs").gameObject.SetActive(false); // nobody is following my facebook!!!!!! 😡😡
@@ -84,7 +77,7 @@ class CreditsControllerStartPatch
     }
 }
 
-[HarmonyPatch]
+[HarmonyPatch(typeof(CreditsController), nameof(CreditsController.LoadCredits))]
 class CreditsControllerLoadCreditsPatch
 {
     static string GetCreditsText()
@@ -98,11 +91,6 @@ class CreditsControllerLoadCreditsPatch
         creditsText = Encoding.UTF8.GetString(buffer);
         return creditsText;
     }
-    static MethodBase TargetMethod()
-    {
-        return typeof(CreditsController).GetMethod("LoadCredits", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy)!;
-    }
-
     static bool Prefix(CreditsController __instance)
     {
         __instance.CSVCredits = new TextAsset(GetCreditsText());

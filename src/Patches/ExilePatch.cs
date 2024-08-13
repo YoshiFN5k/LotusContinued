@@ -27,7 +27,7 @@ static class ExileControllerWrapUpPatch
         {
             try
             {
-                WrapUpPostfix(__instance.exiled);
+                WrapUpPostfix(__instance.initData);
             }
             finally
             {
@@ -43,7 +43,7 @@ static class ExileControllerWrapUpPatch
         {
             try
             {
-                WrapUpPostfix(__instance.exiled);
+                WrapUpPostfix(__instance.initData);
             }
             finally
             {
@@ -51,17 +51,19 @@ static class ExileControllerWrapUpPatch
             }
         }
     }
-    static void WrapUpPostfix(NetworkedPlayerInfo? exiled)
+    static void WrapUpPostfix(ExileController.InitProperties? exiled)
     {
         if (!AmongUsClient.Instance.AmHost) return; //ホスト以外はこれ以降の処理を実行しません;
         FallFromLadder.Reset();
 
         if (exiled == null) return;
 
-        RoleOperations.Current.Trigger(LotusActionType.Exiled, exiled.Object, exiled);
+        PlayerControl exiledPlayer = exiled.networkedPlayer.Object;
 
-        Hooks.PlayerHooks.PlayerExiledHook.Propagate(new PlayerHookEvent(exiled.Object!));
-        Hooks.PlayerHooks.PlayerDeathHook.Propagate(new PlayerDeathHookEvent(exiled.Object!, new ExiledEvent(exiled.Object!, new List<PlayerControl>(), new List<PlayerControl>())));
+        RoleOperations.Current.Trigger(LotusActionType.Exiled, exiledPlayer, exiled);
+
+        Hooks.PlayerHooks.PlayerExiledHook.Propagate(new PlayerHookEvent(exiledPlayer!));
+        Hooks.PlayerHooks.PlayerDeathHook.Propagate(new PlayerDeathHookEvent(exiledPlayer!, new ExiledEvent(exiledPlayer!, new List<PlayerControl>(), new List<PlayerControl>())));
     }
 
     static void WrapUpFinalizer()
