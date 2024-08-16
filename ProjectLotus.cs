@@ -27,6 +27,8 @@ using Lotus.Extensions;
 using VentLib.Options.UI.Controllers;
 using Lotus.Roles.Internals.Attributes;
 using VentLib.Version.BuiltIn;
+using VentLib.Options.UI.Controllers.Search;
+using Lotus.Utilities;
 #if !DEBUG
 using VentLib.Utilities.Debug.Profiling;
 #endif
@@ -47,7 +49,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
     public const string MajorVersion = "1";
     public const string MinorVersion = "1"; // Update with each release
     public const string PatchVersion = "0";
-    public const string BuildNumber = "0863";
+    public const string BuildNumber = "0976";
 
     public static string PluginVersion = typeof(ProjectLotus).Assembly.GetName().Version!.ToString();
 
@@ -55,7 +57,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 
     public static readonly string ModName = "Project Lotus";
     public static readonly string ModColor = "#4FF918";
-    public static readonly string DevVersionStr = "Dev August 3 2024";
+    public static readonly string DevVersionStr = "Dev August 13 2024";
     public static bool DevVersion = false;
 
     private static Harmony _harmony = null!;
@@ -109,12 +111,12 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 
         _harmony = new Harmony(Id);
         //Profilers.Global.SetActive(false);
-        log.Info($"{Application.version}", "AmongUs Version");
+        log.Info($"AmongUs Version - {Application.version}");
 
         SettingsOptionController.Enable();
         GameModeManager = new GameModeManager();
 
-        log.Info(CurrentVersion.ToString(), "GitVersion");
+        log.Info("GitVersion - " + CurrentVersion.ToString());
 
         // Setup, order matters here
 
@@ -128,6 +130,13 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 
         RoleOptionController.Enable();
         RoleOptionController.RemoveBuiltInTabs();
+
+        SearchBarController.SetEnabled(true);
+        SearchBarController.SetSearchInfo(new SearchBar(
+            () => AssetLoader.LoadLotusSprite("searchbar.png", 300, true),
+            () => AssetLoader.LoadLotusSprite("searchicon.png", 100, true),
+            greenOnHover: false
+        ));
 
         FinishedLoading = true;
         log.High("Finished Initializing Project Lotus. Sending Post-Initialization Event");
