@@ -99,7 +99,7 @@ public class Retributionist : NeutralKillingBase
         Async.Schedule(() => RpcV3.Immediate(MyPlayer.MyPhysics.NetId, RpcCalls.BootFromVent).WritePacked(randomVent.Id).Send(MyPlayer.GetClientId()), NetUtils.DeriveDelay(1.1f));
     }
 
-    [RoleAction(LotusActionType.MeetingCalled)]
+    [RoleAction(LotusActionType.ReportBody)]
     private void CheckRevenge()
     {
         if (!MyPlayer.IsAlive() || attacker == null) return;

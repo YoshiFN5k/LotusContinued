@@ -42,7 +42,7 @@ public class TimeThief : Vanilla.Impostor
         return flag;
     }
 
-    [RoleAction(LotusActionType.MeetingCalled, ActionFlag.WorksAfterDeath | ActionFlag.GlobalDetector)]
+    [RoleAction(LotusActionType.ReportBody, ActionFlag.WorksAfterDeath | ActionFlag.GlobalDetector, priority: API.Priority.Low)]
     private void TimeThiefSubtractMeetingTime()
     {
         discussionRemote?.ForEach(d => d.Delete());

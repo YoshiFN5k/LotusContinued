@@ -37,13 +37,16 @@ public class MeetingPrep
     /// <param name="reporter">Optional player, if provided, uses rpc to call meeting</param>
     /// <param name="deadBody">Optional reported body</param>
     /// <returns>the current meeting delegate</returns>
-    public static MeetingDelegate? PrepMeeting(PlayerControl? reporter = null, NetworkedPlayerInfo? deadBody = null)
+    public static MeetingDelegate? PrepMeeting(PlayerControl? reporter = null, NetworkedPlayerInfo? deadBody = null, bool checkReportBodyCancel = true)
     {
         if (!Prepped) _meetingDelegate = new MeetingDelegate();
         if (Prepped || !AmongUsClient.Instance.AmHost) return _meetingDelegate;
-        ActionHandle handle = ActionHandle.NoInit();
-        if (reporter != null) RoleOperations.Current.TriggerForAll(LotusActionType.MeetingCalled, reporter, handle, Optional<NetworkedPlayerInfo>.Of(deadBody));
-        if (handle.IsCanceled) return null;
+        if (checkReportBodyCancel)
+        {
+            ActionHandle handle = ActionHandle.NoInit();
+            if (reporter != null) RoleOperations.Current.TriggerForAll(LotusActionType.ReportBody, reporter, handle, Optional<NetworkedPlayerInfo>.Of(deadBody));
+            if (handle.IsCanceled) return null;
+        }
 
         Game.State = GameState.InMeeting;
 

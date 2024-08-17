@@ -43,7 +43,7 @@ public class Camouflager : Shapeshifter
         Players.GetAlivePlayers().Where(p => p.PlayerId != MyPlayer.PlayerId).Do(p => p.CRpcRevertShapeshift(true));
     }
 
-    [RoleAction(LotusActionType.MeetingCalled, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath, priority: API.Priority.VeryLow)]
+    [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath, priority: API.Priority.VeryLow)]
     private void HandleMeetingCall(PlayerControl reporter, Optional<NetworkedPlayerInfo> reported, ActionHandle handle)
     {
         if (!camouflaged) return;

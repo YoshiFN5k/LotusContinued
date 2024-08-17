@@ -43,7 +43,7 @@ public class Jester : CustomRole
         jesterWin.Activate();
     }
 
-    [RoleAction(LotusActionType.MeetingCalled)]
+    [RoleAction(LotusActionType.ReportBody)]
     public void CheckCallMeeting(PlayerControl caller, ActionHandle handle, Optional<NetworkedPlayerInfo> deadBody)
     {
         if (caller.PlayerId != MyPlayer.PlayerId) return;

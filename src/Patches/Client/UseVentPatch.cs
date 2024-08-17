@@ -15,14 +15,9 @@ class UseVentPatch
 {
     public static bool CanUseVent(PlayerControl player, CustomRole role, Vent _, bool isSubRole = false)
     {
-        if (isSubRole)
-        {
-            // RoleTypes subRoleVanila = role.RealRole;
-            // if (subRoleVanila.IsCrewmate()) return subRoleVanila is RoleTypes.Engineer;
-            return role.CanVent();
-        }
+        if (isSubRole) return role.CanVent();
         bool canUseVent = player.GetSubroles().Count != 0 ? player.GetSubroles().Any(sR => CanUseVent(player, sR, _, true)) : false;
-        RoleTypes vanillaRole = player.GetVanillaRole();
+        RoleTypes vanillaRole = player.Data.Role.Role;
         if (vanillaRole.IsCrewmate()) canUseVent = canUseVent || vanillaRole is RoleTypes.Engineer;
         canUseVent = canUseVent || role.CanVent();
         return canUseVent;

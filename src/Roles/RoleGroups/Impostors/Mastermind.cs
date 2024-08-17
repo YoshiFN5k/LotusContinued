@@ -139,7 +139,7 @@ public class Mastermind : Impostor
 
 
     [RoleAction(LotusActionType.PlayerDeath)] // MY DEATH
-    [RoleAction(LotusActionType.MeetingCalled, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath)]
+    [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath, priority: API.Priority.Low)]
     public override void HandleDisconnect()
     {
         manipulatedPlayers.ToArray().Filter(Players.PlayerById).ForEach(p =>

@@ -29,7 +29,11 @@ public class Oblivious : Subrole
     }
 
     [RoleAction(LotusActionType.ReportBody, priority: Priority.VeryLow)]
-    private void CancelReportBody(Optional<NetworkedPlayerInfo> deadBody, ActionHandle handle) => handle.Cancel(); // easiest role lol
+    private void CancelReportBody(Optional<NetworkedPlayerInfo> deadBody, ActionHandle handle)
+    {
+        // if (deadBody.Exists())
+        handle.Cancel(); // easiest role lol
+    }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)

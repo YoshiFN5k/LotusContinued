@@ -48,7 +48,7 @@ public class Vampire : Impostor, IVariableRole
     [RoleAction(LotusActionType.RoundStart)]
     public void ResetBitten() => bitten.Clear();
 
-    [RoleAction(LotusActionType.MeetingCalled)]
+    [RoleAction(LotusActionType.ReportBody, priority: API.Priority.Low)]
     public void KillBitten() => bitten.Filter(Players.PlayerById).Where(p => p.IsAlive()).ForEach(p => MyPlayer.InteractWith(p, CreateInteraction(p)));
 
     private DelayedInteraction CreateInteraction(PlayerControl target)

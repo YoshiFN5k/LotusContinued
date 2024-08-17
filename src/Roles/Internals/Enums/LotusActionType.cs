@@ -75,10 +75,10 @@ public enum LotusActionType
     RoundStart,
     RoundEnd,
     /// <summary>
-    /// Triggers when any player reports a body. <br></br>Parameters: (PlayerInfo reported)
+    /// Triggers when any player reports a body or calls a meeting. <br></br>Parameters: (Optional<NetworkedPlayerInfo>)
     /// </summary>
     /// <param name="reporter"><b>(GLOBAL ONLY)</b><see cref="PlayerControl"/> the player reporting the body.</param>
-    /// <param name="target"><see cref="Optional"/> an optional of <see cref="DeadBody"/>, containing the player being reported. Null if meeting.</param>
+    /// <param name="target"><see cref="Optional"/> an optional of <see cref="NetworkedPlayerInfo"/>, containing the player being reported. Null if meeting.</param>
     ReportBody,
     /// <summary>
     /// Triggers when any player completes a task. This cannot be canceled (Currently)
@@ -131,11 +131,5 @@ public enum LotusActionType
     /// <param name="isTie"><see cref="bool"/> a boolean representing if the meeting tied</param>
     /// <param name="player vote counts"><see cref="Dictionary{TKey,TValue}"/> a dictionary containing (byte, int) representing the amount of votes a player got</param>
     /// <param name="playerVoteStatus"><see cref="Dictionary{TKey,TValue}"/> a dictionary containing (byte, List[Optional[byte]] containing the voting statuses of all players)</param>
-    MeetingEnd,
-    /// <summary>
-    /// Triggers when a meeting is called
-    /// </summary>
-    /// <param name="player"><b>(GLOBAL ONLY)</b><see cref="PlayerControl"/> the player who called the meeting</param>
-    /// <param name="deadBody"><see cref="Optional{T}"/> optional <see cref="NetworkedPlayerInfo"/> which exists if the meeting was called byt reporting a body</param>
-    MeetingCalled
+    MeetingEnd
 }

@@ -51,7 +51,7 @@ class SelectRolesPatch
 
     public static void Postfix()
     {
-        if (!AmongUsClient.Instance.AmHost || encounteredError) return;
+        if (encounteredError) return;
         desyncedIntroText = new();
 
         TextTable textTable = new("ID", "Color", "Player", "Role", "SubRoles");
@@ -62,7 +62,8 @@ class SelectRolesPatch
             textTable.AddEntry((object)p.PlayerId, ModConstants.ColorNames[p.cosmetics.ColorId], p.name, primaryRole.RoleName, p.SecondaryRoles().Fuse());
             desyncedIntroText.Add(p.PlayerId, p.NameModel().GetComponentHolder<TextHolder>().Add(new TextComponent(new LiveString(primaryRole.GetRoleIntroString()), GameState.InIntro, ViewMode.Replace, p)));
         });
-        log.Debug($"oleManager::SelectRoles~Postfix - Role Assignments\n{textTable}");
+        log.Debug($"RoleManager::SelectRoles~Postfix - Role Assignments\n{textTable}");
+        if (!AmongUsClient.Instance.AmHost || encounteredError) return;
         Game.RenderAllForAll(state: GameState.InIntro);
     }
 }

@@ -85,7 +85,7 @@ public class AgiTater : NeutralKillingBase
         bombs.RemoveAll(b => b.DoUpdate());
     }
 
-    [RoleAction(LotusActionType.MeetingCalled, ActionFlag.WorksAfterDeath | ActionFlag.GlobalDetector)]
+    [RoleAction(LotusActionType.ReportBody, ActionFlag.WorksAfterDeath | ActionFlag.GlobalDetector, priority: API.Priority.Low)]
     private void KillPlayersBeforeMeeting()
     {
         if (Condition.HasFlag(ExplodeCondition.Meetings)) bombs.RemoveAll(b => b.Explode());

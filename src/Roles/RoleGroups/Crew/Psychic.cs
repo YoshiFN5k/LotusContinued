@@ -31,7 +31,7 @@ public class Psychic : Crewmate
     private List<Remote<NameComponent>> remotes;
 
 
-    [RoleAction(LotusActionType.MeetingCalled)]
+    [RoleAction(LotusActionType.ReportBody)]
     private void MarkMeetingPlayers()
     {
         List<PlayerControl> eligiblePlayers = Players.GetAlivePlayers().Where(IsEvil).ToList();
