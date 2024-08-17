@@ -153,7 +153,7 @@ public abstract class AbstractBaseRole
         RoleOptions.Color = RoleColor;
 
         if (RoleFlags.HasFlag(RoleFlag.DontRegisterOptions) || RoleOptions.GetValueText() == "N/A") goto finished;
-        Option percentageOption = RoleOptions.Children.Find(child => child.Name() == "Percentage");
+        Option? percentageOption = RoleOptions.Children.FirstOrDefault(child => child.Name() == "Percentage", null!);
         if (percentageOption != null) this.Chance = (int)percentageOption.GetValue();
         else
         {

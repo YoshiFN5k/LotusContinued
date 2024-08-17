@@ -53,9 +53,24 @@ public class RoleCommand
     private static void ShowRole(PlayerControl source, CustomRole role)
     {
         if (!PluginDataManager.TemplateManager.TryFormat(role, "help-role", out string formatted))
-            formatted = $"{role.RoleName} ({role.Faction.Name()})\n{role.Blurb}\n{role.Description}\n\nOptions:\n{OptionUtils.OptionText(role.RoleOptions)}";
+            formatted = $"{role.RoleName} ({role.Faction.Name()})\n{role.Blurb}\n{role.Description}\n\nOptions:\n{GetRoleText(role)}";
 
         SendSpecial(source, formatted);
+    }
+
+    private static string GetRoleText(CustomRole role)
+    {
+        string finalString = $"• {role.RoleName}: {role.Count} × {role.Chance}%";
+        if (role.Count > 1) finalString += $" (+ {role.AdditionalChance}%)\n";
+        else finalString += "\n";
+
+        role.RoleOptions.Children.ForEach(c =>
+        {
+            if (c.Name() == "Percentage" | c.Name() == RoleTranslations.MaximumText) return;
+            finalString += OptionUtils.OptionText(c, 1);
+        });
+
+        return finalString;
     }
 
     private static void SendSpecial(PlayerControl source, string message)
