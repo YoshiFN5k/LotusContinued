@@ -104,9 +104,9 @@ public class Bodyguard : Crewmate
     }
 
     [RoleAction(LotusActionType.Exiled, ActionFlag.GlobalDetector)]
-    private void CheckForExiledPlayer(NetworkedPlayerInfo exiled, ActionHandle handle)
+    private void CheckForExiledPlayer(PlayerControl exiled, ActionHandle handle)
     {
-        if (exiled.Object != null) CheckForDisconnectAndDeath(exiled.Object, handle);
+        if (exiled != null) CheckForDisconnectAndDeath(exiled, handle);
     }
 
     [RoleAction(LotusActionType.PlayerDeath)]
@@ -147,15 +147,6 @@ public class Bodyguard : Crewmate
             if (interactor.InteractWith(MyPlayer, LotusInteraction.FatalInteraction.Create(this)) is InteractionResult.Proceed)
                 Game.MatchData.GameHistory.AddEvent(new KillEvent(interactor, MyPlayer));
         }
-
-        // interactor.PrimaryRole().GetActions(LotusActionType.Attack)
-        //     .FirstOrOptional()
-        //     .Handle(t => t.Item1.Execute(t.Item2, new object[] { MyPlayer }),
-        //     () =>
-        //     {
-        //         if (interactor.InteractWith(MyPlayer, LotusInteraction.FatalInteraction.Create(this)) is InteractionResult.Proceed)
-        //             Game.MatchData.GameHistory.AddEvent(new KillEvent(interactor, MyPlayer));
-        //     });
     }
 
     private ChatHandler CHandler(string message) => new ChatHandler()

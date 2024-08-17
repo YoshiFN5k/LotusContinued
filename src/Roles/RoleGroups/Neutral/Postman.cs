@@ -67,7 +67,7 @@ public class Postman : Crewmate
     }
 
     [RoleAction(LotusActionType.Exiled, ActionFlag.GlobalDetector)]
-    private void CheckEndMeeting(NetworkedPlayerInfo exiled)
+    private void CheckEndMeeting(PlayerControl exiled)
     {
         if (exiled.PlayerId == MyPlayer.PlayerId) components.ForEach(c => c.Delete());
         if (completedDelivery) return;

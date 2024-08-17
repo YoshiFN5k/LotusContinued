@@ -110,9 +110,9 @@ public class Medic : Crewmate
     }
 
     [RoleAction(LotusActionType.Exiled, ActionFlag.GlobalDetector)]
-    private void CheckForExiledPlayer(NetworkedPlayerInfo exiled, ActionHandle handle)
+    private void CheckForExiledPlayer(PlayerControl exiled, ActionHandle handle)
     {
-        if (exiled.Object != null) CheckForDisconnectAndDeath(exiled.Object, handle);
+        if (exiled != null) CheckForDisconnectAndDeath(exiled, handle);
     }
 
     [RoleAction(LotusActionType.PlayerDeath)]

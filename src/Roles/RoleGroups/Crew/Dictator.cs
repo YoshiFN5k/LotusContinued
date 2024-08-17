@@ -93,7 +93,7 @@ public class Dictator : Crewmate
     private void FinalizeDictate(MeetingDelegate meetingDelegate)
     {
         meetingDelegate.ClearAllVotes();
-        meetingDelegate.CastVote(MyPlayer.PlayerId, Optional<byte>.NonNull(dictatedPlayer.PlayerId));
+        meetingDelegate.CastVote(MyPlayer.PlayerId, Optional<byte>.NonNull(dictatedPlayer!.PlayerId));
         dictateMessage?.Send();
         if (!shouldSuicide) return;
 

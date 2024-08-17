@@ -67,7 +67,6 @@ public enum LotusActionType
     /// Triggers when any player gets exiled (by being voted out)
     /// </summary>
     /// <param name="victim"><b>(GLOBAL ONLY)</b> <see cref="PlayerControl"/> the exiled player</param>
-    /// <param name="exiled"><see cref="NetworkedPlayerInfo"/> the exiled player</param>
     Exiled,
     /// <summary>
     /// Triggers on Round Start (end of meetings, and start of game)

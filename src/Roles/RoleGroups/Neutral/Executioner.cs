@@ -51,7 +51,7 @@ public class Executioner : CustomRole
     }
 
     [RoleAction(LotusActionType.Exiled, ActionFlag.GlobalDetector)]
-    private void CheckExecutionerWin(NetworkedPlayerInfo exiled)
+    private void CheckExecutionerWin(PlayerControl exiled)
     {
         if (target == null || target.PlayerId != exiled.PlayerId) return;
         List<PlayerControl> winners = new() { MyPlayer };

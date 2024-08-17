@@ -57,10 +57,11 @@ static class ExileControllerWrapUpPatch
         FallFromLadder.Reset();
 
         if (exiled == null) return;
+        if (exiled.networkedPlayer == null) return;
 
         PlayerControl exiledPlayer = exiled.networkedPlayer.Object;
 
-        RoleOperations.Current.Trigger(LotusActionType.Exiled, exiledPlayer, exiled);
+        RoleOperations.Current.Trigger(LotusActionType.Exiled, exiledPlayer);
 
         Hooks.PlayerHooks.PlayerExiledHook.Propagate(new PlayerHookEvent(exiledPlayer!));
         Hooks.PlayerHooks.PlayerDeathHook.Propagate(new PlayerDeathHookEvent(exiledPlayer!, new ExiledEvent(exiledPlayer!, new List<PlayerControl>(), new List<PlayerControl>())));

@@ -65,7 +65,7 @@ public class Demon : NeutralKillingBase
     public override void HandleDisconnect() => CleanupHealthBar(MyPlayer);
 
     [RoleAction(LotusActionType.Exiled, ActionFlag.GlobalDetector)]
-    private void CleanupHealthBarExiled(NetworkedPlayerInfo exiled)
+    private void CleanupHealthBarExiled(PlayerControl exiled)
     {
         healthBars[exiled.PlayerId].Delete();
         if (exiled.PlayerId == MyPlayer.PlayerId) healthBars.Values.ForEach(remote => remote.Delete());
