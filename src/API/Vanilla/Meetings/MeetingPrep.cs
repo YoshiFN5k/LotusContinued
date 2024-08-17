@@ -10,6 +10,8 @@ using Lotus.Roles.Operations;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
+using Lotus.GameModes.Standard;
+using Lotus.Options;
 
 namespace Lotus.API.Vanilla.Meetings;
 
@@ -41,12 +43,23 @@ public class MeetingPrep
     {
         if (!Prepped) _meetingDelegate = new MeetingDelegate();
         if (Prepped || !AmongUsClient.Instance.AmHost) return _meetingDelegate;
+        if (Game.CurrentGameMode is StandardGameMode && deadBody == null && GeneralOptions.MeetingOptions.SyncMeetingButtons)
+        {
+            if (GeneralOptions.MeetingOptions.MeetingButtonPool >= Game.MatchData.EmergencyButtonsUsed)
+            {
+                _meetingDelegate = null!;
+                log.Debug($"{reporter?.name ?? "null player"}'s was canceled because there are no more meetings. ({GeneralOptions.MeetingOptions.MeetingButtonPool}) >= {Game.MatchData.EmergencyButtonsUsed}");
+                return _meetingDelegate;
+            }
+        }
         if (checkReportBodyCancel)
         {
             ActionHandle handle = ActionHandle.NoInit();
             if (reporter != null) RoleOperations.Current.TriggerForAll(LotusActionType.ReportBody, reporter, handle, Optional<NetworkedPlayerInfo>.Of(deadBody));
             if (handle.IsCanceled) return null;
         }
+
+        if (deadBody == null) Game.MatchData.EmergencyButtonsUsed += 1;
 
         Game.State = GameState.InMeeting;
 
