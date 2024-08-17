@@ -62,7 +62,7 @@ public class IdentityThief : Impostor
     }
 
     // might conflict with camouflager
-    [RoleAction(LotusActionType.MeetingCalled, ActionFlag.GlobalDetector, priority: Priority.Low)]
+    [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector, priority: Priority.Low)]
     private void HandleMeetingCall(PlayerControl reporter, Optional<NetworkedPlayerInfo> reported, ActionHandle handle)
     {
         if (!shapeshiftedThisRound) return;

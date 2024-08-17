@@ -64,7 +64,7 @@ public class Vampiress : Impostor
         log.Trace($"Swapping Vampire Mode: {currentMode} => {mode}");
     }
 
-    [RoleAction(LotusActionType.MeetingCalled, ActionFlag.WorksAfterDeath)]
+    [RoleAction(LotusActionType.ReportBody, ActionFlag.WorksAfterDeath, priority: API.Priority.Low)]
     public void KillBitten()
     {
         bitten.Filter(Players.PlayerById).Where(p => p.IsAlive()).ForEach(p =>
