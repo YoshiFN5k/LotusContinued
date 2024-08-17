@@ -7,10 +7,10 @@ namespace Lotus.Addons;
 public class AddonInfo : IRpcSendable<AddonInfo>
 {
     internal ulong UUID;
-    internal string AssemblyShortName;
-    internal string AssemblyFullName;
-    internal string Name;
-    internal string Version;
+    internal string AssemblyShortName = null!;
+    internal string AssemblyFullName = null!;
+    internal string Name = null!;
+    internal string Version = null!;
     internal Mismatch Mismatches = Mismatch.None;
 
     public AddonInfo Read(MessageReader reader)

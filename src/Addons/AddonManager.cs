@@ -12,6 +12,7 @@ using VentLib;
 using VentLib.Networking.RPC.Attributes;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
+using Lotus.API.Player;
 
 namespace Lotus.Addons;
 
@@ -74,11 +75,12 @@ public class AddonManager
     {
         List<AddonInfo> hostInfo = Addons.Select(AddonInfo.From).ToList();
         int senderId = Vents.GetLastSender((uint)ModCalls.RecieveAddons)?.GetClientId() ?? 999;
-        $"Last Sender: {senderId}".DebugLog();
+        log.Debug($"Last Sender: {senderId}");
+
 
         List<AddonInfo> mismatchInfo = Addons.Select(hostAddon =>
         {
-            AddonInfo haInfo = AddonInfo.From(hostAddon);
+            AddonInfo haInfo = hostInfo.First(h => h.Name == hostAddon.Name);
             AddonInfo? matchingAddon = receivedAddons.FirstOrDefault(a => a == haInfo);
             if (matchingAddon == null)
             {
@@ -105,12 +107,14 @@ public class AddonManager
         ReceiveAddonVerification(mismatchInfo.DistinctBy(addon => addon.Name).Where(addon => addon.Mismatches is not Mismatch.None).ToList(), senderId);
     }
 
-    [ModRPC((uint)ModCalls.RecieveAddons, RpcActors.Host, RpcActors.LastSender, MethodInvocation.ExecuteAfter)]
+    [ModRPC((uint)ModCalls.RecieveAddons, RpcActors.Host, RpcActors.NonHosts, MethodInvocation.ExecuteAfter)]
     public static void ReceiveAddonVerification(List<AddonInfo> addons, int senderId)
     {
         if (addons.Count == 0) return;
-        log.Exception(" Error Validating Addons. All CustomRPCs between the host and this client have been disabled.", "VerifyAddons");
-        log.Exception(" -=-=-=-=-=-=-=-=-=[Errored Addons]=-=-=-=-=-=-=-=-=-", "VerifyAddons");
+        PlayerControl? senderControl = Players.GetAllPlayers().FirstOrDefault(p => p.GetClientId() == senderId);
+        string clientName = senderControl == null ? "(could not find sender)" : (senderControl.PlayerId == PlayerControl.LocalPlayer.PlayerId ? "this client" : senderControl.name);
+        log.Exception($"VerifyAddons - Error Validating Addons. All CustomRPCs between the host and {clientName} have been disabled.");
+        log.Exception(" -=-=-=-=-=-=-=-=-=[Errored Addons]=-=-=-=-=-=-=-=-=-");
         foreach (var rejectReason in addons.Where(info => info.Mismatches is not Mismatch.None).Select(addonInfo => addonInfo.Mismatches
              switch
         {
@@ -119,6 +123,8 @@ public class AddonManager
             Mismatch.HostMissingAddon => $" {addonInfo.Name}:{addonInfo.Version} => Host Missing Addon ",
             _ => throw new ArgumentOutOfRangeException()
         }))
-            log.Exception(rejectReason, "VerifyAddons");
+            log.Exception("VerifyAddons" + rejectReason);
+        if (clientName != "this client") return;
+        // stop rpcs from bad addons
     }
 }

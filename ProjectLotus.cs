@@ -57,7 +57,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 
     public static readonly string ModName = "Project Lotus";
     public static readonly string ModColor = "#4FF918";
-    public static readonly string DevVersionStr = "Dev August 13 2024";
+    public static readonly string DevVersionStr = "Dev August 17 2024";
     public static bool DevVersion = false;
 
     private static Harmony _harmony = null!;
@@ -73,7 +73,6 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 #if DEBUG
         DevVersion = true;
         RpcMonitor.Enable();
-        DebugExtensions.Start();
 #endif
         Instance = this;
 
