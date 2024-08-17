@@ -29,10 +29,10 @@ class GameJoinPatch
         Async.WaitUntil(() => PlayerControl.LocalPlayer, p => p != null, p =>
         {
             gameJoinHookEvent.Loaded = true;
+            AddonManager.SendAddonsToHost();
             PluginDataManager.TitleManager.ApplyTitleWithChatFix(p);
         }, 0.1f, 20);
-
-        Async.Schedule(() => AddonManager.VerifyClientAddons(AddonManager.Addons.Select(AddonInfo.From).ToList()), NetUtils.DeriveDelay(0.5f));
+        if (!AmongUsClient.Instance.AmHost) return;
 
         if (GeneralOptions.AdminOptions.AutoStartMaxTime != -1 && GeneralOptions.AdminOptions.AutoStartEnabled)
         {

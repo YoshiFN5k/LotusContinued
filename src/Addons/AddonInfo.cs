@@ -4,7 +4,7 @@ using VentLib.Networking.Interfaces;
 
 namespace Lotus.Addons;
 
-public class AddonInfo: IRpcSendable<AddonInfo>
+public class AddonInfo : IRpcSendable<AddonInfo>
 {
     internal ulong UUID;
     internal string AssemblyShortName;
@@ -54,8 +54,8 @@ public class AddonInfo: IRpcSendable<AddonInfo>
             Mismatches = (Mismatches | Mismatch.Version) & ~Mismatch.None;
     }
 
-    public static bool operator ==(AddonInfo addon1, AddonInfo addon2) => addon1?.Equals(addon2) ?? addon2 is null;
-    public static bool operator !=(AddonInfo addon1, AddonInfo addon2) => !addon1?.Equals(addon2) ?? addon2 is not null;
+    public static bool operator ==(AddonInfo? addon1, AddonInfo? addon2) => addon1?.Equals(addon2) ?? addon2 is null;
+    public static bool operator !=(AddonInfo? addon1, AddonInfo? addon2) => !addon1?.Equals(addon2) ?? addon2 is not null;
 
     public override bool Equals(object? obj)
     {

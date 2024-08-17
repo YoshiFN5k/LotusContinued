@@ -1,3 +1,4 @@
+using System.Linq;
 using HarmonyLib;
 using Lotus.Addons;
 using Lotus.Managers.Date;
@@ -38,7 +39,7 @@ public class VersionShowerStartPatch
         ProjectLotus.CredentialsText += $": {_endColor.Colorize($"{ProjectLotus.Instance.Version().Branch}({ProjectLotus.Instance.Version().CommitNumber})")}";
 #endif
 
-        int addonCount = AddonManager.Addons.Count;
+        int addonCount = AddonManager.GetAllAddons().Count();
         if (addonCount > 0)
             ProjectLotus.CredentialsText += $"\r\n{new Color(1f, 0.67f, 0.37f).Colorize($"{addonCount} {addonsLoaded}")}";
 

@@ -89,7 +89,8 @@ public class Bastion : Engineer
 
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier).RoleColor("#524f4d");
+        base.Modify(roleModifier)
+        .RoleColor("#524f4d");
 
     [Localized(nameof(Bastion))]
     internal static class BastionTranslations

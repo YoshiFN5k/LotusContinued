@@ -124,7 +124,6 @@ public abstract class AbstractBaseRole
         RoleModifier _;
         try
         {
-            // _ = _editors.Aggregate(Modify(new RoleModifier(this)), (current, editor) => editor.HookModifier(current));
             _ = Modify(new RoleModifier(this));
         }
         catch { }
@@ -516,7 +515,7 @@ public abstract class AbstractBaseRole
             return this;
         }
 
-        public RoleModifier IntroSound(RoleTypes roleType) => IntroSound(() => BeginCrewmatePatch.GetIntroSound(roleType));
+        public RoleModifier IntroSound(RoleTypes roleType) => IntroSound(() => BeginCrewmatePatch.GetIntroSound(roleType)!);
 
         public RoleModifier IntroSound(Func<AudioClip> sound)
         {

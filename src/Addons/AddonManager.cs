@@ -20,9 +20,11 @@ public class AddonManager
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(AddonManager));
 
     public static LogLevel AddonLL = LogLevel.Info.Similar("ADDON", ConsoleColor.Magenta);
-    public static List<LotusAddon> Addons = new();
+    private static List<LotusAddon> Addons = new();
 
-    public static void ImportAddons()
+    public static IEnumerable<LotusAddon> GetAllAddons(bool includeHidden = true) => Addons.Where(x => includeHidden | x.DisableRPC());
+
+    internal static void ImportAddons()
     {
         DirectoryInfo addonDirectory = new("./addons/");
         if (!addonDirectory.Exists)
@@ -60,21 +62,28 @@ public class AddonManager
         }
     }
 
-    [ModRPC((uint)ModCalls.VerifyAddons, RpcActors.NonHosts, RpcActors.Host)]
-    public static void VerifyClientAddons(List<AddonInfo> addons)
+    internal static void SendAddonsToHost()
+    {
+        if (AmongUsClient.Instance.AmHost) return;
+        List<AddonInfo> addonsToSend = GetAllAddons(false).Select(AddonInfo.From).ToList();
+        Vents.FindRPC((uint)ModCalls.RecieveAddons)!.Send([-1], addonsToSend);
+    }
+
+    [ModRPC((uint)ModCalls.RecieveAddons, RpcActors.NonHosts, RpcActors.Host)]
+    public static void VerifyClientAddons(List<AddonInfo> receivedAddons)
     {
         List<AddonInfo> hostInfo = Addons.Select(AddonInfo.From).ToList();
-        int[] senderId = { Vents.GetLastSender((uint)ModCalls.VerifyAddons)?.GetClientId() ?? 999 };
+        int senderId = Vents.GetLastSender((uint)ModCalls.RecieveAddons)?.GetClientId() ?? 999;
         $"Last Sender: {senderId}".DebugLog();
 
         List<AddonInfo> mismatchInfo = Addons.Select(hostAddon =>
         {
             AddonInfo haInfo = AddonInfo.From(hostAddon);
-            AddonInfo matchingAddon = addons.FirstOrDefault(a => a == haInfo);
+            AddonInfo? matchingAddon = receivedAddons.FirstOrDefault(a => a == haInfo);
             if (matchingAddon == null)
             {
                 haInfo.Mismatches = Mismatch.ClientMissingAddon;
-                Vents.BlockClient(hostAddon.BundledAssembly, senderId[0]);
+                Vents.BlockClient(hostAddon.BundledAssembly, senderId);
                 return haInfo;
             }
 
@@ -82,22 +91,22 @@ public class AddonManager
             return matchingAddon;
         }).ToList();
 
-        mismatchInfo.AddRange(addons.Select(clientAddon =>
+        mismatchInfo.AddRange(receivedAddons.Select(clientAddon =>
             {
-                AddonInfo matchingAddon = hostInfo.FirstOrDefault(a => a == clientAddon);
-                if (matchingAddon == null)
+                AddonInfo? matchingAddon = hostInfo.FirstOrDefault(a => a == clientAddon);
+                if (matchingAddon! == null!)
                     clientAddon.Mismatches = Mismatch.HostMissingAddon;
                 else
                     clientAddon.CheckVersion(matchingAddon);
                 return clientAddon;
             }));
 
-        mismatchInfo.DistinctBy(addon => addon.Name).Where(addon => addon.Mismatches is not (Mismatch.None or Mismatch.ClientMissingAddon)).Do(a => Vents.FindRPC(1017)!.Send(senderId, a.AssemblyFullName, 0));
-        ReceiveAddonVerification(mismatchInfo.DistinctBy(addon => addon.Name).Where(addon => addon.Mismatches is not Mismatch.None).ToList());
+        mismatchInfo.DistinctBy(addon => addon.Name).Where(addon => addon.Mismatches is not (Mismatch.None or Mismatch.ClientMissingAddon)).Do(a => Vents.FindRPC(1017)!.Send([senderId], a.AssemblyFullName, 0));
+        ReceiveAddonVerification(mismatchInfo.DistinctBy(addon => addon.Name).Where(addon => addon.Mismatches is not Mismatch.None).ToList(), senderId);
     }
 
-    [ModRPC((uint)ModCalls.VerifyAddons, RpcActors.Host, RpcActors.LastSender)]
-    public static void ReceiveAddonVerification(List<AddonInfo> addons)
+    [ModRPC((uint)ModCalls.RecieveAddons, RpcActors.Host, RpcActors.LastSender, MethodInvocation.ExecuteAfter)]
+    public static void ReceiveAddonVerification(List<AddonInfo> addons, int senderId)
     {
         if (addons.Count == 0) return;
         log.Exception(" Error Validating Addons. All CustomRPCs between the host and this client have been disabled.", "VerifyAddons");

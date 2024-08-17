@@ -13,14 +13,9 @@ public class RpcCheckForOtherMods
     public static void Prefix(PlayerControl __instance, [HarmonyArgument(0)] byte callId, [HarmonyArgument(1)] MessageReader reader)
     {
         if (!AmongUsClient.Instance.AmHost) return;
-        switch (callId)
-        {
-            case TOHVersionCheck:
-                AmongUsClient.Instance.KickPlayerWithMessage(__instance, $"{__instance.name} was kicked for joining with a variation of Town Of Host.");
-                break;
-            case EHRVersionCheck:
-                AmongUsClient.Instance.KickPlayerWithMessage(__instance, $"{__instance.name} was kicked for joining with Endless Host Roles.");
-                break;
-        }
+        if (callId is TOHVersionCheck)
+            AmongUsClient.Instance.KickPlayerWithMessage(__instance, $"{__instance.name} was kicked for joining with a variation of Town Of Host.");
+        else if (callId is EHRVersionCheck)
+            AmongUsClient.Instance.KickPlayerWithMessage(__instance, $"{__instance.name} was kicked for joining with Endless Host Roles.");
     }
 }

@@ -17,11 +17,6 @@ public static class DebugExtensions
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(DebugExtensions));
 
-    public static void Start()
-    {
-
-    }
-
     public static void DebugLog(this object obj, string prefixText = "", string tag = "DebugLog", ConsoleColor color = ConsoleColor.DarkGray)
     {
         LogLevel tempLevel = new("OBJ", 0, color);
