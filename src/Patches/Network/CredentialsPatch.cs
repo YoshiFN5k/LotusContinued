@@ -14,7 +14,7 @@ namespace Lotus.Patches.Network;
 public class VersionShowerStartPatch
 {
     [Localized("AddonsLoaded")]
-    private static string addonsLoaded;
+    private static string addonsLoaded = "{0} Addons Loaded";
 
 
     //private static readonly ColorGradient LotusGradient = new(new Color(1f, 0.93f, 0.98f), new Color(1f, 0.57f, 0.73f));
@@ -39,7 +39,7 @@ public class VersionShowerStartPatch
         ProjectLotus.CredentialsText += $": {_endColor.Colorize($"{ProjectLotus.Instance.Version().Branch}({ProjectLotus.Instance.Version().CommitNumber})")}";
 #endif
 
-        int addonCount = AddonManager.GetAllAddons().Count();
+        int addonCount = AddonManager.Addons.Count;
         if (addonCount > 0)
             ProjectLotus.CredentialsText += $"\r\n{new Color(1f, 0.67f, 0.37f).Colorize($"{addonCount} {addonsLoaded}")}";
 

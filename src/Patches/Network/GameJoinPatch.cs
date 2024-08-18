@@ -21,6 +21,7 @@ class GameJoinPatch
     {
         log.High($"Joining Lobby (GameID={__instance.GameId})", "GameJoin");
         SoundManager.Instance.ChangeMusicVolume(DataManager.Settings.Audio.MusicVolume);
+        AddonManager.PlayerAddons = new();
 
         GameJoinHookEvent gameJoinHookEvent = new(_lastGameId != __instance.GameId || ServerAuthPatch.IsLocal);
         Hooks.NetworkHooks.GameJoinHook.Propagate(gameJoinHookEvent);

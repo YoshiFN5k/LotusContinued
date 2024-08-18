@@ -19,7 +19,7 @@ public abstract class LotusAddon
     internal Dictionary<AbstractBaseRole, HashSet<IGameMode>> ExportedDefinitions { get; } = new();
 
     internal readonly List<IFaction> Factions = new();
-    internal readonly List<IGameMode> Gamemodes = new();
+    internal readonly List<IGameMode> GameModes = new();
 
     internal readonly Assembly BundledAssembly = Assembly.GetCallingAssembly();
     internal readonly ulong UUID;
@@ -55,13 +55,6 @@ public abstract class LotusAddon
     }
 
     /// <summary>
-    /// Whether or not to disable rpcs if the host/client do not have this addon. If this is set to false, the host/client will essentially not even know that you have this addon.
-    /// </summary>
-    /// <returns>Boolean</returns>
-    public virtual bool DisableRPC() => true;
-    // You might say that this is kind of stupid idea, but there are a lot of other ways to achieve this without even using an addon.
-
-    /// <summary>
     /// Export your custom roles.
     /// </summary>
     /// <param name="roleDefinitions">List of roles to export.</param>
@@ -72,6 +65,11 @@ public abstract class LotusAddon
         else ExportCustomRoles(roleDefinitions, baseGameModes.Select(gm => ProjectLotus.GameModeManager.GetGameMode(gm) ?? StandardGameMode.Instance).ToArray());
     }
 
+    /// <summary>
+    /// Export your custom roles.
+    /// </summary>
+    /// <param name="roleDefinitions">List of roles to export.</param>
+    /// <param name="baseGameModes">The gamemodes to export these roles in. Make sure they have been registered first.</param>
     public void ExportCustomRoles(IEnumerable<CustomRole> roleDefinitions, params IGameMode[] baseGameModes)
     {
         IGameMode[] targetGameModes = ProjectLotus.GameModeManager.GameModes.Where(gm => baseGameModes.Any(bgm => bgm.GetType().IsInstanceOfType(gm))).ToArray();
@@ -80,6 +78,7 @@ public abstract class LotusAddon
             r.Addon = this;
             HashSet<IGameMode> iGameMode = ExportedDefinitions.GetOrCompute(r, () => new HashSet<IGameMode>());
             targetGameModes.All(x => iGameMode.Add(x));
+            log.Trace($"Exporting GameMode ({r.EnglishRoleName}) for {Name}");
         });
     }
 
@@ -91,14 +90,48 @@ public abstract class LotusAddon
     {
         foreach (IGameMode gamemode in gamemodes)
         {
-            log.Trace($"Exporting GameMode: {gamemode.Name}", "ExportGameModes");
+            log.Trace($"Exporting GameMode ({gamemode.Name}) for {Name}");
             // ProjectLotus.GameModeManager.AddGamemodeSettingToOptions(gamemode.MainTab().GetOptions());
+            GameModes.Add(gamemode);
             ProjectLotus.GameModeManager.GameModes.Add(gamemode);
         }
     }
 
+    /// <summary>
+    /// Export your custom gamemodes.
+    /// </summary>
+    /// <param name="gamemodes">All gamemodes passed through the function.</param>
     public void ExportGameModes(params IGameMode[] gamemodes) => ExportGameModes((IEnumerable<IGameMode>)gamemodes);
 
+    /// <summary>
+    /// Export your custom factions.
+    /// </summary>
+    /// <param name="factions">List of factions to export.</param>
+    public void ExportFactions(IEnumerable<IFaction> factions)
+    {
+        // more will be done soon for factions, as we need to replicate them over as well. but this is all for now.
+        factions.ForEach(f =>
+        {
+            log.Trace($"Exporting Faction ({f.Name}) for {Name}");
+            Factions.Add(f);
+        });
+    }
+
+    /// <summary>
+    /// Export your custom factions.
+    /// </summary>
+    /// <param name="factions">List of factions to export.</param>
+    public void ExportFactions(params IFaction[] factions) => ExportFactions((IEnumerable<IFaction>)factions);
+
     public override string ToString() => GetName(true);
+
+    public static bool operator ==(LotusAddon? addon1, LotusAddon? addon2) => addon1?.Equals(addon2) ?? addon2 is null;
+    public static bool operator !=(LotusAddon? addon1, LotusAddon? addon2) => !addon1?.Equals(addon2) ?? addon2 is not null;
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is not LotusAddon addon) return false;
+        return addon.UUID == UUID;
+    }
 }
 
