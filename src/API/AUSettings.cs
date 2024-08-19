@@ -7,7 +7,8 @@ public static class AUSettings
 {
     private const string GameOptionHookKey = nameof(GameOptionHookKey);
 
-    public static IGameOptions StaticOptions {
+    public static IGameOptions StaticOptions
+    {
         set => _originalHostOptions = value;
         get => _originalHostOptions ?? GameOptionsManager.Instance?.CurrentGameOptions!;
     }
@@ -39,6 +40,12 @@ public static class AUSettings
     public static float ScientistBatteryCharge() => StaticOptions.GetFloat(FloatOptionNames.ScientistBatteryCharge);
     public static float EngineerCooldown() => StaticOptions.GetFloat(FloatOptionNames.EngineerCooldown);
     public static float EngineerInVentMaxTime() => StaticOptions.GetFloat(FloatOptionNames.EngineerInVentMaxTime);
+    public static float TrackerCooldown() => StaticOptions.GetFloat(FloatOptionNames.TrackerCooldown);
+    public static float TrackerDuration() => StaticOptions.GetFloat(FloatOptionNames.TrackerDuration);
+    public static float TrackerDelay() => StaticOptions.GetFloat(FloatOptionNames.TrackerDelay);
+    public static float NoisemakerAlertDuration() => StaticOptions.GetFloat(FloatOptionNames.NoisemakerAlertDuration);
+    public static float PhantomCooldown() => StaticOptions.GetFloat(FloatOptionNames.PhantomCooldown);
+    public static float PhantomDuration() => StaticOptions.GetFloat(FloatOptionNames.PhantomDuration);
 
     public static int NumImpostors() => StaticOptions.GetInt(Int32OptionNames.NumImpostors);
     public static int KillDistance() => StaticOptions.GetInt(Int32OptionNames.KillDistance);
@@ -71,6 +78,7 @@ public static class AUSettings
     public static bool ShowCrewmateNames() => StaticOptions.GetBool(BoolOptionNames.ShowCrewmateNames);
     public static bool ShapeshifterLeaveSkin() => StaticOptions.GetBool(BoolOptionNames.ShapeshifterLeaveSkin);
     public static bool ImpostorsCanSeeProtect() => StaticOptions.GetBool(BoolOptionNames.ImpostorsCanSeeProtect);
+    public static bool NoisemakerImpostorAlert() => StaticOptions.GetBool(BoolOptionNames.NoisemakerImpostorAlert);
     public static float[] KillDistances() => StaticOptions.GetFloatArray(FloatArrayOptionNames.KillDistances);
     public static byte MapId() => StaticOptions.MapId;
 }

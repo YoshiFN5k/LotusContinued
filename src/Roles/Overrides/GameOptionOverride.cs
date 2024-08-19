@@ -33,13 +33,13 @@ public class GameOptionOverride
         this.Condition = condition;
     }
 
-    public virtual bool CanApply() => !Condition?.Invoke() ?? false;
+    public virtual bool CanApply() => Condition == null ? true : Condition.Invoke();
 
     public virtual void ApplyTo(IGameOptions options)
     {
         if (!CanApply()) return;
 
-        object? value = ForceValue ?? GetValue();
+        object? value = GetValue();
 
         switch (Option)
         {
@@ -94,6 +94,27 @@ public class GameOptionOverride
             case Override.VitalsBatteryCharge:
                 options.SetFloat(FloatOptionNames.ScientistBatteryCharge, (float)(value ?? AUSettings.ScientistBatteryCharge()));
                 break;
+            case Override.TrackerCooldown:
+                options.SetFloat(FloatOptionNames.TrackerCooldown, (float)(value ?? AUSettings.TrackerCooldown()));
+                break;
+            case Override.TrackerDelay:
+                options.SetFloat(FloatOptionNames.TrackerDelay, (float)(value ?? AUSettings.TrackerDelay()));
+                break;
+            case Override.TrackerDuration:
+                options.SetFloat(FloatOptionNames.TrackerDuration, (float)(value ?? AUSettings.TrackerDuration()));
+                break;
+            case Override.NoiseAlertDuration:
+                options.SetFloat(FloatOptionNames.NoisemakerAlertDuration, (float)(value ?? AUSettings.NoisemakerAlertDuration()));
+                break;
+            case Override.NoiseImpGetAlert:
+                options.SetBool(BoolOptionNames.NoisemakerImpostorAlert, (bool)(value ?? AUSettings.NoisemakerImpostorAlert()));
+                break;
+            case Override.PhantomVanishCooldown:
+                options.SetFloat(FloatOptionNames.PhantomCooldown, (float)(value ?? AUSettings.PhantomCooldown()));
+                break;
+            case Override.PhantomVanishDuration:
+                options.SetFloat(FloatOptionNames.PhantomDuration, (float)(value ?? AUSettings.PhantomDuration()));
+                break;
             case Override.CanUseVent:
             default:
                 log.Warn($"Invalid Option Override: {this}", "ApplyOverride");
@@ -103,7 +124,7 @@ public class GameOptionOverride
         DevLogger.Low($"Applying Override: {Option} => {DebugValue}");
     }
 
-    public virtual object? GetValue() => DebugValue = supplier == null ? value : supplier.Invoke();
+    public virtual object? GetValue() => DebugValue = supplier == null ? (ForceValue ?? value) : supplier.Invoke();
 
     public override bool Equals(object? obj)
     {

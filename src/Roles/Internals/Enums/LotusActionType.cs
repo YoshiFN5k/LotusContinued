@@ -131,5 +131,22 @@ public enum LotusActionType
     /// <param name="isTie"><see cref="bool"/> a boolean representing if the meeting tied</param>
     /// <param name="player vote counts"><see cref="Dictionary{TKey,TValue}"/> a dictionary containing (byte, int) representing the amount of votes a player got</param>
     /// <param name="playerVoteStatus"><see cref="Dictionary{TKey,TValue}"/> a dictionary containing (byte, List[Optional[byte]] containing the voting statuses of all players)</param>
-    MeetingEnd
+    MeetingEnd,
+    /// <summary>
+    /// Triggers when the player tries to Vanish as Phantom.
+    /// </summary>
+    /// <param name="player"><b>(GLOBAL ONLY)</b><see cref="PlayerControl"/>the player who is vanishing</param>
+    Vanish,
+    /// <summary>
+    /// Triggers when the player tries to Appear as Phantom.
+    /// </summary>
+    /// <param name="player"><b>(GLOBAL ONLY)</b><see cref="PlayerControl"/>the player who is appearing</param>
+    Appear,
+    /// <summary>
+    /// Triggers when a player uses the Zipline in the Fungle map.
+    /// </summary>
+    /// <param name="player"><b>(GLOBAL ONLY)</b><see cref="PlayerControl"/> the player who used the zipline</param>
+    /// <param name="ziplineBehaviour"><see cref="ZiplineBehaviour"/>The zipline the player is using.</param>
+    /// <param name="fromTop">A boolean representing whether or not the player is coming from the top.</param>
+    Zipline
 }

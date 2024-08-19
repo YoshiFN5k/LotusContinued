@@ -95,7 +95,7 @@ public class RandomSpawn
     {
         if (ShipStatus.Instance is AirshipStatus) usedLocations = AirshipLocations;
         else
-            usedLocations = (ShipStatus.Instance.Type) switch
+            usedLocations = ShipStatus.Instance.Type switch
             {
                 ShipStatus.MapType.Ship => SkeldLocations,
                 ShipStatus.MapType.Hq => MiraLocations,
