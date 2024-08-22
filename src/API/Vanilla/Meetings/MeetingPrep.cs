@@ -91,6 +91,7 @@ public class MeetingPrep
         MeetingRoomManager.Instance.AssignSelf(reporter, Reported);
         DestroyableSingleton<HudManager>.Instance.OpenMeetingRoom(reporter);
         reporter.RpcStartMeeting(Reported);
+
     }
 
     private static void FixChatNames() => Players.GetPlayers().ForEach(p => p.RpcSetName(p.name));

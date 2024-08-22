@@ -20,6 +20,9 @@ public class AdminOptions
 
     // ReSharper disable once InconsistentNaming
     public bool HostGM;
+    public bool SpectatorMode;
+    public float AutoHauntCooldown;
+
     public bool AutoKick;
     public bool KickPlayersWithoutFriendcodes;
     public int KickPlayersUnderLevel;
@@ -44,12 +47,23 @@ public class AdminOptions
 
         AllOptions.Add(new GameOptionBuilder()
             .AddBoolean(false)
-            .Name(AdminOptionTranslations.HostGmText)
-            .Key("HostGM")
+            .KeyName("HostGM", AdminOptionTranslations.HostGmText)
             .Color(_optionColor)
             .BindBool(b => HostGM = b)
             .IsHeader(true)
-            .BuildAndRegister());
+            .ShowSubOptionPredicate(v => (bool)v)
+            .SubOption(sub => sub
+                .KeyName("SpectatorMode", AdminOptionTranslations.SpectatorMode)
+                .AddBoolean()
+                .BindBool(b => SpectatorMode = b)
+                .ShowSubOptionPredicate(v => (bool)v)
+                .SubOption(sub2 => sub2
+                    .KeyName("AutoHauntCooldown", AdminOptionTranslations.AutoHauntCooldown)
+                    .AddFloatRange(2.5f, 60f, 2.5f, 9, "s")
+                    .BindFloat(v => AutoHauntCooldown = v)
+                    .Build())
+                .Build())
+            .Build());
 
         // TODO: repeat offenders
         AllOptions.Add(new GameOptionBuilder()
@@ -57,14 +71,14 @@ public class AdminOptions
             .Builder("Chat AutoKick", _optionColor)
             .Name(AdminOptionTranslations.AutoKickText)
             .BindBool(b => AutoKick = b)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .AddBoolean(false)
             .Builder("Kick Players Without Friendcode", _optionColor)
             .Name(AdminOptionTranslations.AutoKickNoFriendCodeText)
             .BindBool(b => KickPlayersWithoutFriendcodes = b)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .AddIntRange(1, 100, 1)
@@ -72,14 +86,14 @@ public class AdminOptions
             .Builder("Kick Players Under Level", _optionColor)
             .Name(AdminOptionTranslations.AutoKickUnderLevel)
             .BindInt(i => KickPlayersUnderLevel = i)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .AddBoolean(false)
             .Builder("Kick Mobile Players", _optionColor)
             .Name(AdminOptionTranslations.AutoKickMobile)
             .BindBool(b => KickMobilePlayers = b)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .AddBoolean(false)
@@ -121,14 +135,14 @@ public class AdminOptions
                 .Name(AdminOptionTranslations.AutoStartGameCountdown)
                 .BindInt(i => AutoStartGameCountdown = i)
                 .Build())
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .AddBoolean()
             .Builder("Auto Play Again", _optionColor)
             .Name(AdminOptionTranslations.AutoPlayAgain)
             .BindBool(b => AutoPlayAgain = b)
-            .BuildAndRegister());
+            .Build());
 
         additionalOptions.ForEach(o =>
         {
@@ -186,6 +200,12 @@ public class AdminOptions
 
         [Localized(nameof(AutoPlayAgain))]
         public static string AutoPlayAgain = "Auto Play Again";
+
+        [Localized(nameof(SpectatorMode))]
+        public static string SpectatorMode = "Spectator Mode";
+
+        [Localized(nameof(AutoHauntCooldown))]
+        public static string AutoHauntCooldown = "Auto Haunt Cooldown";
     }
 
 }
