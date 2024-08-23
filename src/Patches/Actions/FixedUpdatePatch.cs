@@ -18,7 +18,7 @@ static class FixedUpdatePatch
     private static void Postfix(PlayerControl __instance)
     {
         Game.RecursiveCallCheck = 0;
-        DisplayModVersion(__instance);
+        // DisplayModVersion(__instance);
 
         if (!AmongUsClient.Instance.AmHost) return;
 

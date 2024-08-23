@@ -3,6 +3,7 @@ using HarmonyLib;
 using Lotus.Extensions;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using System.Text;
 
 namespace Lotus.Patches;
 
@@ -67,6 +68,19 @@ public static class ResetForMeetingPatch
         catch (Exception exception)
         {
             log.Exception(exception);
+            log.Fatal($"Errored Player: {__instance.name}");
+            log.Fatal($"Current Outfit Type: {__instance.CurrentOutfitType.ToString()}");
+            var keysBuilder = new StringBuilder();
+
+            foreach (var key in __instance.Data.Outfits.Keys)
+            {
+                if (keysBuilder.Length > 0)
+                {
+                    keysBuilder.Append(", ");
+                }
+                keysBuilder.Append(key.ToString());
+            }
+            log.Fatal($"All Outfits: {keysBuilder.ToString()}");
         }
 
         return false;

@@ -27,7 +27,7 @@ public static class AntiBlackoutLogic
         foreach (PlayerControl player in players)
         {
             if (player.IsHost() || player.IsModded()) continue;
-            log.Trace($"Patching For: {player.name} ({player.PrimaryRole().RoleName})", "AntiBlackout");
+            log.Trace($"Patching For: {player.name} ({player.PrimaryRole().RoleName})");
             ReviveEveryone(exiledPlayer);
 
             bool wasImpostor = roleTracker.GetAllImpostorIds(player.PlayerId).Contains(0);
@@ -83,10 +83,15 @@ public static class AntiBlackoutLogic
     {
         foreach (var info in Instance.AllPlayers)
         {
+            if (info == null) continue;
             info.IsDead = false;
             info.Disconnected = false;
-            if (info.PlayerId != exiledPlayer && info.Object != null) info.PlayerName = info.Object.name;
-            else if (info.PlayerId != exiledPlayer) info.PlayerName = info.PlayerName.RemoveHtmlTags();
+            try
+            {
+                if (info.PlayerId != exiledPlayer && info.Object != null) info.PlayerName = info.Object.name;
+                else if (info.PlayerId != exiledPlayer) info.PlayerName = info.PlayerName.RemoveHtmlTags();
+            }
+            catch { }
         }
     }
 }

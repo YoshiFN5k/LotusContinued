@@ -96,6 +96,7 @@ public static class DesyncOptions
 
             AmongUsClient.Instance.SendOrDisconnect(realWriter);
             realWriter.Recycle();
+            log.Debug("Sent new options to client.");
         });
 
         writer.Recycle();

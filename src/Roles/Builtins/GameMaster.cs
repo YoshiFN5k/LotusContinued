@@ -29,10 +29,10 @@ public sealed class GameMaster : CustomRole, IPhantomRole
         get => GeneralOptions.AdminOptions.AutoHauntCooldown;
     }
     private byte lastHauntedPlayer = 255;
+    private Cooldown hauntCooldown = null!;
     public static Color GMColor = new(1f, 0.4f, 0.4f);
-    public Cooldown hauntCooldown = null!;
 
-    [RoleAction(LotusActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundStart, ActionFlag.WorksAfterDeath)]
     private void ExileGM(bool roundStart)
     {
         if (!roundStart)
@@ -69,7 +69,7 @@ public sealed class GameMaster : CustomRole, IPhantomRole
             if (MeetingHud.Instance == null) return;
             ChatController chat = DestroyableSingleton<HudManager>.Instance.Chat;
             if (!chat.IsOpenOrOpening) chat.Toggle();
-        }, 2f);
+        }, 3f);
     }
 
     [RoleAction(LotusActionType.FixedUpdate, ActionFlag.WorksAfterDeath)]
@@ -97,10 +97,7 @@ public sealed class GameMaster : CustomRole, IPhantomRole
             log.Debug($"Setting haunt target: {target.name}");
             minigame.SetHauntTarget(target);
         }
-        else
-        {
-            log.Debug("Possble targets is equal to zero.");
-        }
+        else log.Debug("Possble targets is equal to zero.");
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>

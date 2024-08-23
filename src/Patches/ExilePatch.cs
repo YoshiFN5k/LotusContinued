@@ -45,6 +45,10 @@ static class ExileControllerWrapUpPatch
             {
                 WrapUpPostfix(__instance.initData);
             }
+            catch (Exception ex)
+            {
+                log.Exception(ex);
+            }
             finally
             {
                 WrapUpFinalizer();
@@ -76,8 +80,9 @@ static class ExileControllerWrapUpPatch
             MeetingDelegate.Instance.BlackscreenResolver.ClearBlackscreen(BeginRoundStart);
             log.Debug("Start Task Phase", "Phase");
         }
-        catch
+        catch (Exception ex)
         {
+            log.Exception(ex);
             BeginRoundStart();
         }
     }
@@ -87,7 +92,7 @@ static class ExileControllerWrapUpPatch
     /// </summary>
     private static void BeginRoundStart()
     {
-        Players.GetAlivePlayers().ForEach(p => Async.Execute(ReverseEngineeredRPC.UnshfitButtonTrigger(p)));
+        Players.GetAlivePlayers().ForEach(p => Async.Schedule(ReverseEngineeredRPC.UnshfitButtonTrigger(p), NetUtils.DeriveDelay(1f)));
 
         try
         {

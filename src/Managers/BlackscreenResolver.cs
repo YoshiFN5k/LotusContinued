@@ -61,13 +61,14 @@ internal class BlackscreenResolver
         if (unpatchable.Count == 0) return;
         TryGetDeadPlayer(out PlayerControl? deadPlayer);
         if (deadPlayer != null) Async.Schedule(() => StoreAndTeleport(deadPlayer), 1.5f);
+        else log.Fatal("Could not find dead player to patch every player.");
     }
 
     internal void ClearBlackscreen(Action callback)
     {
         if (!AmongUsClient.Instance.AmHost) return;
         float deferredTime = 0; // Used if needing to teleport the player
-        Async.Schedule(() => ProcessPatched(callback), NetUtils.DeriveDelay(0.7f));
+        Async.Schedule(() => ProcessPatched(callback), NetUtils.DeriveDelay(0.9f));
         if (unpatchable.Count == 0) return;
 
         bool updated = !TryGetDeadPlayer(out PlayerControl? deadPlayer);
@@ -76,27 +77,27 @@ internal class BlackscreenResolver
         if (updated)
         {
             StoreAndTeleport(deadPlayer);
-            deferredTime = 0.1f;
+            deferredTime = NetUtils.DeriveDelay(.1f);
         }
 
-        log.Debug($"Resetting player cameras using \"{deadPlayer?.name ?? "themselves"}\" as camera player", "BlackscreenResolver");
+        log.Debug($"Resetting player cameras using \"{deadPlayer?.name ?? "(themselves)"}\" as camera player");
         Async.Schedule(() => PerformCameraReset(deadPlayer), deferredTime);
     }
 
     private void PerformCameraReset(PlayerControl deadPlayer)
     {
-        log.Debug("Performing Camera Reset", "BlackscreenResolver");
+        log.Debug("Performing Camera Reset");
         if (deadPlayer == null && !ProjectLotus.AdvancedRoleAssignment) deadPlayer = EmergencyKillHost();
-        if (deadPlayer == null && ProjectLotus.AdvancedRoleAssignment) resetCameraPosition = PlayerControl.LocalPlayer.GetTruePosition();
+        if (deadPlayer == null && ProjectLotus.AdvancedRoleAssignment) resetCameraPosition = new Vector2(100f, 100f);
 
         unpatchable.Filter(b => Utils.PlayerById(b)).ForEach(p =>
         {
             Vector2 originalPosition = p.GetTruePosition();
-            p.ResetPlayerCam(0.1f, deadPlayer);
-            Async.Schedule(() => Utils.Teleport(p.NetTransform, originalPosition), 1f);
+            p.ResetPlayerCam(NetUtils.DeriveDelay(0f), deadPlayer);
+            Async.Schedule(() => Utils.Teleport(p.NetTransform, originalPosition), NetUtils.DeriveDelay(1f));
         });
 
-        Async.Schedule(() => Utils.Teleport(deadPlayer.NetTransform, resetCameraPosition), 0.5f);
+        Async.Schedule(() => Utils.Teleport(deadPlayer!.NetTransform, resetCameraPosition), NetUtils.DeriveDelay(.5f));
     }
 
     private HashSet<byte> StoreAndSendFallbackData()
@@ -108,7 +109,7 @@ internal class BlackscreenResolver
 
         playerStates = playerInfos.ToDict(i => i.PlayerId, i => (i.IsDead, i.Disconnected));
         HashSet<byte> unpatchablePlayers = SendPatchedData(meetingDelegate.ExiledPlayer?.PlayerId ?? byte.MaxValue);
-        log.Debug($"Unpatchable Players: {unpatchablePlayers.Filter(p => Utils.PlayerById(p)).Select(p => p.name).Fuse()}", "BlackscreenResolver");
+        log.Debug($"Unpatchable Players: {unpatchablePlayers.Filter(p => Utils.PlayerById(p)).Select(p => p.name).Fuse()}");
         return unpatchablePlayers;
     }
 
@@ -119,7 +120,11 @@ internal class BlackscreenResolver
             if (!playerStates.TryGetValue(info.PlayerId, out var val)) return;
             info.IsDead = val.isDead;
             info.Disconnected = val.isDisconnected;
-            if (info.Object != null) info.PlayerName = info.Object.name;
+            try
+            {
+                if (info.Object != null) info.PlayerName = info.Object.name;
+            }
+            catch { }
         });
         Patching = false;
         GeneralRPC.SendGameData();
@@ -157,7 +162,7 @@ internal class BlackscreenResolver
             StoreAndSendFallbackData();
             return;
         }
-        log.Trace($"Teleporting Camera \"{cameraPlayer.name}\"");
+        log.Trace($"Teleporting Camera (blackscreen resolver player) \"{cameraPlayer.name}\"");
         resetCameraPosition = cameraPlayer.GetTruePosition();
         Utils.Teleport(cameraPlayer.NetTransform, new Vector2(100f, 100f));
     }

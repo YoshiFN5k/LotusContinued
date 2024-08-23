@@ -154,10 +154,10 @@ public class StandardRoleAssignment
 
     private void DoNameBasedAssignment(List<PlayerControl> unassignedPlayers)
     {
-        if (!GeneralOptions.DebugOptions.NameBasedRoleAssignment || !ProjectLotus.DevVersion) return;
-        log.Debug("Doign Name Based Role Assigment");
+        if (!GeneralOptions.DebugOptions.NameBasedRoleAssignment) return;
+        log.Debug("Doing Name Based Role Assigment!");
         int j = 0;
-        while (GeneralOptions.DebugOptions.NameBasedRoleAssignment && j < unassignedPlayers.Count)
+        while (j < unassignedPlayers.Count)
         {
             PlayerControl player = unassignedPlayers[j];
             CustomRole? role = StandardGameMode.Instance.RoleManager.RoleHolder.AllRoles.FirstOrDefault(r => r.RoleName.RemoveHtmlTags().ToLower().StartsWith(player.name.ToLower() ?? "HEHXD"));

@@ -99,7 +99,6 @@ public class Sheriff : Crewmate
     [RoleAction(LotusActionType.OnPet)]
     public bool TryKillWithPet(ActionHandle handle)
     {
-
         log.Trace("Sheriff Shoot Ability (Pet)", "SheriffAbility");
         handle.Cancel();
         if (isSheriffDesync || !shootCooldown.IsReady() || !HasShots()) return false;
