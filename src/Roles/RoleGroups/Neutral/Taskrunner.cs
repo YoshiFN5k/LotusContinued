@@ -27,7 +27,7 @@ using Lotus.API.Player;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
-public class Phantom : Crewmate, IPhantomRole
+public class Taskrunner : Crewmate, IPhantomRole
 {
     private bool immuneToRangedInteractions;
     private int phantomInteractionThreshold;

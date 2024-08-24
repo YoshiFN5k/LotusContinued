@@ -51,7 +51,7 @@ public class Copycat : CustomRole
 
     protected override void PostSetup()
     {
-        StandardRoles roleHolder = StandardGameMode.Instance?.RoleManager?.RoleHolder!;
+        StandardRoles? roleHolder = StandardGameMode.Instance?.RoleManager?.RoleHolder ?? null;
         if (roleHolder != null)
         {
             if (FallbackTypes.Keys.Count != 0) return;
@@ -60,7 +60,7 @@ public class Copycat : CustomRole
             {typeof(Mafioso), () => roleHolder.Static.Amnesiac },
             {typeof(Snitch), () => roleHolder.Static.Amnesiac },
             {typeof(Postman), () => roleHolder.Static.Amnesiac },
-            {typeof(Phantom), () => roleHolder.Static.Amnesiac },
+            {typeof(Taskrunner), () => roleHolder.Static.Amnesiac },
         });
         }
         else log.Fatal("StandardGameMode.Instance?.RoleManager?.RoleHolder was null.");

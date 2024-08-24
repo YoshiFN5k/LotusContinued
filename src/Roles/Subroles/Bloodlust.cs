@@ -39,7 +39,7 @@ public class Bloodlust : Subrole
         typeof(Speedrunner),
         typeof(Amnesiac),
         typeof(Copycat),
-        typeof(Phantom),
+        typeof(Taskrunner),
         typeof(Postman),
     };
 
@@ -108,11 +108,12 @@ public class Bloodlust : Subrole
     protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier).RoleColor(new Color(0.41f, 0.1f, 0.18f));
 
     [Localized(nameof(Bloodlust))]
-    private static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         internal static class Options
         {
+            [Localized(nameof(RestrictToCompatbileRoles))]
             public static string RestrictToCompatbileRoles = "Restrict to Compatible Roles";
         }
     }

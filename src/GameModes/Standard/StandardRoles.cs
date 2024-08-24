@@ -16,6 +16,7 @@ using Lotus.Roles.Subroles.Romantics;
 using VentLib.Utilities.Extensions;
 using Medium = Lotus.Roles.RoleGroups.Crew.Medium;
 using Pirate = Lotus.Roles.RoleGroups.Neutral.Pirate;
+using Lotus.src.Roles.Subroles;
 
 namespace Lotus.GameModes.Standard;
 public class StandardRoles : RoleHolder
@@ -250,11 +251,11 @@ public class StandardRoles : RoleHolder
         public Hacker Hacker = new();
         public Jester Jester = new();
         public Opportunist Opportunist = new();
-        public Roles.RoleGroups.Neutral.Phantom Phantom = new();
         public Pirate Pirate = new();
         public Postman Postman = new();
         public SchrodingersCat SchrodingersCat = new();
         public Survivor Survivor = new();
+        public Taskrunner Taskrunner = new();
         public Terrorist Terrorist = new();
         public Vulture Vulture = new();
 
@@ -272,6 +273,7 @@ public class StandardRoles : RoleHolder
         public Flash Flash = new();
         public Honed Honed = new();
         public Nimble Nimble = new();
+        public LastResort LastResort = new();
         public Oblivious Oblivious = new();
         public Romantic Romantic = new();
         public Sleuth Sleuth = new();

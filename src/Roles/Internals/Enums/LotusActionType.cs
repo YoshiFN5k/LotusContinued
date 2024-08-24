@@ -92,7 +92,7 @@ public enum LotusActionType
     /// Triggers when my player votes for someone (or skips)
     /// </summary>
     /// <param name="voter"><b>(GLOBAL ONLY)</b> <see cref="PlayerControl"/> the player voting</param>
-    /// <param name="voted"><see cref="PlayerControl"/> the player voted for, or null if skipped</param>
+    /// <param name="voted"><see cref="Optional"/> an optional of <see cref="PlayerControl"/> the player voted for, or null if skipped</param>
     /// <param name="delegate"><see cref="MeetingDelegate"/> the meeting delegate for the current meeting</param>
     Vote,
     /// <summary>
