@@ -20,6 +20,8 @@ using VentLib.Utilities.Optionals;
 using Lotus.Roles;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Roles.Managers.Interfaces;
+using System.Collections.Generic;
+using Lotus.API.Player;
 
 namespace Lotus.Utilities;
 
@@ -130,6 +132,37 @@ public static class Utils
         AudioClip exampleClip = Helpers.loadAudioClipFromResources("Lotus.assets.exampleClip.raw");
         if (Constants.ShouldPlaySfx()) SoundManager.Instance.PlaySound(exampleClip, false, 0.8f);
         */
+    }
+
+    public static Vent GetFurthestVentFromPlayers()
+    {
+        List<Vector2> playerPositions = new();
+        Players.GetAlivePlayers().ForEach(p => playerPositions.Add(p.GetTruePosition()));
+        Vent furthestVent = null!;
+        float maxDistance = float.MinValue;
+
+        foreach (var vent in ShipStatus.Instance.AllVents)
+        {
+            Vector2 ventPosition = vent.transform.position;
+            float minDistanceToPlayers = float.MaxValue;
+
+            playerPositions.ForEach(pos =>
+            {
+                float distance = Vector2.Distance(ventPosition, pos);
+                if (distance < minDistanceToPlayers)
+                {
+                    minDistanceToPlayers = distance;
+                }
+            });
+
+            if (minDistanceToPlayers > maxDistance)
+            {
+                maxDistance = minDistanceToPlayers;
+                furthestVent = vent;
+            }
+        }
+
+        return furthestVent;
     }
 
     public static string ColorString(Color32 color, string str) =>

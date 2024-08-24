@@ -3,6 +3,7 @@ using Lotus.Options;
 using Lotus.Roles.Overrides;
 using VentLib.Localization.Attributes;
 using VentLib.Options.UI;
+using VentLib.Utilities;
 
 namespace Lotus.Roles.RoleGroups.Vanilla;
 
@@ -27,6 +28,26 @@ public class Engineer : Crewmate
                 .Build());
     }
 
+    protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream)
+    {
+        try
+        {
+            var callingMethod = Mirror.GetCaller();
+            var callingType = callingMethod?.DeclaringType;
+
+            if (callingType == null)
+            {
+                return base.RegisterOptions(optionStream);
+            }
+            if (callingType == typeof(AbstractBaseRole)) return AddVentingOptions(base.RegisterOptions(optionStream));
+            else return base.RegisterOptions(optionStream);
+        }
+        catch
+        {
+            return base.RegisterOptions(optionStream);
+        }
+    }
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .CanVent(true)
@@ -37,6 +58,7 @@ public class Engineer : Crewmate
     [Localized(nameof(Engineer))]
     public static class EngineerTranslations
     {
+        [Localized(ModConstants.Options)]
         public static class Options
         {
             [Localized(nameof(VentCooldown))]

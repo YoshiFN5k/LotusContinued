@@ -3,6 +3,7 @@ using AmongUs.GameOptions;
 using Lotus.API.Stats;
 using Lotus.Factions;
 using Lotus.Roles.RoleGroups.Stock;
+using UnityEngine;
 
 namespace Lotus.Roles.RoleGroups.Vanilla;
 
@@ -12,7 +13,7 @@ public class Crewmate : TaskRoleBase
         roleModifier
             .VanillaRole(RoleTypes.Crewmate)
             .Faction(FactionInstances.Crewmates)
-            .RoleColor("#b6f0ff")
+            .RoleColor(new Color(0.71f, 0.94f, 1f))
             .CanVent(false);
 
     public override List<Statistic> Statistics() => new() { VanillaStatistics.TasksComplete };

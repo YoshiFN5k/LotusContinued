@@ -168,7 +168,7 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
         PlayerControl[] alliedPlayers = Players.GetPlayers().Where(p => Relationship(p) is Relation.FullAllies).ToArray();
 
         DevLogger.Log($"CustomRole.Assign({isStartOfGame}) for {MyPlayer.name} {ProjectLotus.AdvancedRoleAssignment}");
-
+        // we can assign crewmate without worries as they should be crew for EVERYONE
         if (RealRole.IsCrewmate())
         {
             DevLogger.Log($"Real Role: {RealRole}");
@@ -181,6 +181,8 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
             goto finishAssignment;
         }
 
+        // as impostor, its get a bit tricky..
+        // we need to be wary of Noisemaker and Phantom since those cause isseus if not replicated properly
         log.Trace($"Setting {MyPlayer.name} Role => {RealRole} | IsStartGame = {isStartOfGame}", "CustomRole::Assign");
         if (MyPlayer.IsHost()) MyPlayer.StartCoroutine(MyPlayer.CoSetRole(RealRole, ProjectLotus.AdvancedRoleAssignment));
         else RpcV3.Immediate(MyPlayer.NetId, RpcCalls.SetRole).Write((ushort)RealRole).Write(ProjectLotus.AdvancedRoleAssignment).Send(MyPlayer.GetClientId());
@@ -208,11 +210,11 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
         if (isStartOfGame) nonAlliedImpostors.ForEach(p => p.GetTeamInfo().AddVanillaCrewmate(MyPlayer.PlayerId));
 
         // This code exists to hopefully better split up the roles to cause less blackscreens
-        RoleTypes splitRole = Faction is ImpostorFaction ? RoleTypes.Impostor : RoleTypes.Crewmate;
+        RoleTypes splitRole = Faction is ImpostorFaction ? RealRole : RoleTypes.Crewmate;
         RpcV3.Immediate(MyPlayer.NetId, RpcCalls.SetRole).Write((ushort)splitRole).Write(ProjectLotus.AdvancedRoleAssignment).SendInclusive(crewmateClientIds);
         if (isStartOfGame) crewmates.ForEach(p =>
         {
-            if (splitRole is RoleTypes.Impostor) p.GetTeamInfo().AddVanillaImpostor(MyPlayer.PlayerId);
+            if (splitRole.IsImpostor()) p.GetTeamInfo().AddVanillaImpostor(MyPlayer.PlayerId);
             else p.GetTeamInfo().AddVanillaCrewmate(MyPlayer.PlayerId);
         });
 
@@ -223,8 +225,7 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
         // DevLogger.Log($"(HostCheck) Should See as Imp: {Relationship(PlayerControl.LocalPlayer) is Relation.FullAllies && Faction.CanSeeRole(PlayerControl.LocalPlayer)}");
 
         // This is for host. Should also fix player being set as impostor as host.
-        if (RealRole.IsCrewmate())
-            MyPlayer.StartCoroutine(MyPlayer.CoSetRole(RealRole, ProjectLotus.AdvancedRoleAssignment));
+        if (RealRole.IsCrewmate()) MyPlayer.StartCoroutine(MyPlayer.CoSetRole(RealRole, ProjectLotus.AdvancedRoleAssignment));
         else if (Relationship(PlayerControl.LocalPlayer) is Relation.FullAllies && Faction.CanSeeRole(PlayerControl.LocalPlayer) || MyPlayer.IsHost()) MyPlayer.StartCoroutine(MyPlayer.CoSetRole(RealRole, ProjectLotus.AdvancedRoleAssignment));
         else MyPlayer.StartCoroutine(MyPlayer.CoSetRole(PlayerControl.LocalPlayer.GetVanillaRole().IsImpostor() ? RoleTypes.Crewmate : RoleTypes.Impostor, ProjectLotus.AdvancedRoleAssignment));
 

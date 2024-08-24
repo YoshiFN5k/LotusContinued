@@ -164,14 +164,14 @@ public abstract class AbstractBaseRole
         if (!RoleFlags.HasFlag(RoleFlag.Hidden) && RoleOptions.Tab == null)
         {
             if (GetType() == typeof(Impostor)) RoleOptions.Tab = DefaultTabs.HiddenTab;
-            else if (GetType() == typeof(Engineer)) RoleOptions.Tab = DefaultTabs.HiddenTab;
-            else if (GetType() == typeof(Scientist)) RoleOptions.Tab = DefaultTabs.HiddenTab;
             else if (GetType() == typeof(Crewmate)) RoleOptions.Tab = DefaultTabs.HiddenTab;
-            else if (GetType() == typeof(Phantom)) RoleOptions.Tab = DefaultTabs.HiddenTab;
-            else if (GetType() == typeof(Tracker)) RoleOptions.Tab = DefaultTabs.HiddenTab;
-            else if (GetType() == typeof(Noisemaker)) RoleOptions.Tab = DefaultTabs.HiddenTab;
-            else if (GetType() == typeof(Shapeshifter)) RoleOptions.Tab = DefaultTabs.HiddenTab;
             else if (GetType() == typeof(GuardianAngel)) RoleOptions.Tab = DefaultTabs.HiddenTab;
+            // else if (GetType() == typeof(Engineer)) RoleOptions.Tab = DefaultTabs.HiddenTab;
+            // else if (GetType() == typeof(Scientist)) RoleOptions.Tab = DefaultTabs.HiddenTab;
+            // else if (GetType() == typeof(Phantom)) RoleOptions.Tab = DefaultTabs.HiddenTab;
+            // else if (GetType() == typeof(Tracker)) RoleOptions.Tab = DefaultTabs.HiddenTab;
+            // else if (GetType() == typeof(Noisemaker)) RoleOptions.Tab = DefaultTabs.HiddenTab;
+            // else if (GetType() == typeof(Shapeshifter)) RoleOptions.Tab = DefaultTabs.HiddenTab;
             else
             {
                 if (this is GameMaster) { /*ignored*/ }

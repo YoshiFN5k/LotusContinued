@@ -147,7 +147,7 @@ public class StandardRoleAssignment
 
         log.Debug("Finishing up...");
         RunAdditionalAssignmentLogic(allPlayers, unassignedPlayers, 5);
-        if (ProjectLotus.AdvancedRoleAssignment) Players.GetAllPlayers().Sorted(p => p.IsHost() ? 0 : 1).ForEach(p => p.RpcSetRole(AmongUs.GameOptions.RoleTypes.Crewmate, true));
+        if (ProjectLotus.AdvancedRoleAssignment) Players.GetAllPlayers().ForEach(p => p.RpcSetRole(AmongUs.GameOptions.RoleTypes.Crewmate, true));
         else Players.GetAllPlayers().Sorted(p => p.IsHost() ? 0 : 1).ForEach(p => p.PrimaryRole().Assign());
         log.Debug("Finished assigning roles!");
     }

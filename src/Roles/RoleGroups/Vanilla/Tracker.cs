@@ -1,16 +1,18 @@
+using System.Diagnostics;
 using AmongUs.GameOptions;
 using Lotus.Options;
 using Lotus.Roles.Overrides;
 using VentLib.Localization.Attributes;
 using VentLib.Options.UI;
+using VentLib.Utilities;
 
 namespace Lotus.Roles.RoleGroups.Vanilla;
 
 public class Tracker : Crewmate
 {
-    protected float? TrackerCooldown;
-    protected float? TrackerDuration;
-    protected float? TrackerDelay;
+    protected float TrackerCooldown;
+    protected float TrackerDuration;
+    protected float TrackerDelay;
 
     protected GameOptionBuilder AddTrackerOptions(GameOptionBuilder builder)
     {
@@ -34,6 +36,26 @@ public class Tracker : Crewmate
                 .Build());
     }
 
+    protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream)
+    {
+        try
+        {
+            var callingMethod = Mirror.GetCaller();
+            var callingType = callingMethod?.DeclaringType;
+
+            if (callingType == null)
+            {
+                return base.RegisterOptions(optionStream);
+            }
+            if (callingType == typeof(AbstractBaseRole)) return AddTrackerOptions(base.RegisterOptions(optionStream));
+            else return base.RegisterOptions(optionStream);
+        }
+        catch
+        {
+            return base.RegisterOptions(optionStream);
+        }
+    }
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .VanillaRole(RoleTypes.Tracker)
@@ -44,6 +66,7 @@ public class Tracker : Crewmate
     [Localized(nameof(Tracker))]
     public static class TrackerTranslations
     {
+        [Localized(ModConstants.Options)]
         public static class Options
         {
             [Localized(nameof(TrackerCooldown))]

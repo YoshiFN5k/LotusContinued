@@ -156,13 +156,14 @@ public class StandardRoles : RoleHolder
         public Mare Mare = new();
         public Mastermind Mastermind = new();
         public Miner Miner = new();
-        public Morphling Morphling = new();
         public Ninja Ninja = new();
+        public Phantom Phantom = new();
         public PickPocket PickPocket = new();
         public Puppeteer Puppeteer = new();
         //sidekick madmate
         //silencer
         public SerialKiller SerialKiller = new();
+        public Shapeshifter Shapeshifter = new();
         public Sniper Sniper = new();
         public Swooper Swooper = new();
         public TimeThief TimeThief = new();
@@ -193,21 +194,21 @@ public class StandardRoles : RoleHolder
         public Demolitionist Demolitionist = new();
         public Dictator Dictator = new();
         public Doctor Doctor = new();
-
+        public Engineer Engineer = new();
         public Escort Escort = new();
         public ExConvict ExConvict = new();
         public Herbalist Herbalist = new();
         public Investigator Investigator = new();
         public Mayor Mayor = new();
-        public Mechanic Mechanic = new();
         public Medic Medic = new();
         public Medium Medium = new();
         public Mystic Mystic = new();
+        public Noisemaker Noisemaker = new();
         public Observer Observer = new();
         public Oracle Oracle = new();
-        public Physicist Physicist = new();
         public Psychic Psychic = new();
         public Repairman Repairman = new();
+        public Scientist Scientist = new();
         public Sheriff Sheriff = new();
         public Snitch Snitch = new();
         public Speedrunner Speedrunner = new();

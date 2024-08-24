@@ -76,9 +76,9 @@ public static class MurderPatches
     }
 
     [QuickPrefix(typeof(PlayerControl), nameof(PlayerControl.MurderPlayer))]
-    public static void SaveAttacker(PlayerControl __instance, MurderResultFlags resultFlags)
+    public static void SaveAttacker(PlayerControl __instance, PlayerControl target, MurderResultFlags resultFlags)
     {
-        if (resultFlags.HasFlag(MurderResultFlags.Succeeded) || resultFlags.HasFlag(MurderResultFlags.DecisionByHost) && !__instance.protectedByGuardianThisRound)
+        if (resultFlags.HasFlag(MurderResultFlags.Succeeded) || resultFlags.HasFlag(MurderResultFlags.DecisionByHost) && target.protectedByGuardianId > -1)
             LastAttacker = __instance;
     }
 
@@ -91,7 +91,7 @@ public static class MurderPatches
 
         MurderPatches.Lock(__instance.PlayerId);
 
-        log.Trace($"(MurderPlayer) {__instance.GetNameWithRole()} => {target.GetNameWithRole()}{(target.protectedByGuardianId != -1 ? "(Protected)" : "")}");
+        log.Trace($"(MurderPlayer) {__instance.GetNameWithRole()} => {target.GetNameWithRole()}{(target.protectedByGuardianId > -1 ? "(Protected)" : "")}");
 
         IDeathEvent deathEvent = Game.MatchData.GameHistory.GetCauseOfDeath(target.PlayerId)
             .OrElseGet(() => __instance.PlayerId == target.PlayerId
