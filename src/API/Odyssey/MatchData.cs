@@ -34,8 +34,8 @@ public class MatchData
     public VanillaRoleTracker VanillaRoleTracker = new();
 
     public HashSet<byte> UnreportableBodies = new();
-    public int MeetingsCalled;
-    public int EmergencyButtonsUsed;
+    public int EmergencyButtonsUsed = 0;
+    public int MeetingsCalled = 0;
 
     private static readonly Func<RemoteList<GameOptionOverride>> OptionOverrideListSupplier = GetGlobalOptions;
 

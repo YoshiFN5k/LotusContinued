@@ -30,7 +30,7 @@ public class StandardGameMode : GameMode
     public override string Name { get; set; } = "Standard";
     public override StandardRoleOperations RoleOperations { get; }
     public override StandardRoleManager RoleManager { get; }
-    public new MatchData MatchData { get; private set; }
+    public override MatchData MatchData { get; set; }
 
     public StandardRoleAssignment RoleAssignment { get; }
 
