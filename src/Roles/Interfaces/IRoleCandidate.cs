@@ -1,4 +1,4 @@
-namespace Lotus.src.Roles.Interfaces;
+namespace Lotus.Roles.Interfaces;
 
 /// <summary>
 /// Use this if you want your role to only be assigned on certain conditions.<br></br>

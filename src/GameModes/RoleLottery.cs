@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Lotus.GameModes.Standard;
 using Lotus.Roles;
-using Lotus.src.Roles.Interfaces;
+using Lotus.Roles.Interfaces;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 

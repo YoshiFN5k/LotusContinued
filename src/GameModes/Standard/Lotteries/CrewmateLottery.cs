@@ -1,7 +1,7 @@
 using System.Linq;
 using Lotus.Factions.Crew;
 using Lotus.Roles;
-using Lotus.src.Roles.Interfaces;
+using Lotus.Roles.Interfaces;
 using VentLib.Utilities.Extensions;
 
 namespace Lotus.GameModes.Standard.Lotteries;
