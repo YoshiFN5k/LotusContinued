@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using HarmonyLib;
 using LibCpp2IL;
+using Lotus.API.Odyssey;
 using Lotus.Logging;
 using Lotus.Options;
 using UnityEngine;
@@ -27,6 +28,7 @@ class LobbyMusicPatch
     }
     public static void Postfix(LobbyBehaviour __instance)
     {
+        Game.State = GameState.InLobby;
         DevLogger.Log(ClientOptions.SoundOptions.CurrentSoundType.ToString());
         PostfixMusicDictionary.GetOrCompute(ClientOptions.SoundOptions.CurrentSoundType, () => _ => { })(__instance);
     }
