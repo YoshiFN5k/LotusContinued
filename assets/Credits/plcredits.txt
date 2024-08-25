@@ -1,7 +1,5 @@
 ﻿Format,Column1,Column2
-image,100;;Lotus.assets.Lotus_Icon.png,
-image,100;;Lotus.assets.Credits.Images.maintitlecredits.png,
-image,100;;Lotus.assets.Credits.Images.devstitle.png,
+image,100;;Lotus.assets.Credits.Images.topcredits.png,
 person,Discussions,Owner and Lead Developer
 person,Theta,Bot Developer & Translator (Eng)
 person,Piggy B,Art Director

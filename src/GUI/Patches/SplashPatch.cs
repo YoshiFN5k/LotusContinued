@@ -241,10 +241,10 @@ class SplashPatch
         __instance.settingsButton.inactiveTextColor = Color.white;
 
         var tohLogo = new GameObject("titleLogo_TOH");
-        tohLogo.transform.position = new Vector3(4.55f, -2.1f);
+        tohLogo.transform.position = new Vector3(4.5f, -2.1f);
         tohLogo.transform.localScale = new Vector3(1f, 1f, 1f);
         var renderer = tohLogo.AddComponent<SpriteRenderer>();
-        renderer.sprite = AssetLoader.LoadSprite("Lotus.assets.Lotus_Icon.png", 700f);
+        renderer.sprite = AssetLoader.LoadSprite("Lotus.assets.Lotus_Icon.png", 1100f);
 
         _customSplash.OrElseSet(InitializeSplash);
         PlayerParticles particles = Object.FindObjectOfType<PlayerParticles>();
