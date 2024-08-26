@@ -36,7 +36,7 @@ public static class PhantomActionsPatch
             if (__instance == p) return; // skip player going invis
             CustomRole role = p.PrimaryRole();
             if (role.RealRole.IsCrewmate() && isImpFaction) return; // they are crewmate and we are imp so we are phantom for them
-            if (alliedPlayerIds.Contains(p.PlayerId)) return; // if we are non-allied than continue
+            if (alliedPlayerIds.Contains(p.PlayerId)) return; // if we are allied than continue
             if (isActive)
             {
                 if (p.AmOwner)
