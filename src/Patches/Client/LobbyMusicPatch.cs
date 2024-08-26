@@ -28,7 +28,6 @@ class LobbyMusicPatch
     }
     public static void Postfix(LobbyBehaviour __instance)
     {
-        Game.State = GameState.InLobby;
         DevLogger.Log(ClientOptions.SoundOptions.CurrentSoundType.ToString());
         PostfixMusicDictionary.GetOrCompute(ClientOptions.SoundOptions.CurrentSoundType, () => _ => { })(__instance);
     }

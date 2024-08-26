@@ -174,6 +174,7 @@ public class ModKeybindings
 
     private static void ToggleHistoryButton()
     {
+        if (DestroyableSingleton<HudManager>.Instance.Chat.IsOpenOrOpening) return;
         HM2 historyMenu = DestroyableSingleton<HudManager>.Instance.GetComponent<HM2>();
         if (historyMenu != null) historyMenu.ToggleMenu();
     }
