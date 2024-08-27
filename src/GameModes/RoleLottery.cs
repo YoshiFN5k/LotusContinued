@@ -33,7 +33,7 @@ public class RoleLottery : IEnumerator<CustomRole>, IEnumerable<CustomRole>
     {
         if (role is IRoleCandidate candidate)
         {
-            if (!candidate.ShouldSkip()) return;
+            if (candidate.ShouldSkip()) return;
         }
         int chance = useSubsequentChance ? role.AdditionalChance : role.Chance;
         if (chance == 0 || role.RoleFlags.HasFlag(RoleFlag.Unassignable)) return;

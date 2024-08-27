@@ -12,6 +12,7 @@ using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using Lotus.GameModes.Standard;
 using Lotus.Options;
+using HarmonyLib;
 
 namespace Lotus.API.Vanilla.Meetings;
 
@@ -71,6 +72,18 @@ public class MeetingPrep
                 QuickStartMeeting(reporter);
                 /*Async.Schedule(() => Players.GetPlayers().ForEach(p => p.CRpcRevertShapeshift(false)), 0.1f);*/
             }, 0.1f);
+        Players.GetPlayers().Do(p =>
+        {
+            ActionHandle handle = ActionHandle.NoInit();
+            try
+            {
+                RoleOperations.Current.TriggerFor(p, LotusActionType.RoundEnd, null, handle, _meetingDelegate, false);
+            }
+            catch
+            {
+                // ignored. just so a meeting isn't forcefully stopped
+            }
+        });
 
         Game.RenderAllForAll(GameState.InMeeting, true);
         Async.Schedule(FixChatNames, 5f);
