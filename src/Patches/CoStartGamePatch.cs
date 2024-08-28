@@ -10,6 +10,7 @@ using Lotus.Options;
 using VentLib.Utilities.Extensions;
 using UnityEngine;
 using Lotus.Utilities;
+using Lotus.RPC.CustomObjects;
 
 namespace Lotus.Patches;
 
@@ -39,6 +40,7 @@ class CoStartGamePatch
     public static void Postfix(AmongUsClient __instance)
     {
         ProjectLotus.ResetCamPlayerList = new List<byte>();
+        CustomNetObject.Reset();
         FallFromLadder.Reset();
 
         try

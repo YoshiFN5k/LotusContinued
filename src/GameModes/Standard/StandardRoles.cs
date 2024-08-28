@@ -183,6 +183,7 @@ public class StandardRoles : RoleHolder
         /// Crewmates
 
         public Alchemist Alchemist = new();
+        public Altruist Altruist = new();
         public Bastion Bastion = new();
         public Bodyguard Bodyguard = new();
         public Chameleon Chameleon = new();
@@ -192,6 +193,7 @@ public class StandardRoles : RoleHolder
         public Demolitionist Demolitionist = new();
         public Dictator Dictator = new();
         public Doctor Doctor = new();
+        public Duplicator Duplicator = new();
         public Engineer Engineer = new();
         public Escort Escort = new();
         public ExConvict ExConvict = new();
