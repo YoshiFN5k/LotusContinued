@@ -4,6 +4,7 @@ using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.Extensions;
 using Lotus.GUI.Name.Interfaces;
+using Lotus.RPC.CustomObjects;
 using System.Collections;
 using System.IO;
 using System.Linq;
@@ -12,13 +13,14 @@ using VentLib.Networking.RPC;
 using VentLib.Networking.RPC.Interfaces;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
+using VentLib.Utilities.Harmony.Attributes;
 using Object = UnityEngine.Object;
 
 namespace Lotus.RPC;
 
 public static class ReverseEngineeredRPC
 {
-    public static void RpcChangeSkin(PlayerControl player, NetworkedPlayerInfo.PlayerOutfit newOutift, int targetClientId = -1, bool sendToClients = false)
+    public static void RpcChangeSkin(PlayerControl player, NetworkedPlayerInfo.PlayerOutfit newOutift, int targetClientId = -1, bool sendToClients = true)
     {
         MassRpc massRpc = RpcV3.Mass();
 
