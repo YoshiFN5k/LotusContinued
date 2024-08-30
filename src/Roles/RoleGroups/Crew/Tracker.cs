@@ -73,7 +73,7 @@ public class Tracker : Vanilla.Tracker
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
-            .RoleColor(new Color(0.82f, 0.24f, 0.82f))
+            // .RoleColor(new Color(0.82f, 0.24f, 0.82f))
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     private static class Translations
