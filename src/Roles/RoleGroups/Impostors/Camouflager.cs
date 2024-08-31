@@ -52,7 +52,7 @@ public class Camouflager : Shapeshifter
     //     handle.Cancel();
     //     Async.Schedule(() => MeetingPrep.PrepMeeting(reporter, reported.OrElse(null!)), NetUtils.DeriveDelay(0.5f));
     // }
-    [RoleAction(LotusActionType.RoundEnd, priority: API.Priority.High)]
+    [RoleAction(LotusActionType.RoundEnd, ActionFlag.WorksAfterDeath, priority: API.Priority.High)]
     private void HandleMeetingCall()
     {
         if (!camouflaged) return;
