@@ -46,10 +46,10 @@ public class MeetingPrep
         if (Prepped || !AmongUsClient.Instance.AmHost) return _meetingDelegate;
         if (Game.CurrentGameMode is StandardGameMode && deadBody == null && GeneralOptions.MeetingOptions.SyncMeetingButtons)
         {
-            if (GeneralOptions.MeetingOptions.MeetingButtonPool >= Game.MatchData.EmergencyButtonsUsed)
+            if (Game.MatchData.EmergencyButtonsUsed >= GeneralOptions.MeetingOptions.MeetingButtonPool)
             {
                 _meetingDelegate = null!;
-                log.Debug($"{reporter?.name ?? "null player"}'s was canceled because there are no more meetings. ({GeneralOptions.MeetingOptions.MeetingButtonPool}) >= {Game.MatchData.EmergencyButtonsUsed}");
+                log.Debug($"{reporter?.name ?? "null player"}'s meeting was canceled because there are no more meetings. {Game.MatchData.EmergencyButtonsUsed} >= {GeneralOptions.MeetingOptions.MeetingButtonPool}");
                 return _meetingDelegate;
             }
         }
