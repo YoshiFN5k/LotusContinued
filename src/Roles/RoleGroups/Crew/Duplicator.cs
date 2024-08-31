@@ -5,7 +5,7 @@ using Lotus.GUI;
 using Lotus.API.Odyssey;
 using Lotus.GUI.Name.Holders;
 using Lotus.GUI.Name.Components;
-using Lotus.RPC.CustomObjects.Builtin;
+// using Lotus.RPC.CustomObjects.Builtin;
 using System.Collections.Generic;
 using VentLib.Localization.Attributes;
 using VentLib.Options.UI;
@@ -17,6 +17,7 @@ namespace Lotus.Roles.RoleGroups.Crew;
 
 public class Duplicator : Crewmate
 {
+    /*
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Duplicator));
     [UIComponent(GUI.Name.UI.Cooldown)]
     private Cooldown duplicateCooldown = null!;
@@ -88,12 +89,13 @@ public class Duplicator : Crewmate
                 .Value(v => v.Value(true).Text(Translations.Options.RandomLocation).Color(Color.red).Build())
                 .BindBool(v => spawnsRandomly = v)
                 .Build());
+    */
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(0.87f, 0.6f, 1f))
-            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
-            .RoleFlags(RoleFlag.DontRegisterOptions); // still wip
+            .RoleFlags(RoleFlag.DontRegisterOptions) // still wip
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     [Localized(nameof(Duplicator))]
     public static class Translations

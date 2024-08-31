@@ -33,7 +33,7 @@ class PlayerLeavePatch
             RoleOperations.Current.Trigger(LotusActionType.Disconnect, data.Character);
             Game.MatchData.Roles.MainRoles.GetValueOrDefault(data.Character.PlayerId)?.HandleDisconnect();
             Game.MatchData.Roles.SubRoles.GetValueOrDefault(data.Character.PlayerId)?.ForEach(r => r.HandleDisconnect());
-            CustomNetObject.DespawnOnQuit(data.Character.PlayerId);
+            // CustomNetObject.DespawnOnQuit(data.Character.PlayerId);
         }
         Hooks.PlayerHooks.PlayerDisconnectHook.Propagate(new PlayerHookEvent(data.Character));
         data.Character.Data.PlayerName = data.Character.name;
