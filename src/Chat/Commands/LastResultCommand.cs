@@ -124,6 +124,11 @@ public class LastResultCommand : CommandTranslations
         float StatusOrder(PlayerHistory ph) => winners.Contains(ph.PlayerId) ? (float)ph.Status + DeathTimeOrder(ph) : (float)ph.Status + 99 + DeathTimeOrder(ph);
     }
 
+    private static void SeparatePlayerInfo(string message, string title)
+    {
+
+    }
+
     private static string CreateSmallPlayerResult(PlayerHistory history, bool isWinner)
     {
         const string indent = "<indent=5.5%>{0}</indent>";

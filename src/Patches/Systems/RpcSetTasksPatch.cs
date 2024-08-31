@@ -60,7 +60,7 @@ public class RpcSetTasksPatch
                 break;
         }
 
-        if (!hasTasks) return true; // if they dont have tasks, we dont care what tasks they have
+        if (!hasTasks) return true;
         log.Debug($"Setting tasks for player {__instance.Object?.name ?? __instance.PlayerName}");
 
         if (shortTaskCount == -1 || !overrideTasks) shortTaskCount = AUSettings.NumShortTasks();
