@@ -4,7 +4,6 @@ using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.Extensions;
 using Lotus.GUI.Name.Interfaces;
-using Lotus.RPC.CustomObjects;
 using System.Collections;
 using System.IO;
 using System.Linq;
