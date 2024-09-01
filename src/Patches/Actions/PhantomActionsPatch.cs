@@ -43,7 +43,7 @@ public static class PhantomActionsPatch
                 {
                     __instance.MyPhysics.StopAllCoroutines();
                     __instance.NetTransform.SnapTo(farthestVent.transform.position);
-                    __instance.MyPhysics.StartCoroutine(p.MyPhysics.CoEnterVent(farthestVent.Id));
+                    __instance.MyPhysics.StartCoroutine(__instance.MyPhysics.CoEnterVent(farthestVent.Id));
                 }
                 else
                 {
