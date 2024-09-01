@@ -49,7 +49,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
     public const string MajorVersion = "1";
     public const string MinorVersion = "1"; // Update with each release
     public const string PatchVersion = "0";
-    public const string BuildNumber = "0976";
+    public const string BuildNumber = "1274";
 
     public static string PluginVersion = typeof(ProjectLotus).Assembly.GetName().Version!.ToString();
 
