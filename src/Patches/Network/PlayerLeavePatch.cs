@@ -19,6 +19,7 @@ class PlayerLeavePatch
     public static void Postfix(AmongUsClient __instance, [HarmonyArgument(0)] ClientData data, [HarmonyArgument(1)] DisconnectReasons reason)
     {
         log.Debug($"{data.PlayerName} (ClientID={data.Id}) left the game. (Reason={reason})", "SessionEnd");
+        if (!AmongUsClient.Instance.AmHost) return;
         if (Game.State is GameState.InLobby)
         {
             PlayerJoinPatch.CheckAutostart();
@@ -33,6 +34,11 @@ class PlayerLeavePatch
             RoleOperations.Current.Trigger(LotusActionType.Disconnect, data.Character);
             Game.MatchData.Roles.MainRoles.GetValueOrDefault(data.Character.PlayerId)?.HandleDisconnect();
             Game.MatchData.Roles.SubRoles.GetValueOrDefault(data.Character.PlayerId)?.ForEach(r => r.HandleDisconnect());
+            try
+            {
+                Game.MatchData.RegenerateFrozenPlayers(data.Character);
+            }
+            catch { }
             // CustomNetObject.DespawnOnQuit(data.Character.PlayerId);
         }
         Hooks.PlayerHooks.PlayerDisconnectHook.Propagate(new PlayerHookEvent(data.Character));

@@ -46,6 +46,21 @@ public class MatchData
         return player == null || !FrozenPlayers.ContainsKey(player.GetGameID()) ? null : FrozenPlayers[player.GetGameID()];
     }
 
+    public void RegenerateFrozenPlayers(PlayerControl? specificPlayer = null)
+    {
+        if (specificPlayer != null)
+        {
+            FrozenPlayer frozenPlayer = new(specificPlayer);
+            Game.MatchData.FrozenPlayers[frozenPlayer.GameID] = frozenPlayer;
+            return;
+        }
+        Players.GetAllPlayers().Where(p => p.Data != null && !p.Data.Disconnected).ForEach(p =>
+        {
+            FrozenPlayer frozenPlayer = new(p);
+            Game.MatchData.FrozenPlayers[frozenPlayer.GameID] = frozenPlayer;
+        });
+    }
+
     public void Cleanup()
     {
         UnreportableBodies.Clear();

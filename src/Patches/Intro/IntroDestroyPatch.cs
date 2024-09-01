@@ -69,8 +69,7 @@ class IntroDestroyPatch
     {
         if (player == null) yield break;
 
-        FrozenPlayer frozenPlayer = new(player);
-        Game.MatchData.FrozenPlayers[frozenPlayer.GameID] = frozenPlayer;
+        Game.MatchData.RegenerateFrozenPlayers(player);
 
         if (player.GetVanillaRole().IsImpostor() && Game.CurrentGameMode is StandardGameMode)
         {
