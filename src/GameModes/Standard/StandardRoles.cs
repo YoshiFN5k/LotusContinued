@@ -239,6 +239,7 @@ public class StandardRoles : RoleHolder
         public Werewolf Werewolf = new();
 
         /// Neutral Non-Killing
+        public Amalgamation Amalgamation = new();
         public Amnesiac Amnesiac = new();
         public Archangel Archangel = new();
         public Copycat Copycat = new();
