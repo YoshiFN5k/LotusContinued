@@ -233,7 +233,7 @@ public class Sheriff : Crewmate
             [Localized(nameof(OneShotPerRound))] public static string OneShotPerRound = "One Shot Per Round";
             [Localized(nameof(KillOnMisfire))] public static string KillOnMisfire = "Kill Target On Misfire";
             [Localized(nameof(KillCooldown))] public static string KillCooldown = "Shoot Cooldown";
-            [Localized(nameof(TotalShots))] public static string TotalShots = "TotalShots";
+            [Localized(nameof(TotalShots))] public static string TotalShots = "Total Shots";
         }
     }
 }
