@@ -66,6 +66,7 @@ public class MatchData
         UnreportableBodies.Clear();
         Roles = new RoleData();
         GameHistory = new GameHistory();
+        VanillaRoleTracker = new VanillaRoleTracker();
     }
 
     public class RoleData

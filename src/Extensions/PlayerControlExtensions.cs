@@ -148,7 +148,7 @@ public static class PlayerControlExtensions
             {
                 remote.Delete();
                 roleDefinition.SyncOptions();
-            }, time);
+            }, deriveDelay * 2);
         }
     }
 

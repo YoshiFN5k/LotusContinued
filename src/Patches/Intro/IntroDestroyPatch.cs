@@ -76,7 +76,6 @@ class IntroDestroyPatch
             float cooldown = GeneralOptions.GameplayOptions.GetFirstKillCooldown(player);
             log.Trace($"Fixing First Kill Cooldown for {player.name} (Cooldown={cooldown}s)", "Fix First Kill Cooldown");
             player.SetKillCooldown(cooldown);
-            player.Data.Role.SetCooldown();
         }
 
         if (GeneralOptions.MayhemOptions.RandomSpawn) Game.RandomSpawn.Spawn(player);

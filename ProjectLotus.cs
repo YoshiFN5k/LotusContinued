@@ -29,6 +29,10 @@ using Lotus.Roles.Internals.Attributes;
 using VentLib.Version.BuiltIn;
 using VentLib.Options.UI.Controllers.Search;
 using Lotus.Utilities;
+using System;
+using Lotus.src.Managers.Blackscreen.Interfaces;
+using Lotus.Managers.Blackscreen;
+using Lotus.API.Vanilla.Meetings;
 #if !DEBUG
 using VentLib.Utilities.Debug.Profiling;
 #endif
@@ -68,6 +72,8 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
     public static bool FinishedLoading;
     public static bool AdvancedRoleAssignment = true;
 
+    internal Func<MeetingDelegate, IBlackscreenResolver> GetNewBlackscreenResolver = new(md => new BlackscreenResolver(md));
+
     public ProjectLotus()
     {
 #if DEBUG
@@ -104,6 +110,12 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
     public static GameModeManager GameModeManager = null!;
     public static List<byte> ResetCamPlayerList = null!;
     public static ProjectLotus Instance = null!;
+
+    public void SetBlackscreenResolver(Func<MeetingDelegate, IBlackscreenResolver> newResolver)
+    {
+        log.Debug($"{Assembly.GetCallingAssembly().GetName().Name} overrided the default blackscreen resolver.");
+        GetNewBlackscreenResolver = newResolver;
+    }
 
     public override void Load()
     {
