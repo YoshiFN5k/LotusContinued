@@ -29,6 +29,10 @@ static class ExileControllerWrapUpPatch
             {
                 WrapUpPostfix(__instance.initData);
             }
+            catch (Exception ex)
+            {
+                log.Exception(ex);
+            }
             finally
             {
                 WrapUpFinalizer();
