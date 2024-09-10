@@ -170,8 +170,8 @@ public class Sheriff : Crewmate
             .SubOption(sub => sub
                 .KeyName("Sheriff Action Button", Translations.Options.SheriffActionButton)
                 .Bind(v => isSheriffDesync = (bool)v)
-                .Value(v => v.Text("Kill Button (legacy)").Value(true).Color(Color.green).Build())
-                .Value(v => v.Text("Pet Button").Value(false).Color(Color.cyan).Build())
+                .Value(v => v.Text(Translations.Options.ActionKillButton).Value(true).Color(Color.green).Build())
+                .Value(v => v.Text(Translations.Options.ActionPetButton).Value(false).Color(Color.cyan).Build())
                 .Build());
 
     // Sheriff is not longer a desync role for simplicity sake && so that they can do tasks
@@ -234,6 +234,9 @@ public class Sheriff : Crewmate
             [Localized(nameof(KillOnMisfire))] public static string KillOnMisfire = "Kill Target On Misfire";
             [Localized(nameof(KillCooldown))] public static string KillCooldown = "Shoot Cooldown";
             [Localized(nameof(TotalShots))] public static string TotalShots = "Total Shots";
+
+            [Localized(nameof(ActionKillButton))] public static string ActionKillButton = "Kill Button (Legacy)";
+            [Localized(nameof(ActionPetButton))] public static string ActionPetButton = "Pet Button";
         }
     }
 }
