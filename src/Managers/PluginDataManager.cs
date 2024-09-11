@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Lotus.Managers.Announcements;
 using Lotus.Managers.Friends;
 using Lotus.Managers.Templates;
 using Lotus.Managers.Titles;
@@ -30,13 +31,13 @@ public static class PluginDataManager
     public static readonly DirectoryInfo ModifiableDataDirectory;
     public static readonly DirectoryInfo HiddenDataDirectory;
 
+    public static CustomAnnouncementManager AnnouncementManager;
     public static TemplateManager TemplateManager;
     public static FriendManager FriendManager;
     public static TitleManager TitleManager;
     public static ChatManager ChatManager;
     public static ModManager ModManager;
     public static BanManager BanManager;
-
 
     static PluginDataManager()
     {
@@ -48,6 +49,7 @@ public static class PluginDataManager
         if (!ModifiableDataDirectory.Exists) ModifiableDataDirectory.Create();
         if (!HiddenDataDirectory.Exists) HiddenDataDirectory.Create();
 
+        AnnouncementManager = TryLoad(() => new CustomAnnouncementManager(), "Announcement Manager")!;
         TemplateManager = TryLoad(() => new TemplateManager(ModifiableDataDirectory.GetFile(TemplateFile)), "Template Manager")!;
         TitleManager = TryLoad(() => new TitleManager(ModifiableDataDirectory.GetDirectory(TitleDirectory)), "Title Manager")!;
         FriendManager = TryLoad(() => new FriendManager(ModifiableDataDirectory.GetFile(FriendListFile)), "Friend Manager")!;
