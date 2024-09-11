@@ -69,6 +69,7 @@ class SplashPatch
         /*AdjustBottomButtons(__instance, GameObject.Find("BottomButtons"));*/
 
         DevLogger.Log("??");
+        AccountManager.Instance.accountTab.FindChild<Transform>("AccountWindow/Card", true).localPosition = new Vector3(0f, 1.3f, 0f);
         AccountManager.Instance.accountTab.FindChildOrEmpty<Transform>("GameHeader").IfPresent(g => g.gameObject.SetActive(false));
         DevLogger.Log("?????");
 
@@ -92,12 +93,6 @@ class SplashPatch
         accountButtons.gameObject.FindChild<Transform>("Header", true).localPosition += new Vector3(1000f, 0f);
         accountButtons.FindChild("Account_CTA").localPosition += new Vector3(0, 1, 0);
         accountButtons.FindChild("Stats_CTA").localPosition += new Vector3(0, 1, 0);
-
-        Async.Schedule(() =>
-        {
-            GameObject accountManager = FindAccountManager();
-            accountManager.transform.localPosition = new Vector3(0f, 1.6782f, 0f);
-        }, 0.1f);
 
         maskedBlackScreen.transform.localPosition = new Vector3(-3.345f, -2.05f);
         maskedBlackScreen.transform.localScale = new Vector3(7.35f, 4.5f, 4f);
@@ -350,32 +345,5 @@ class SplashPatch
     {
         if (__instance.activeSprites != null) return;
         if (__instance.inactiveSprites != null) __instance.inactiveSprites.SetActive(true);
-    }
-
-    // save me from my pain and suffering
-    static GameObject FindAccountManager()
-    {
-        Il2CppSystem.Type gameObjectType = Il2CppType.Of<GameObject>();
-
-        Il2CppReferenceArray<Object> allObjects = Resources.FindObjectsOfTypeAll(gameObjectType);
-        foreach (var obj in allObjects)
-        {
-            GameObject? gameObject = obj.TryCast<GameObject>();
-            if (gameObject != null)
-            {
-                if (gameObject.name == "AccountManager" && gameObject.hideFlags == HideFlags.None)
-                {
-                    return gameObject;
-                }
-
-                var accountManagerComponent = gameObject.GetComponent<AccountManager>();
-                if (accountManagerComponent != null && gameObject.hideFlags == HideFlags.None)
-                {
-                    return accountManagerComponent.gameObject;
-                }
-            }
-        }
-
-        return null!;
     }
 }
