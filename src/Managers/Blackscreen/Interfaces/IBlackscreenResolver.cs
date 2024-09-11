@@ -1,6 +1,6 @@
 using System;
 
-namespace Lotus.src.Managers.Blackscreen.Interfaces;
+namespace Lotus.Managers.Blackscreen.Interfaces;
 
 public interface IBlackscreenResolver
 {

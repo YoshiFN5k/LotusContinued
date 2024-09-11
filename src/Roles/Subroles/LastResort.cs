@@ -19,7 +19,7 @@ using Lotus.API.Odyssey;
 using Lotus.GUI.Name.Holders;
 using System.Linq;
 
-namespace Lotus.src.Roles.Subroles;
+namespace Lotus.Roles.Subroles;
 
 public class LastResort : Subrole
 {

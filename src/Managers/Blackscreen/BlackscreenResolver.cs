@@ -16,7 +16,7 @@ using VentLib.Networking.RPC;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using AmongUs.GameOptions;
-using Lotus.src.Managers.Blackscreen.Interfaces;
+using Lotus.Managers.Blackscreen.Interfaces;
 
 namespace Lotus.Managers.Blackscreen;
 

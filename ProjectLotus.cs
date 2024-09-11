@@ -30,7 +30,7 @@ using VentLib.Version.BuiltIn;
 using VentLib.Options.UI.Controllers.Search;
 using Lotus.Utilities;
 using System;
-using Lotus.src.Managers.Blackscreen.Interfaces;
+using Lotus.Managers.Blackscreen.Interfaces;
 using Lotus.Managers.Blackscreen;
 using Lotus.API.Vanilla.Meetings;
 #if !DEBUG

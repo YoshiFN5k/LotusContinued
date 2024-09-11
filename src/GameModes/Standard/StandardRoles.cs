@@ -16,7 +16,7 @@ using Lotus.Roles.Subroles.Romantics;
 using VentLib.Utilities.Extensions;
 using Medium = Lotus.Roles.RoleGroups.Crew.Medium;
 using Pirate = Lotus.Roles.RoleGroups.Neutral.Pirate;
-using Lotus.src.Roles.Subroles;
+using Lotus.Roles.Subroles;
 
 namespace Lotus.GameModes.Standard;
 public class StandardRoles : RoleHolder

@@ -11,7 +11,7 @@ using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using static MeetingHud;
-using Lotus.src.Managers.Blackscreen.Interfaces;
+using Lotus.Managers.Blackscreen.Interfaces;
 
 namespace Lotus.API.Vanilla.Meetings;
 
