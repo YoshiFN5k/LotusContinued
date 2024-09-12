@@ -50,12 +50,12 @@ public class SimpleNameModel : INameModel
         this.player = player;
         SetHolders();
         this.unalteredName = player.name;
-        NameHolder.Add(new NameComponent(new LiveString(() =>
+        NameHolder.Add(new NameComponent(new LiveString(state =>
         {
             byte shapeshiftedId = player.GetShapeshifted();
-            if (shapeshiftedId == 255) return unalteredName;
+            if (shapeshiftedId == 255 || state is GameState.InMeeting) return unalteredName;
             else return Players.GetAllPlayers().FirstOrDefault(p => p.PlayerId == shapeshiftedId, PlayerControl.LocalPlayer).name; // use host's name as a "scapegoat"
-        }, Color.white), new[] { GameState.Roaming, GameState.InMeeting }));
+        }, Color.white), [GameState.Roaming, GameState.InMeeting]));
     }
 
     public bool Updated() => didUpdate;

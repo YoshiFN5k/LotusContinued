@@ -51,7 +51,7 @@ public class Harbinger : TaskRoleBase
     {
         if (timesPet != 1 || taskCount < tasksBeforeCircle || Vector2.Distance(MyPlayer.GetTruePosition(), targetLocation) > ModConstants.ArrowActivationMin) return;
         progress = 0;
-        LiveString liveString = new(() =>
+        LiveString liveString = new(_ =>
         {
             if (progress < 0) return "";
             DevLogger.Log($"{progress / MaxRitualF}");

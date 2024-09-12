@@ -84,7 +84,7 @@ public class Herbalist : Crewmate
         _bloomsGrown.Update(MyPlayer.UniquePlayerId(), i => i + 1);
         int count = bloomCounts.Compose(playerId, i => i + 1, () =>
         {
-            LiveString ls = new(() =>
+            LiveString ls = new(_ =>
             {
                 int count = bloomCounts.GetValueOrDefault(playerId);
                 if (count < bloomsBeforeReveal) return RoleUtils.Counter(count, bloomsBeforeReveal, RoleColor);

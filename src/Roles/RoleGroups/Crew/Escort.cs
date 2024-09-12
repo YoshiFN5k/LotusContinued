@@ -157,7 +157,7 @@ public class Escort : Crewmate
             Async.Schedule(() => text.Delete(), 1f);
 
             if (BlockedCounter != null) return;
-            LiveString liveString = new(() => RelRbIndicator(BlockDuration?.TimeRemaining() ?? 60));
+            LiveString liveString = new(_ => RelRbIndicator(BlockDuration?.TimeRemaining() ?? 60));
             BlockedCounter = thisPlayer.NameModel().GetComponentHolder<IndicatorHolder>().Add(new IndicatorComponent(liveString, GameState.Roaming, viewers: thisPlayer));
         }
 

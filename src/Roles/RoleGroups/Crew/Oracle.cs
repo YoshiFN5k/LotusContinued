@@ -86,7 +86,7 @@ public class Oracle : Crewmate
 
         string roleName = _oracleGradient.Apply(target.PrimaryRole().RoleName);
 
-        target.NameModel().GetComponentHolder<RoleHolder>().Add(new RoleComponent(new LiveString(() => roleName), Game.InGameStates, ViewMode.Replace));
+        target.NameModel().GetComponentHolder<RoleHolder>().Add(new RoleComponent(new LiveString(_ => roleName), Game.InGameStates, ViewMode.Replace));
         CHandler().Message(Translations.RevealMessage, target.name, roleName).Send();
     }
 

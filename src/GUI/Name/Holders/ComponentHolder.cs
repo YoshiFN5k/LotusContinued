@@ -62,7 +62,7 @@ public class ComponentHolder<T> : RemoteList<T>, IComponentHolder<T> where T : I
             ViewMode newMode = component.ViewMode();
             if (newMode is ViewMode.Replace or ViewMode.Absolute || lastMode is ViewMode.Overriden) endString.Clear();
             lastMode = newMode;
-            string text = component.GenerateText();
+            string text = component.GenerateText(state);
             if (text == null) continue;
             endString.Add(text);
             if (newMode is ViewMode.Absolute) break;

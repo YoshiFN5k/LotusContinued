@@ -125,7 +125,7 @@ public class Mastermind : Impostor
     {
         if (target == null) return;
         Cooldown playerCooldown = expirationTimers[target.PlayerId] = timeToKill.Clone();
-        LiveString killIndicator = new(() => KillImploredText.Formatted(Color.white.Colorize(playerCooldown + "s")), RoleColor);
+        LiveString killIndicator = new(_ => KillImploredText.Formatted(Color.white.Colorize(playerCooldown + "s")), RoleColor);
 
         TextComponent textComponent = new(killIndicator, GameState.Roaming, viewers: target);
         remotes.GetOrCompute(target.PlayerId, () => new[] { (Remote<TextComponent>?)null, null })[1] = target.NameModel().GCH<TextHolder>().Add(textComponent);

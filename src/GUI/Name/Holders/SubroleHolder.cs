@@ -35,14 +35,14 @@ public class SubroleHolder : ComponentHolder<SubroleComponent>
             switch (textMode)
             {
                 case ModifierTextMode.First when i == 0 && state is not GameState.InMeeting:
-                    text = component.GenerateText();
+                    text = component.GenerateText(state);
                     break;
                 case ModifierTextMode.All when state is not GameState.InMeeting:
-                    text = component.GenerateText();
+                    text = component.GenerateText(state);
                     break;
                 case ModifierTextMode.Off:
                 default:
-                    text = component.GenerateIdentifier();
+                    text = component.GenerateIdentifier(state);
                     break;
             }
             if (text == null!) continue;

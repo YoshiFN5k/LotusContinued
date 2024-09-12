@@ -17,23 +17,23 @@ public class SubroleComponent : SimpleComponent
         this.SetMainText(new LiveString(subrole.Identifier() ?? "", this.subrole?.RoleColor));
     }
 
-    public SubroleComponent(ISubrole subrole, GameState gameState, ViewMode viewMode = Name.ViewMode.Additive, params PlayerControl[] viewers) : this(subrole, new []{gameState}, viewMode, viewers)
+    public SubroleComponent(ISubrole subrole, GameState gameState, ViewMode viewMode = Name.ViewMode.Additive, params PlayerControl[] viewers) : this(subrole, [gameState], viewMode, viewers)
     {
         this.subrole = subrole as AbstractBaseRole;
         this.SetMainText(new LiveString(subrole.Identifier() ?? "", this.subrole?.RoleColor));
     }
 
-    public override string GenerateText()
+    public override string GenerateText(GameState state)
     {
-        if (subrole == null) return base.GenerateText();
+        if (subrole == null) return base.GenerateText(state);
         string newString = Prefixes.Fuse("") + subrole.ColoredRoleName() + Suffixes.Fuse("");
         size.IfPresent(s => newString = TextUtils.ApplySize(s, newString));
         return newString;
     }
 
-    public string GenerateIdentifier()
+    public string GenerateIdentifier(GameState state)
     {
-        if (subrole == null) return base.GenerateText();
+        if (subrole == null) return base.GenerateText(state);
         string newString = ((ISubrole)subrole).Identifier() ?? "";
         if (newString != "") newString = subrole.RoleColor.Colorize(newString);
         size.IfPresent(s => newString = TextUtils.ApplySize(s, newString));

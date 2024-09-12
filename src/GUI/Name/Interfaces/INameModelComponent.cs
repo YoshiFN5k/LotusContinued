@@ -18,7 +18,7 @@ public interface INameModelComponent
 
     public GameState[] GameStates();
 
-    public string GenerateText();
+    public string GenerateText(GameState currentText);
 
     public void SetMainText(LiveString liveString);
 

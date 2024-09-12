@@ -88,9 +88,9 @@ public class SimpleComponent : INameModelComponent
 
     public void RemoveViewer(byte playerId) => additionalViewers.RemoveAll(v => v.PlayerId == playerId);
 
-    public virtual string GenerateText()
+    public virtual string GenerateText(GameState state)
     {
-        string newString = Prefixes.Join(delimiter: "") + MainText + Suffixes.Join(delimiter: "");
+        string newString = Prefixes.Select(p => p.GetValue(state)).Join(delimiter: "") + MainText.GetValue(state) + Suffixes.Select(s => s.GetValue(state)).Join(delimiter: "");
         size.IfPresent(s => newString = TextUtils.ApplySize(s, newString));
         return newString;
     }
