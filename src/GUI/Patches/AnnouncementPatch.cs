@@ -5,11 +5,12 @@ using UnityEngine;
 using Lotus.Extensions;
 using VentLib.Utilities.Harmony.Attributes;
 using Object = UnityEngine.Object;
-using Lotus.Managers.Announcements;
+using Lotus.Managers.Announcements.Models;
 using Lotus.Managers;
 using AmongUs.Data;
 using VentLib.Utilities.Extensions;
 using System.Globalization;
+using xCloud;
 
 namespace Lotus.GUI.Patches;
 
@@ -30,10 +31,7 @@ public class AnnouncementPatch
             panel.PassiveButton.ClickMask = __instance.ListScroller.Hitbox;
             __instance.visibleAnnouncements.Add(panel);
             ControllerManager.Instance.AddSelectableUiElement(panel.PassiveButton, false);
-            // if (DataManager.Player.Announcements.AnnouncementsRead.Contains(a.Number))
-            // {
-            //     panel.MarkAsRead();
-            // }
+            if (PluginDataManager.AnnouncementManager.HasReadAnnouncement(a)) panel.MarkAsRead();
             panel.PassiveButton.OnClick.AddListener((Action)(() =>
             {
                 __instance.selectedIndex = __instance.visibleAnnouncements.IndexOf(panel);
@@ -44,6 +42,7 @@ public class AnnouncementPatch
                 }
                 __instance.selectedPanel = panel;
                 __instance.selectedPanel.Select();
+                PluginDataManager.AnnouncementManager.ReadAnnnounement(a);
                 SelectAnnouncement(__instance, a, ActiveInputManager.currentControlType == ActiveInputManager.InputType.Joystick);
             }));
         });

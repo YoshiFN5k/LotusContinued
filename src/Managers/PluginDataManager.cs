@@ -21,6 +21,7 @@ public static class PluginDataManager
     private static readonly string LegacyHiddenDataDirectoryPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "/TownOfHostTheOtherRoles");
     private const string TitleDirectory = "Titles";
 
+    private const string ReadAnnouncementsFile = "ReadAnnouncements.yaml";
     private const string ModdedPlayerFile = "ModdedPlayers.yaml";
     private const string BannedPlayerFile = "BannedPlayers.yaml";
     private const string WordListFile = "BannedWords.yaml";
@@ -49,7 +50,7 @@ public static class PluginDataManager
         if (!ModifiableDataDirectory.Exists) ModifiableDataDirectory.Create();
         if (!HiddenDataDirectory.Exists) HiddenDataDirectory.Create();
 
-        AnnouncementManager = TryLoad(() => new CustomAnnouncementManager(), "Announcement Manager")!;
+        AnnouncementManager = TryLoad(() => new CustomAnnouncementManager(ModifiableDataDirectory.GetFile(ReadAnnouncementsFile)), "Announcement Manager")!;
         TemplateManager = TryLoad(() => new TemplateManager(ModifiableDataDirectory.GetFile(TemplateFile)), "Template Manager")!;
         TitleManager = TryLoad(() => new TitleManager(ModifiableDataDirectory.GetDirectory(TitleDirectory)), "Title Manager")!;
         FriendManager = TryLoad(() => new FriendManager(ModifiableDataDirectory.GetFile(FriendListFile)), "Friend Manager")!;

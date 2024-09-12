@@ -1,8 +1,7 @@
 using System;
 using AmongUs.Data;
 
-namespace Lotus.Managers.Announcements;
-
+namespace Lotus.Managers.Announcements.Models;
 public class Announcement
 {
     public string Title { get; set; } = null!;
