@@ -1,4 +1,5 @@
 using System;
+using AmongUs.Data;
 
 namespace Lotus.Managers.Announcements;
 
@@ -11,5 +12,9 @@ public class Announcement
     public bool DevOnly { get; set; } = false;
     public DateOnly? Date { get; set; }
 
-    public string GetFormattedDate() => Date?.ToString("M/d/yy") ?? DateOnly.MinValue.ToString("M/d/yy");
+    public string FormattedDate() => (Date ?? DateOnly.MinValue).ToDateTime(new TimeOnly(12, 0)).ToString("MM/dd/yyyy");
+    public string FormattedToLanguage() => (Date ?? DateOnly.MinValue)
+        .ToDateTime(new TimeOnly(12, 0))
+        .ToLocalTime()
+        .ToString(DestroyableSingleton<TranslationController>.Instance.dateFormats[DataManager.Settings.Language.CurrentLanguage]);
 }

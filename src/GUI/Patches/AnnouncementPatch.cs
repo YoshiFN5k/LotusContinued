@@ -25,7 +25,7 @@ public class AnnouncementPatch
             // panel.announcement = null;
             panel.Background.enabled = false;
             panel.TitleText.text = a.ShortTitle;
-            panel.DateText.text = DateTime.Parse(a.GetFormattedDate()).ToLocalTime().ToString(DestroyableSingleton<TranslationController>.Instance.dateFormats[DataManager.Settings.Language.CurrentLanguage]);
+            panel.DateText.text = a.FormattedToLanguage();
             panel.transform.localPosition = __instance.panelStartPos;
             panel.PassiveButton.ClickMask = __instance.ListScroller.Hitbox;
             __instance.visibleAnnouncements.Add(panel);
@@ -44,26 +44,32 @@ public class AnnouncementPatch
                 }
                 __instance.selectedPanel = panel;
                 __instance.selectedPanel.Select();
-                // __instance.UpdateAnnouncementText(a.Number, ActiveInputManager.currentControlType == ActiveInputManager.InputType.Joystick);
                 SelectAnnouncement(__instance, a, ActiveInputManager.currentControlType == ActiveInputManager.InputType.Joystick);
             }));
         });
         var newList = __instance.visibleAnnouncements.ToArray().ToList();
         newList.Sort((x, y) =>
         {
-            // this code does not work lol
             DateTime xDate, yDate;
-            bool xValid = DateTime.TryParseExact(x.announcement == null ? x.DateText.text : x.announcement.Date, "M/d/yy", CultureInfo.InvariantCulture, DateTimeStyles.None, out xDate);
-            bool yValid = DateTime.TryParseExact(y.announcement == null ? y.DateText.text : y.announcement.Date, "M/d/yy", CultureInfo.InvariantCulture, DateTimeStyles.None, out yDate);
+            bool xValid = false, yValid = false;
+
+            if (x.announcement != null && DateTime.TryParse(x.announcement.Date, out xDate)) xValid = true;
+            else xValid = DateTime.TryParseExact(x.DateText.text, "MM/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out xDate);
+
+            if (y.announcement != null && DateTime.TryParse(y.announcement.Date, out yDate)) yValid = true;
+            else yValid = DateTime.TryParseExact(y.DateText.text, "MM/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out yDate);
 
             if (!xValid && !yValid) return 0;
+
             if (!xValid) return 1;
+
             if (!yValid) return -1;
 
             return xDate.CompareTo(yDate);
         });
         __instance.visibleAnnouncements = new Il2CppSystem.Collections.Generic.List<AnnouncementPanel>();
         Vector3 localPosition = __instance.panelStartPos;
+        newList.Reverse();
         newList.ForEach(a =>
         {
             __instance.visibleAnnouncements.Add(a);
@@ -83,7 +89,7 @@ public class AnnouncementPatch
         // }
         if (previewOnly)
         {
-            // log.Debug("Announcement Setting preview");
+            log.Debug("Announcement Setting preview");
             __instance.ListStateHUD.SetActive(true);
             string text;
             SelectableHyperLinkHelper.SanitizeLinkText(announcementInfo.BodyText, out text);
@@ -91,7 +97,7 @@ public class AnnouncementPatch
         }
         else
         {
-            // log.Debug("Announcement Setting full text");
+            log.Debug("Announcement Setting full text");
             __instance.ListStateHUD.SetActive(false);
             ControllerManager.Instance.CloseOverlayMenu("Reading");
             ControllerManager.Instance.OpenOverlayMenu("Reading", __instance.ReadingBackButton);
@@ -102,7 +108,7 @@ public class AnnouncementPatch
         }
         __instance.Title.text = announcementInfo.Title;
         __instance.SubTitle.text = announcementInfo.Subtitle;
-        __instance.DateString.text = DateTime.Parse(announcementInfo.GetFormattedDate()).ToLocalTime().ToString(DestroyableSingleton<TranslationController>.Instance.dateFormats[DataManager.Settings.Language.CurrentLanguage], CultureInfo.InvariantCulture);
+        __instance.DateString.text = announcementInfo.FormattedToLanguage();
         __instance.TextScroller.ScrollToTop();
         __instance.ManualScrollHelper.enabled = true;
         __instance.StartCoroutine(__instance.DelayedUpdateHyperlinkPositions());
