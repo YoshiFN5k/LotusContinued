@@ -59,6 +59,8 @@ public class CustomAnnouncementManager
         get => CustomAnnouncements.Keys.Any(id => !readAnnouncements.Read.Contains(id));
     }
 
+    public IEnumerable<Announcement> GetUnReadAnnouncements() => CustomAnnouncements.Where(kvp => !HasReadAnnouncement(kvp.Value)).Select(kvp => kvp.Value);
+
     public void AddAnnouncements(IEnumerable<Announcement> announcements)
     {
         announcements.Where(a => !string.IsNullOrEmpty(a.Title)).ForEach(a => CustomAnnouncements.Add(a.Title, a));

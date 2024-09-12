@@ -43,6 +43,8 @@ public class AnnouncementPatch
                 __instance.selectedPanel = panel;
                 __instance.selectedPanel.Select();
                 PluginDataManager.AnnouncementManager.ReadAnnnounement(a);
+                NewsCountButton button = Object.FindObjectOfType<NewsCountButton>();
+                if (button != null) AddModdedAnnuncementsToCount(button);
                 SelectAnnouncement(__instance, a, ActiveInputManager.currentControlType == ActiveInputManager.InputType.Joystick);
             }));
         });
@@ -77,6 +79,23 @@ public class AnnouncementPatch
         });
         __instance.ListScroller.SetBoundsMax(0.8f * (float)(newList.Count + 1) - 2.512f, 0f);
         newList.Clear();
+    }
+
+    [QuickPrefix(typeof(NewsCountButton), nameof(NewsCountButton.UpdateCountText))]
+    public static bool AddModdedAnnuncementsToCount(NewsCountButton __instance)
+    {
+        int num = DataManager.Player.Announcements.AllAnnouncements.Count - DataManager.Player.Announcements.AnnouncementsRead.Count;
+        log.Debug($"au unread announcements: {num}");
+        num += PluginDataManager.AnnouncementManager.GetUnReadAnnouncements().Count();
+        log.Debug($"after we add our unread announcements: {num}");
+        __instance.notifIcon.SetActive(num > 0);
+        if (num > 9)
+        {
+            __instance.countText.text = "9+";
+            return false;
+        }
+        __instance.countText.text = num.ToString();
+        return false;
     }
 
     private static void SelectAnnouncement(AnnouncementPopUp __instance, Announcement announcementInfo, bool previewOnly)
