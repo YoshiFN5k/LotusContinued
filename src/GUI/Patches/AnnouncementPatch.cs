@@ -16,6 +16,7 @@ namespace Lotus.GUI.Patches;
 
 public class AnnouncementPatch
 {
+    public const string ModdedText = "IGNORE";
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(AnnouncementPatch));
     [QuickPostfix(typeof(AnnouncementPopUp), nameof(AnnouncementPopUp.CreateAnnouncementList))]
     public static void CreateAnnouncementsList(AnnouncementPopUp __instance)
@@ -23,7 +24,7 @@ public class AnnouncementPatch
         PluginDataManager.AnnouncementManager.GetAnnouncements().ForEach(a =>
         {
             AnnouncementPanel panel = Object.Instantiate<AnnouncementPanel>(__instance.AnnouncementPanelPrefab, __instance.AnnouncementListSlider.transform);
-            // panel.announcement = null;
+            panel.announcement = new Assets.InnerNet.Announcement() { Title = ModdedText, Number = 69 };
             panel.Background.enabled = false;
             panel.TitleText.text = a.ShortTitle;
             panel.DateText.text = a.FormattedToLanguage();
@@ -41,7 +42,7 @@ public class AnnouncementPatch
                     announcementPanel.UnSelect();
                 }
                 __instance.selectedPanel = panel;
-                __instance.selectedPanel.Select();
+                SimulateSelect(__instance.selectedPanel);
                 PluginDataManager.AnnouncementManager.ReadAnnnounement(a);
                 NewsCountButton button = Object.FindObjectOfType<NewsCountButton>();
                 if (button != null) AddModdedAnnuncementsToCount(button);
@@ -54,10 +55,10 @@ public class AnnouncementPatch
             DateTime xDate, yDate;
             bool xValid = false, yValid = false;
 
-            if (x.announcement != null && DateTime.TryParse(x.announcement.Date, out xDate)) xValid = true;
+            if (x.announcement.Title != ModdedText && DateTime.TryParse(x.announcement.Date, out xDate)) xValid = true;
             else xValid = DateTime.TryParseExact(x.DateText.text, "MM/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out xDate);
 
-            if (y.announcement != null && DateTime.TryParse(y.announcement.Date, out yDate)) yValid = true;
+            if (y.announcement.Title != ModdedText && DateTime.TryParse(y.announcement.Date, out yDate)) yValid = true;
             else yValid = DateTime.TryParseExact(y.DateText.text, "MM/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out yDate);
 
             if (!xValid && !yValid) return 0;
@@ -130,5 +131,13 @@ public class AnnouncementPatch
         __instance.TextScroller.ScrollToTop();
         __instance.ManualScrollHelper.enabled = true;
         __instance.StartCoroutine(__instance.DelayedUpdateHyperlinkPositions());
+    }
+
+    private static void SimulateSelect(AnnouncementPanel panel)
+    {
+        panel.RightBorder.enabled = false;
+        panel.Background.enabled = true;
+        panel.Background.color = panel.SelectedColor;
+        panel.NewIcon.enabled = false;
     }
 }
