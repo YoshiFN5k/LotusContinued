@@ -53,7 +53,7 @@ public class SimpleNameModel : INameModel
         NameHolder.Add(new NameComponent(new LiveString(() =>
         {
             byte shapeshiftedId = player.GetShapeshifted();
-            if (shapeshiftedId != 255) return unalteredName;
+            if (shapeshiftedId == 255) return unalteredName;
             else return Players.GetAllPlayers().FirstOrDefault(p => p.PlayerId == shapeshiftedId, PlayerControl.LocalPlayer).name; // use host's name as a "scapegoat"
         }, Color.white), new[] { GameState.Roaming, GameState.InMeeting }));
     }
