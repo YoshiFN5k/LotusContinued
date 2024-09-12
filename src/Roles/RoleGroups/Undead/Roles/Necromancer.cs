@@ -26,6 +26,7 @@ using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using Lotus.API.Player;
+using Lotus.GameModes.Standard;
 
 namespace Lotus.Roles.RoleGroups.Undead.Roles;
 
@@ -55,6 +56,7 @@ public class Necromancer : UndeadRole
         if (target == null) return false;
         if (MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this)) is InteractionResult.Halt) return false;
         MyPlayer.RpcMark(target);
+        log.Debug($"Is first convert? {isFirstConvert} - {target.GetNameWithRole()}");
         if (isFirstConvert) return ConvertToDeathknight(target);
         ConvertToUndead(target);
         return false;
@@ -87,8 +89,8 @@ public class Necromancer : UndeadRole
         player.NameModel().GetComponentHolder<CooldownHolder>().Clear();
         player.NameModel().GetComponentHolder<CooldownHolder>().Add(new CooldownComponent(convertCooldown, GameState.Roaming, ViewMode.Additive, viewers: player));
 
-        Game.AssignRole(player, this);
-        Necromancer necromancer = player.PrimaryRole<Necromancer>();
+        StandardGameMode.Instance.Assign(player, this);
+        Necromancer necromancer = player.PrimaryRole<Necromancer>()!;
         necromancer.isFirstConvert = false;
         Game.MatchData.GameHistory.AddEvent(new RoleChangeEvent(player, necromancer));
         disableWinCheck = true;
@@ -103,7 +105,7 @@ public class Necromancer : UndeadRole
 
         deathknightOriginal = target.PrimaryRole();
         Game.MatchData.Roles.AddSubrole(target.PlayerId, deathknightOriginal);
-        Game.AssignRole(target, _deathknight);
+        StandardGameMode.Instance.Assign(target, _deathknight);
         myDeathknight = target.PrimaryRole<Deathknight>();
         target.NameModel().GetComponentHolder<RoleHolder>()[^1]
             .SetViewerSupplier(() => Players.GetAllPlayers().Where(p => p.PlayerId == target.PlayerId || p.Relationship(target) is Relation.FullAllies).ToList());

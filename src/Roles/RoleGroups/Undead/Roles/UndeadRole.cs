@@ -20,6 +20,7 @@ namespace Lotus.Roles.RoleGroups.Undead.Roles;
 
 public class UndeadRole : Impostor
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(UndeadRole));
     public static Color UndeadColor = new(0.33f, 0.46f, 0.76f);
 
     public override bool CanSabotage() => false;
@@ -46,12 +47,12 @@ public class UndeadRole : Impostor
         List<PlayerControl> undead = Players.GetAlivePlayers().Where(IsConvertedUndead).ToList();
         List<PlayerControl> viewers = new() { target };
 
-        LiveString undeadPlayerName = new(target.name, UndeadColor);
+        // LiveString undeadPlayerName = new(target.name, UndeadColor);
 
         if (target.PrimaryRole().Faction is TheUndead.Unconverted unconverted)
         {
             IndicatorComponent oldComponent = unconverted.UnconvertedName;
-            oldComponent.SetMainText(undeadPlayerName);
+            // oldComponent.SetMainText(undeadPlayerName);
             oldComponent.AddViewer(target);
         }
         else
@@ -61,9 +62,9 @@ public class UndeadRole : Impostor
         }
 
         target.PrimaryRole().Faction = FactionInstances.TheUndead;
-
         undead.ForEach(p =>
         {
+            log.Debug($"undead namemodel update - {p.GetNameWithRole()}");
             INameModel nameModel = p.NameModel();
             nameModel.GetComponentHolder<RoleHolder>()[0].AddViewer(target);
 
@@ -72,15 +73,15 @@ public class UndeadRole : Impostor
                 case TheUndead.Converted converted:
                     converted.NameComponent.AddViewer(target);
                     break;
-                case TheUndead.Origin:
+                case TheUndead.Unconverted:
+                    log.Debug($"unconverted {nameModel.GetComponentHolder<IndicatorHolder>().Count}");
                     nameModel.GetComponentHolder<IndicatorHolder>()[0].AddViewer(target);
                     break;
-                default:
-                    nameModel.GetComponentHolder<IndicatorHolder>().Add(new IndicatorComponent(new LiveString("●", UndeadColor), new[] { GameState.Roaming, GameState.InMeeting }, ViewMode.Replace, viewers: () => viewers));
+                default: // origin
+                    nameModel.GetComponentHolder<IndicatorHolder>().Add(new IndicatorComponent(new LiveString("●", UndeadColor), [GameState.Roaming, GameState.InMeeting], ViewMode.Replace, viewers: () => viewers));
                     break;
             }
         });
-
         Game.MatchData.GameHistory.AddEvent(new InitiateEvent(MyPlayer, target));
     }
 
