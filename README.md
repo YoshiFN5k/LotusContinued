@@ -46,13 +46,13 @@ This Mod only needs to be installed on the **Host**, which needs to be on a PC. 
 > - [**Commands/Hotkeys**](https://beta.lotusuau.top/rd/commands)
 > - [**Mod Credits**](https://beta.lotusuau.top/credits)
 
-|                     Getting Started with Project: Lotus                     |                    Features of This Mod.                     |                    For Developers                    |
-| :-------------------------------------------------------------------------: | :----------------------------------------------------------: | :--------------------------------------------------: |
-|   [**Converting from other mods**](https://beta.lotusuau.top/rd/convert)    |     [Templates](https://beta.lotusuau.top/rd/templates)      | [Add-On System](https://dev.lotusuau.top/rd/addons)  |
-|         [Installing the mod!](https://beta.lotusuau.top/rd/install)         |   [Custom Cosmetics](https://beta.lotusuau.top/rd/touhats)   | [VentFramework Docs](https://dev.lotusuau.top/rd/vf) |
-| [Setting up your First Templates.](https://beta.lotusuau.top/rd/f-template) |    [User Tags/Titles](https://beta.lotusuau.top/rd/tags)     |                          .                           |
-|      [Making your first Tag!](https://beta.lotusuau.top/rd/first-tag)       | [Custom Friend System](https://beta.lotusuau.top/rd/friends) |                          .                           |
-|        [Afterthought.](https://beta.lotusuau.top/rd/gs-afterthought)        |             [Online Template Maker (Planned)](#)             |                          .                           |
+|                     Getting Started with Project: Lotus                     |                    Features of This Mod.                     |                    For Developers                      |
+| :-------------------------------------------------------------------------: | :----------------------------------------------------------: | :--------------------------------------------------:   |
+|   [**Converting from other mods**](https://beta.lotusuau.top/rd/convert)    |     [Templates](https://beta.lotusuau.top/rd/templates)      | [Add-On System](https://beta.lotusuau.top/dev/addons)  |
+|         [Installing the mod!](https://beta.lotusuau.top/rd/install)         |   [Custom Cosmetics](https://beta.lotusuau.top/rd/touhats)   | [VentFramework Docs](https://beta.lotusuau.top/dev/vf) |
+| [Setting up your First Templates.](https://beta.lotusuau.top/rd/f-template) |    [User Tags/Titles](https://beta.lotusuau.top/rd/tags)     |                          .                             |
+|      [Making your first Tag!](https://beta.lotusuau.top/rd/first-tag)       | [Custom Friend System](https://beta.lotusuau.top/rd/friends) |                          .                             |
+|        [Afterthought.](https://beta.lotusuau.top/rd/gs-afterthought)        |             [Online Template Maker (Planned)](#)             |                          .                             |
 
 <br>
 <br>
