@@ -13,17 +13,9 @@ namespace Lotus.Roles.Subroles;
 
 public class Deadly : Subrole
 {
-    public bool AssignableToNonKilling;
     public int CooldownReduction;
 
     public override string Identifier() => "乂";
-
-    protected override void PostSetup()
-    {
-        CustomRole playerRole = MyPlayer.PrimaryRole();
-        if (playerRole.RoleAbilityFlags.HasFlag(RoleAbilityFlag.IsAbleToKill)) return;
-        OverridenRoleName = StandardGameMode.Instance.RoleManager.RoleHolder.Mods.Honed.RoleName;
-    }
 
     [RoleAction(LotusActionType.RoundStart)]
     private void GameStart(bool isStart)
@@ -36,7 +28,7 @@ public class Deadly : Subrole
     public override bool IsAssignableTo(PlayerControl player)
     {
         if (!player.GetVanillaRole().IsImpostor()) return false;
-        if (!AssignableToNonKilling && !player.PrimaryRole().RoleAbilityFlags.HasFlag(RoleAbilityFlag.IsAbleToKill)) return false;
+        if (!player.PrimaryRole().RoleAbilityFlags.HasFlag(RoleAbilityFlag.IsAbleToKill)) return false;
         return base.IsAssignableTo(player);
     }
 
@@ -45,11 +37,6 @@ public class Deadly : Subrole
             .SubOption(sub => sub.KeyName("Cooldown Reduction", DeadlyTranslations.Options.CooldownReduction)
                 .AddIntRange(0, 100, 5, 5, "%")
                 .BindInt(i => CooldownReduction = i)
-                .Build())
-            .SubOption(sub => sub
-                .KeyName("Assignable to Non-Killing", DeadlyTranslations.Options.AssignableToNonKilling)
-                .AddOnOffValues()
-                .BindBool(b => AssignableToNonKilling = b)
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>

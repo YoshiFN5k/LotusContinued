@@ -267,7 +267,6 @@ public class StandardRoles : RoleHolder
         public Deadly Deadly = new();
         public Diseased Diseased = new();
         public Flash Flash = new();
-        public Honed Honed = new();
         public Nimble Nimble = new();
         public LastResort LastResort = new();
         public Oblivious Oblivious = new();
