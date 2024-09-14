@@ -72,13 +72,13 @@ public abstract class LotusAddon
     /// <param name="baseGameModes">The gamemodes to export these roles in. Make sure they have been registered first.</param>
     public void ExportCustomRoles(IEnumerable<CustomRole> roleDefinitions, params IGameMode[] baseGameModes)
     {
-        IGameMode[] targetGameModes = ProjectLotus.GameModeManager.GameModes.Where(gm => baseGameModes.Any(bgm => bgm.GetType().IsInstanceOfType(gm))).ToArray();
+        IGameMode[] targetGameModes = ProjectLotus.GameModeManager.GameModes.Where(gm => baseGameModes.Any(bgm => bgm.GetType() == gm.GetType())).ToArray();
         roleDefinitions.ForEach(r =>
         {
             r.Addon = this;
             HashSet<IGameMode> iGameMode = ExportedDefinitions.GetOrCompute(r, () => new HashSet<IGameMode>());
             targetGameModes.All(x => iGameMode.Add(x));
-            log.Trace($"Exporting GameMode ({r.EnglishRoleName}) for {Name}");
+            log.Trace($"Exporting Role ({r.EnglishRoleName}) for {Name}");
         });
     }
 
@@ -130,6 +130,8 @@ public abstract class LotusAddon
 
     public override bool Equals(object? obj)
     {
+        if (this is null) return obj is null;
+        if (obj is null) return this is null;
         if (obj is not LotusAddon addon) return false;
         return addon.UUID == UUID;
     }

@@ -40,12 +40,12 @@ public class StandardRoleManager : Roles.Managers.RoleManager
         base.RegisterRole(role);
         ulong roleID = role.RoleID;
 
-        // log.Debug($"Registering Role Definition (name={role.EnglishRoleName}, RoleID={role.RoleID}, Assembly={role.Assembly.GetName().Name}, AddonID={role.Addon?.UUID ?? 0})");
+        log.Log(LogLevel.All, $"Registering Role Definition (name={role.EnglishRoleName}, RoleID={role.RoleID}, Assembly={role.Assembly.GetName().Name}, AddonID={role.Addon?.UUID ?? 0})");
 
         Dictionary<ulong, CustomRole> assemblyDefinitions = rolesbyAssembly.GetOrCompute(role.Assembly, () => new Dictionary<ulong, CustomRole>());
         if (!assemblyDefinitions.TryAdd(roleID, role)) throw new DuplicateRoleIdException(roleID, assemblyDefinitions[roleID], role);
         if (!OrderedCustomRoles.TryAdd(role.GlobalRoleID, role)) throw new DuplicateRoleIdException(role.GlobalRoleID, OrderedCustomRoles[role.GlobalRoleID], role);
-        // log.Debug($"Registered Role!");
+        log.Log(LogLevel.All, "Registered Role!");
     }
 
     public override CustomRole GetRole(ulong assemblyRoleID, Assembly? assembly = null)

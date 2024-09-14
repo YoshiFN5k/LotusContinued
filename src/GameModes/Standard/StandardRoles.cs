@@ -16,20 +16,12 @@ using Lotus.Roles.Subroles.Romantics;
 using VentLib.Utilities.Extensions;
 using Medium = Lotus.Roles.RoleGroups.Crew.Medium;
 using Pirate = Lotus.Roles.RoleGroups.Neutral.Pirate;
-using Lotus.Roles.Subroles;
+using Lotus.Logging;
 
 namespace Lotus.GameModes.Standard;
 public class StandardRoles : RoleHolder
 {
     public override List<Action> FinishedCallbacks() => Callbacks;
-
-    public new List<CustomRole> MainRoles { get; set; }
-
-    public new List<CustomRole> ModifierRoles { get; set; }
-
-    public new List<CustomRole> SpecialRoles { get; set; }
-
-    public new List<CustomRole> AllRoles { get; set; }
 
     private static List<CustomRole> AddonRoles = new();
 
@@ -66,16 +58,24 @@ public class StandardRoles : RoleHolder
             .Select(f => (CustomRole)f.GetValue(Special)!)
             .ToList();
 
-        List<CustomRole> realAllRoleList = MainRoles;
-        realAllRoleList.AddRange(ModifierRoles);
-        realAllRoleList.AddRange(SpecialRoles);
-        realAllRoleList.AddRange(AllRoles);
-        realAllRoleList.AddRange(AddonRoles);
-        AllRoles = realAllRoleList;
+        // add all roles
+        AllRoles.AddRange(MainRoles);
+        AllRoles.AddRange(ModifierRoles);
+        AllRoles.AddRange(SpecialRoles);
+        AllRoles.AddRange(AddonRoles);
+
+        // solidify every role to finish them off
         AllRoles.ForEach(r => r.Solidify());
     }
 
-    public static void AddRole(CustomRole role) => AddonRoles.Add(role);
+    public static void AddRole(CustomRole role)
+    {
+        DevLogger.Log($"adding {role.EnglishRoleName} to Standard.");
+        AddonRoles.Add(role);
+        Instance.AllRoles.Add(role);
+        role.Solidify();
+        StandardGameMode.Instance.RoleManager.RegisterRole(role);
+    }
 
     internal void LinkEditor(Type editorType)
     {
