@@ -30,8 +30,8 @@ public class ModKeybindings
     static ModKeybindings()
     {
         // Dump Log
-        Bind(KeyCode.F, KeyCode.LeftControl).Do(DumpLog);
-        Bind(KeyCode.D, KeyCode.LeftControl).Do(() => LogManager.WriteSessionLog(""));
+        Bind(KeyCode.F, KeyCode.LeftControl, KeyCode.Return).Do(DumpLog);
+        Bind(KeyCode.D, KeyCode.LeftControl, KeyCode.Return).Do(() => LogManager.WriteSessionLog(""));
 
         // Profile All
         Bind(KeyCode.F2).Do(ProfileAll);

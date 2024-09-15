@@ -27,7 +27,7 @@ public class LogManager
     static LogManager()
     {
         string directory = CreateSessionDirectory();
-        _sessionAppender = GlobalLogAppenders.AddAppender(new FlushingMemoryAppender(directory, null!, LogLevel.Info) { AutoFlush = false }).Cast<FlushingMemoryAppender>();
+        _sessionAppender = GlobalLogAppenders.AddAppender(new FlushingMemoryAppender(directory, null!, LogLevel.Debug) { AutoFlush = false }).Cast<FlushingMemoryAppender>();
         Hooks.NetworkHooks.GameJoinHook.Bind(nameof(LogManager), e => BeginGameLogSession(e.IsNewLobby));
     }
 
@@ -80,7 +80,7 @@ public class LogManager
     {
         if (file == null)
         {
-            StaticLogger.Warn("Nil fileinfo in LogManager.GetLineCount");
+            log.Warn("Nil fileinfo in LogManager.GetLineCount");
             return 0;
         }
         using (StreamReader reader = file.OpenText())
