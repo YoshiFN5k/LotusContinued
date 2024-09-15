@@ -26,6 +26,7 @@ using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using System.Collections.Generic;
 using Lotus.API.Vanilla.Meetings;
+using Lotus.GameModes.Standard;
 
 namespace Lotus.Roles.Subroles.Romantics;
 
@@ -38,6 +39,8 @@ public class Romantic : Subrole
     private bool targetKnowsRomantic;
     private Cooldown protectionCooldown = null!;
     private Cooldown protectionDuration = null!;
+    private bool parterCanWin;
+    private bool cancelGameWin;
 
     private bool partnerLockedIn;
     private byte partner = byte.MaxValue;
@@ -147,20 +150,38 @@ public class Romantic : Subrole
 
     private void InterceptWinCondition(WinDelegate winDelegate)
     {
-        Players.PlayerById(partner).IfPresent(p => p.GetSubroles().Insert(0, new Partner()));
-        if (winDelegate.GetWinners().All(w => w.PlayerId != partner))
+        Optional<PlayerControl> partnerControl = Players.PlayerById(partner);
+        if (!partnerControl.Exists()) return; // if we win round1, do nothing
+        if (!partnerControl.Get().IsAlive()) return; // if they died, do nothing.
+        StandardGameMode.Instance.Assign(partnerControl.Get(), new Partner(), false);
+        bool hasRomantic = winDelegate.GetWinners().Any(w => w.PlayerId == MyPlayer.PlayerId);
+        bool hasPartner = winDelegate.GetWinners().Any(w => w.PlayerId == partner);
+        if ((!hasRomantic && !hasPartner) || (hasRomantic && hasPartner)) return; // includes neither or both us so we skip.
+        if (parterCanWin)
         {
-            winDelegate.RemoveWinner(MyPlayer);
+            if (hasRomantic && !hasPartner) winDelegate.AddAdditionalWinner(partnerControl.Get()); // add partner if we win
+            else if (hasPartner && !hasRomantic) winDelegate.AddAdditionalWinner(MyPlayer); // add us if partner wins
             return;
         }
-        if (!Players.FindPlayerById(partner)?.IsAlive() ?? true) return;
-        winDelegate.AddAdditionalWinner(MyPlayer);
+        if (hasPartner) // add us without questions if partner wins
+        {
+            winDelegate.AddAdditionalWinner(MyPlayer);
+            return;
+        }
+
+        if (winDelegate.GetWinners().Count == 1) // if we are a solo winner
+        {
+            if (!cancelGameWin) return; // if option to cancel is not on
+            winDelegate.CancelGameWin(); // cancel win. this will prob cancel jester exile win
+        }
+        // since we are NOT a solo winner. we can safely remove us from the win con
+        else winDelegate.RemoveWinner(MyPlayer);
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddRestrictToCrew(base.RegisterOptions(optionStream))
             .SubOption(sub => sub.KeyName("Notify Target of Romance", Translations.Options.TargetKnowsRomantic)
-                .AddOnOffValues()
+                .AddBoolean()
                 .BindBool(b => targetKnowsRomantic = b)
                 .Build())
             .SubOption(sub => sub.KeyName("Protection Cooldown", Translations.Options.ProtectionCooldown)
@@ -170,6 +191,16 @@ public class Romantic : Subrole
             .SubOption(sub => sub.KeyName("Protection Duration", Translations.Options.ProtectionDuration)
                 .AddFloatRange(0, 120, 2.5f, 2, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(protectionDuration.SetDuration)
+                .Build())
+            .SubOption(sub => sub.KeyName("Partner can Win with Romantic", Translations.Options.PartnerCanWin)
+                .AddBoolean()
+                .BindBool(b => parterCanWin = b)
+                .ShowSubOptionPredicate(v => !(bool)v)
+                .SubOption(sub2 => sub2
+                    .KeyName("Cancel Game Win if Solo Winner", Translations.Options.CancelGameWinIfSolo)
+                    .AddBoolean(false)
+                    .BindBool(b => cancelGameWin = b)
+                    .Build())
                 .Build());
 
     protected override List<CustomRole> LinkedRoles() => base.LinkedRoles().Concat(new List<CustomRole>() { _vengefulRomantic, _ruthlessRomantic }).ToList();
@@ -183,37 +214,32 @@ public class Romantic : Subrole
     [Localized(nameof(Romantic))]
     private static class Translations
     {
-        [Localized(nameof(PartnerText))]
-        public static string PartnerText = "Partner ♥";
+        [Localized(nameof(PartnerText))] public static string PartnerText = "Partner ♥";
 
         public static string PartnerIndicator = "{0} ♥::0";
 
-        [Localized(nameof(RomanticMessage))]
-        public static string RomanticMessage = "You are a Romantic. You must select a partner by the end of this meeting or die! To select a partner, vote them twice! Afterwards, you may vote normally.";
+        [Localized(nameof(RomanticMessage))] public static string RomanticMessage = "You are a Romantic. You must select a partner by the end of this meeting or die! To select a partner, vote them twice! Afterwards, you may vote normally.";
 
-        [Localized(nameof(RomanticSelectMessage))]
-        public static string RomanticSelectMessage = "You have selected {0} to be your partner. To confirm, vote them again, otherwise vote a different player.";
+        [Localized(nameof(RomanticSelectMessage))] public static string RomanticSelectMessage = "You have selected {0} to be your partner. To confirm, vote them again, otherwise vote a different player.";
 
-        [Localized(nameof(ConfirmedPartnerMessage))]
-        public static string ConfirmedPartnerMessage = "You have confirmed {0} to be your partner. You may now vote normally";
+        [Localized(nameof(ConfirmedPartnerMessage))] public static string ConfirmedPartnerMessage = "You have confirmed {0} to be your partner. You may now vote normally";
 
-        [Localized(nameof(NotifyPartnerMessage))]
-        public static string NotifyPartnerMessage = "You have been selected by {0} to be their romantic partner! Congrats!";
+        [Localized(nameof(NotifyPartnerMessage))] public static string NotifyPartnerMessage = "You have been selected by {0} to be their romantic partner! Congrats!";
 
-        [Localized(nameof(NoSkipMessage))]
-        public static string NoSkipMessage = "You may not skip until you have chosen a partner!";
+        [Localized(nameof(NoSkipMessage))] public static string NoSkipMessage = "You may not skip until you have chosen a partner!";
 
         [Localized(ModConstants.Options)]
         public static class Options
         {
-            [Localized(nameof(TargetKnowsRomantic))]
-            public static string TargetKnowsRomantic = "Notify Target of Romance";
+            [Localized(nameof(TargetKnowsRomantic))] public static string TargetKnowsRomantic = "Notify Target of Romance";
 
-            [Localized(nameof(ProtectionCooldown))]
-            public static string ProtectionCooldown = "Protection Cooldown";
+            [Localized(nameof(ProtectionCooldown))] public static string ProtectionCooldown = "Protection Cooldown";
 
-            [Localized(nameof(ProtectionDuration))]
-            public static string ProtectionDuration = "Protection Duration";
+            [Localized(nameof(ProtectionDuration))] public static string ProtectionDuration = "Protection Duration";
+
+            [Localized(nameof(PartnerCanWin))] public static string PartnerCanWin = "Partner can win with Romantic";
+
+            [Localized(nameof(CancelGameWinIfSolo))] public static string CancelGameWinIfSolo = "Cancel Game Win if Solo Winner";
         }
     }
 }

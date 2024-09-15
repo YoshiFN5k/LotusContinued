@@ -78,9 +78,9 @@ public static class Utils
         return player.NameModel().GetComponentHolder<SubroleHolder>().Render(player, GameState.Roaming);
     }
 
-    public static PlayerControl? GetPlayerById(int playerId) => PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(pc => pc.PlayerId == playerId);
+    public static PlayerControl? GetPlayerById(byte playerId) => PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(pc => pc.PlayerId == playerId);
 
-    public static Optional<PlayerControl> PlayerById(int playerId) => PlayerControl.AllPlayerControls.ToArray().FirstOrOptional(pc => pc.PlayerId == playerId);
+    public static Optional<PlayerControl> PlayerById(byte playerId) => PlayerControl.AllPlayerControls.ToArray().FirstOrOptional(pc => pc.PlayerId == playerId);
 
     public static Optional<PlayerControl> PlayerByClientId(int clientId)
     {
