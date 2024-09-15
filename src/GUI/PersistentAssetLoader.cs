@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Utilities.Attributes;
@@ -33,21 +34,22 @@ internal class PersistentAssetLoader : MonoBehaviour
         SpriteInfo.ForEach(si => LoadSprite(si.Key, si.Value.path, si.Value.pixelsPerUnit));
     }
 
-    private void LoadSprite(string key, string path, int pixelsPerUnit)
+    private void LoadSprite(string key, string path, int pixelsPerUnit, Assembly? assembly = null)
     {
         log.Debug($"Loading Persistent Sprite: {key} => {path}", "PersistentAssetLoader");
         GameObject anchor = gameObject.CreateChild("Anchor");
         anchors.Add(anchor);
         SpriteRenderer render = anchor.AddComponent<SpriteRenderer>();
-        render.sprite = AssetLoader.LoadSprite(path, pixelsPerUnit);
+        render.sprite = AssetLoader.LoadSprite(path, pixelsPerUnit, assembly: assembly);
         render.enabled = false;
         _spriteRenderers[key] = render;
     }
 
-    public static Func<Sprite> RegisterSprite(string key, string path, int pixelsPerUnit)
+    public static Func<Sprite> RegisterSprite(string key, string path, int pixelsPerUnit, Assembly? assembly = null)
     {
+        assembly ??= Assembly.GetCallingAssembly();
         SpriteInfo.Add(key, (path, pixelsPerUnit));
-        if (_initialized) _instance.LoadSprite(key, path, pixelsPerUnit);
+        if (_initialized) _instance.LoadSprite(key, path, pixelsPerUnit, assembly);
         return () => _spriteRenderers[key].sprite;
     }
 
