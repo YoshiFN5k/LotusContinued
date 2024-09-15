@@ -126,4 +126,18 @@ public class Consort : Impostor
             .OptionOverride(new IndirectKillCooldown(KillCooldown, () => blocking))
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
+    [Localized(nameof(Consort))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        internal static class Options
+        {
+            [Localized(nameof(roleblockCooldown))]
+            public static string roleblockCooldown = "Role-Block Cooldown";
+
+            [Localized(nameof(roleblockDuration))]
+            public static string roleblockDuration = "Role-Block Duration";
+        }
+    }
 }
+
