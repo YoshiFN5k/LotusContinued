@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
@@ -7,9 +6,6 @@ using System.Linq;
 using System.Reflection;
 using AmongUs.GameOptions;
 using HarmonyLib;
-using Lotus.API.Odyssey;
-using Lotus.API.Reactive;
-using Lotus.API.Reactive.HookEvents;
 using Lotus.Factions;
 using Lotus.Factions.Crew;
 using Lotus.Factions.Impostors;
@@ -24,7 +20,6 @@ using Lotus.API.Stats;
 using Lotus.Extensions;
 using Lotus.Logging;
 using Lotus.Roles.Builtins;
-using Lotus.Roles.Builtins.Base;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Interfaces;
 using Lotus.Utilities;
@@ -34,7 +29,6 @@ using VentLib.Options;
 using VentLib.Options.UI;
 using VentLib.Options.IO;
 using VentLib.Utilities;
-using VentLib.Utilities.Debug.Profiling;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using Lotus.Roles.RoleGroups.Vanilla;
@@ -45,8 +39,8 @@ using Lotus.Roles.Subroles;
 using Lotus.Managers;
 using Lotus.Roles.RoleGroups.NeutralKilling;
 using Lotus.Patches.Intro;
-using Lotus.API.Player;
-using VentLib.Options.UI.Options;
+using Object = UnityEngine.Object;
+using Lotus.Roles.Outfit;
 
 namespace Lotus.Roles;
 
@@ -352,45 +346,67 @@ public abstract class AbstractBaseRole
     protected virtual List<CustomRole> LinkedRoles() => new();
 
     /// <summary>
-    /// Force the path for the Role Image.
+    /// Force the path for the Role Image or Role Outfit.
     /// Override GetRoleImage() instead of you are making an Addon.
     /// </summary>
     protected virtual string ForceRoleImageDirectory() => "N/A";
 
     /// <summary>
     /// This method gets the sprite of the Role Image to Replace.
-    /// You have to override this if you are developing an Addon.
     /// </summary>
-    protected virtual Func<Sprite> GetRoleImage()
+    private Action<RoleOptionIntializer.RoleOptionIntialized> GetRoleOutfit()
     {
-        string imageDirectory = ForceRoleImageDirectory();
+        string resourceDirectory = ForceRoleImageDirectory();
 
-        if (imageDirectory != "N/A") return () => AssetLoader.LoadSprite("Lotus.assets.RoleImages." + imageDirectory + ".png", 500, true);
-        imageDirectory = "";
+        if (resourceDirectory != "N/A") goto finish;
 
-        if (this is GameMaster) imageDirectory = "gm";
-        else if (Faction is ImpostorFaction | SpecialType is SpecialType.Madmate && this is not NeutralKillingBase) imageDirectory = "Imposter." + EnglishRoleName.ToLower();
-        else if (Faction is Crewmates) imageDirectory = "Crew." + EnglishRoleName.ToLower();
-        else imageDirectory = "Neutral." + EnglishRoleName.ToLower();
+        resourceDirectory = "";
 
-        imageDirectory = "Lotus.assets.RoleImages." + imageDirectory + ".png";
-        string? debugMessage = null;
-        if (!AssetLoader.ResourceExists(imageDirectory))
+        if (this is GameMaster) resourceDirectory = "gm";
+        else if (Faction is ImpostorFaction | SpecialType is SpecialType.Madmate && this is not NeutralKillingBase) resourceDirectory = "Imposter." + EnglishRoleName.ToLower();
+        else if (Faction is Crewmates) resourceDirectory = "Crew." + EnglishRoleName.ToLower();
+        else resourceDirectory = "Neutral." + EnglishRoleName.ToLower();
+
+        resourceDirectory = "Lotus.assets.RoleImages." + resourceDirectory;
+
+    finish:
+        if (AssetLoader.ResourceExists(resourceDirectory.EndsWith(".png") ? resourceDirectory : resourceDirectory + ".png", DeclaringAssembly))
         {
-            debugMessage = $"Could not find RoleImage for {EnglishRoleName}. Defaulting to the GM image. Path: {imageDirectory}";
-            imageDirectory = "Lotus.assets.RoleImages.gm.png";
+            if (!resourceDirectory.EndsWith(".png")) resourceDirectory += ".png";
+            PersistentAssetLoader.RegisterSprite(EnglishRoleName + "RoleImage", resourceDirectory, 500, DeclaringAssembly);
+            return (roleOption) => roleOption.RoleImage.sprite = PersistentAssetLoader.GetSprite(EnglishRoleName + "RoleImage");
         }
-        string key = EnglishRoleName + "RoleImage";
-        PersistentAssetLoader.RegisterSprite(key, imageDirectory, 500);
-        return () =>
+        else if (AssetLoader.ResourceExists(resourceDirectory.EndsWith(".yaml") ? resourceDirectory : resourceDirectory + ".yaml", DeclaringAssembly))
         {
-            if (debugMessage != null)
+            if (!resourceDirectory.EndsWith(".yaml")) resourceDirectory += ".yaml";
+            return (roleOption) =>
             {
-                log.Debug(debugMessage);
-                debugMessage = null;
-            }
-            return PersistentAssetLoader.GetSprite(key);
-        };
+                roleOption.RoleImage.enabled = false;
+                PoolablePlayer fakePlayer = Object.Instantiate<PoolablePlayer>(DestroyableSingleton<HudManager>.Instance.IntroPrefab.PlayerPrefab, roleOption.RoleImage.transform);
+                fakePlayer.name = "RoleOutfit";
+                fakePlayer.transform.localPosition = new Vector3(0, -.2f, 0);
+                fakePlayer.transform.localScale = Vector3.one;
+                fakePlayer.enabled = true;
+                fakePlayer.cosmetics.initialized = false;
+                fakePlayer.cosmetics.EnsureInitialized(PlayerBodyTypes.Normal);
+                fakePlayer.UpdateFromPlayerOutfit(OutfitFile.FromManifestFile(resourceDirectory).ToPlayerOutfit(), PlayerMaterial.MaskType.SimpleUI, false, false);
+                fakePlayer.FindChild<Transform>("Names", true).gameObject.SetActive(false);
+            };
+        }
+        else
+        {
+            // log we can't find it and default to an empty image
+            string? debugMessage = $"Could not find RoleImage for {EnglishRoleName}. Defaulting to the GM image. Path (.png/.yaml): {resourceDirectory}";
+            return (roleOption) =>
+            {
+                if (debugMessage != null)
+                {
+                    log.Debug(debugMessage);
+                    debugMessage = null;
+                }
+                roleOption.RoleImage.enabled = false;
+            };
+        }
     }
 
     public GameOptionBuilder GetGameOptionBuilder()
@@ -420,8 +436,6 @@ public abstract class AbstractBaseRole
         string qualifier = $"Roles.{EnglishRoleName}.RoleName";
 
         return optionStream
-            // .Name(localizer.Translate(qualifier))
-            // .Key(EnglishRoleName)
             .KeyName(EnglishRoleName, localizer.Translate(qualifier))
             .Description(localizer.Translate($"Roles.{EnglishRoleName}.Blurb"))
             .IsHeader(true);
@@ -433,12 +447,11 @@ public abstract class AbstractBaseRole
         if (!RoleFlags.HasFlag(RoleFlag.RemoveRolePercent) && GetRoleType() is RoleType.Normal)
         {
             return new GameOptionBuilder()
-                .SetAsRoleOption(val => this.Chance = val, 0, 100, RoleFlags.HasFlag(RoleFlag.IncrementChanceByFives) ? 5 : 10, suffix: "%")
+                .SetAsRoleOption(val => this.Chance = val, GetRoleOutfit(), 0, 100, RoleFlags.HasFlag(RoleFlag.IncrementChanceByFives) ? 5 : 10, suffix: "%")
                 .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
                 // .AddIntRange(0, 100, RoleFlags.HasFlag(RoleFlag.IncrementChanceByFives) ? 5 : 10, suffix: "%")
                 // .Value(0)
                 // .BindInt(val => this.Chance = val)
-                .RoleImage(GetRoleImage())
                 .ShowSubOptionPredicate(value => this.Chance > 0);
         }
 
@@ -454,19 +467,19 @@ public abstract class AbstractBaseRole
 
         if (GetRoleType() is RoleType.Variation)
             return new GameOptionBuilder()
-            .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
-            // .Value(v => v.Text(onText).Value(true).Color(Color.cyan).Build())
-            // .Value(v => v.Text(offText).Value(false).Color(Color.red).Build())
-            // .ShowSubOptionPredicate(b => (bool)b);
-            .AddIntRange(0, 100, RoleFlags.HasFlag(RoleFlag.IncrementChanceByFives) ? 5 : 10, suffix: "%")
-            .BindInt(val => this.Chance = val)
-            .ShowSubOptionPredicate(value => this.Chance > 0);
+                .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
+                // .Value(v => v.Text(onText).Value(true).Color(Color.cyan).Build())
+                // .Value(v => v.Text(offText).Value(false).Color(Color.red).Build())
+                // .ShowSubOptionPredicate(b => (bool)b);
+                .AddIntRange(0, 100, RoleFlags.HasFlag(RoleFlag.IncrementChanceByFives) ? 5 : 10, suffix: "%")
+                .BindInt(val => this.Chance = val)
+                .ShowSubOptionPredicate(value => this.Chance > 0);
         else
             return new GameOptionBuilder()
-            .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
-            .Value(v => v.Text(onText).Value(true).Color(Color.cyan).Build())
-            .Value(v => v.Text(offText).Value(false).Color(Color.red).Build())
-            .ShowSubOptionPredicate(b => (bool)b);
+                .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
+                .Value(v => v.Text(onText).Value(true).Color(Color.cyan).Build())
+                .Value(v => v.Text(offText).Value(false).Color(Color.red).Build())
+                .ShowSubOptionPredicate(b => (bool)b);
     }
 
 
