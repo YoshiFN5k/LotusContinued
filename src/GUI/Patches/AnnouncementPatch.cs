@@ -86,9 +86,9 @@ public class AnnouncementPatch
     public static bool AddModdedAnnuncementsToCount(NewsCountButton __instance)
     {
         int num = DataManager.Player.Announcements.AllAnnouncements.Count - DataManager.Player.Announcements.AnnouncementsRead.Count;
-        log.Debug($"au unread announcements: {num}");
+        log.Log(LogLevel.All, $"au unread announcements: {num}");
         num += PluginDataManager.AnnouncementManager.GetUnReadAnnouncements().Count();
-        log.Debug($"after we add our unread announcements: {num}");
+        log.Log(LogLevel.All, $"after we add our unread announcements: {num}");
         __instance.notifIcon.SetActive(num > 0);
         if (num > 9)
         {
@@ -108,7 +108,7 @@ public class AnnouncementPatch
         // }
         if (previewOnly)
         {
-            log.Debug("Announcement Setting preview");
+            log.Info("Announcement Setting preview");
             __instance.ListStateHUD.SetActive(true);
             string text;
             SelectableHyperLinkHelper.SanitizeLinkText(announcementInfo.BodyText, out text);
@@ -116,7 +116,7 @@ public class AnnouncementPatch
         }
         else
         {
-            log.Debug("Announcement Setting full text");
+            log.Info("Announcement Setting full text");
             __instance.ListStateHUD.SetActive(false);
             ControllerManager.Instance.CloseOverlayMenu("Reading");
             ControllerManager.Instance.OpenOverlayMenu("Reading", __instance.ReadingBackButton);

@@ -111,18 +111,19 @@ public class CustomAnnouncementManager
         return CustomAnnouncements.Values;
     }
 
-    private static Announcement? LoadAnnouncementFromManifest(string manifestResource)
+    public static Announcement? LoadAnnouncementFromManifest(string manifestResource)
     {
-        using Stream? stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(manifestResource);
+        using Stream? stream = Assembly.GetCallingAssembly().GetManifestResourceStream(manifestResource);
         return stream == null ? null : LoadFromStream(stream);
     }
 
-    private static Announcement LoadFromFileInfo(FileInfo file) => LoadFromStream(file.Open(FileMode.Open));
+    public static Announcement LoadFromFileInfo(FileInfo file) => LoadFromStream(file.Open(FileMode.Open));
 
     private static Announcement LoadFromStream(Stream stream)
     {
         string result;
         using (StreamReader reader = new(stream)) result = reader.ReadToEnd();
+        stream.Dispose();
 
         return deserializer.Deserialize<Announcement>(result);
     }
@@ -131,5 +132,6 @@ public class CustomAnnouncementManager
         string emptyFile = serializer.Serialize(newFile);
         using FileStream stream = announceFile.Open(FileMode.Create);
         stream.Write(Encoding.UTF8.GetBytes(emptyFile));
+        stream.Dispose();
     }
 }
