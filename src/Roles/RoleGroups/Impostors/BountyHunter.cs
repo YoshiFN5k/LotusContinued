@@ -103,4 +103,21 @@ public class BountyHunter : Impostor
                 .AddFloatRange(0, 180, 2.5f, 15)
                 .IOSettings(settings => settings.UnknownValueAction = ADEAnswer.Allow)
                 .Build());
+
+    [Localized(nameof(BountyHunter))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        internal static class Options
+        {
+            [Localized(nameof(TimeUntilNewTarget))]
+            public static string TimeUntilNewTarget = "Time Until New Target";
+
+            [Localized(nameof(KillCooldownAfterKillingTarget))]
+            public static string KillCooldownAfterKillingTarget = "Kill Cooldown After Killing Target";
+
+            [Localized(nameof(KillCooldownAfterKillingNonTarget))]
+            public static string KillCooldownAfterKillingNonTarget = "Kill Cooldown After Killing Non-Target";
+        }
+    }
 }
