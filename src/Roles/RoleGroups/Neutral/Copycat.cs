@@ -28,7 +28,6 @@ using VentLib.Logging;
 using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
-using Lotus.Roles.Editors;
 using MonoMod.Utils;
 using Lotus.GameModes.Standard;
 using Lotus.Logging;
@@ -126,10 +125,6 @@ public class Copycat : CustomRole
         log.Trace("Adding shapeshift action to base role", "Copycat::AssignRole");
         RoleAction action = this.GetActions(LotusActionType.Shapeshift).First().Item1.Clone();
         action.Executer = this;
-
-        role.Editor = new BasicRoleEditor(role);
-        role.Editor!.AddAction(action);
-
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>

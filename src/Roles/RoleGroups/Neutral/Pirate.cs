@@ -60,7 +60,7 @@ public class Pirate : Guesser
 
 
     [Localized(nameof(Pirate))]
-    private static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options

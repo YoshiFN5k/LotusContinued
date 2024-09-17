@@ -106,10 +106,10 @@ public class BountyHunter : Impostor
                 .Build());
 
     [Localized(nameof(BountyHunter))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
-        internal static class Options
+        public static class Options
         {
             [Localized(nameof(TimeUntilNewTarget))]
             public static string TimeUntilNewTarget = "Time Until New Target";

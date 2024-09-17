@@ -128,10 +128,10 @@ public class Consort : Impostor
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     [Localized(nameof(Consort))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
-        internal static class Options
+        public static class Options
         {
             [Localized(nameof(roleblockCooldown))]
             public static string roleblockCooldown = "Role-Block Cooldown";

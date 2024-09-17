@@ -110,7 +110,7 @@ public class Blackmailer : Shapeshifter
                 .Build());
 
     [Localized(nameof(Blackmailer))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(nameof(BlackmailedMessage))]
         public static string BlackmailedMessage = "You have been blackmailed! Sending a chat message will kill you.";
@@ -122,7 +122,7 @@ public class Blackmailer : Shapeshifter
         public static string BlackmailedText = "BLACKMAILED";
 
         [Localized(ModConstants.Options)]
-        internal static class Options
+        public static class Options
         {
             [Localized(nameof(WarningsUntilDeath))]
             public static string WarningsUntilDeath = "Warnings Until Death";
