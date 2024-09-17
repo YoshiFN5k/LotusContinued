@@ -106,7 +106,7 @@ class SplashPatch
         PassiveButton discordButton = Object.Instantiate(inventoryButton, __instance.transform);
         discordButton.transform.localPosition = new Vector3(0.34f, -2.4f, 0f);
         discordButton.transform.localScale = new Vector3(0.329f, 0.56f, 1f);
-        discordButton.Modify(() => Application.OpenURL(ModConstants.LinkTree));
+        discordButton.Modify(() => Application.OpenURL(ModConstants.DiscordInvite));
         {
             var ogRender = discordButton.inactiveSprites.GetComponent<SpriteRenderer>();
             ogRender.enabled = false;
@@ -148,7 +148,6 @@ class SplashPatch
         // SpriteRenderer inactiveSpriteRender = __instance.playButton.inactiveSprites.GetComponent<SpriteRenderer>();
         // inactiveSpriteRender.color = new Color(1f, 0f, 0.35f);
         // inactiveSpriteRender.sprite = activeSpriteRender.sprite;
-        __instance.PlayOnlineButton.OnClick.AddListener((Action)(() => Async.Schedule(UnloadUnusedAssets(), 2f)));
 
         __instance.playButton.activeTextColor = Color.white;
         __instance.playButton.inactiveTextColor = Color.white;
@@ -233,7 +232,6 @@ class SplashPatch
         playLocalButton.inactiveSprites.FindChild<SpriteRenderer>("Icon", true).transform.localScale = new Vector3(.8f, .7f, 1f);
         playLocalButton.activeSprites.FindChild<SpriteRenderer>("Icon", true).transform.localScale = new Vector3(.8f, .7f, 1f);
         playLocalButton.OnClick = __instance.playLocalButton.OnClick;
-        playLocalButton.OnClick.AddListener((Action)(() => Async.Schedule(UnloadUnusedAssets(), 2f)));
         Async.Schedule(() => playLocalButton.buttonText.text = "Play Local", 0.001f);
 
         // __instance.myAccountButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(0.95f, 0f, 1f);
@@ -345,13 +343,5 @@ class SplashPatch
     {
         if (__instance.activeSprites != null) return;
         if (__instance.inactiveSprites != null) __instance.inactiveSprites.SetActive(true);
-    }
-
-    private static IEnumerator UnloadUnusedAssets()
-    {
-        DevLogger.Log("Unloading unused assets.");
-        yield return Resources.UnloadUnusedAssets();
-        DevLogger.Log("Unloading unused assets.");
-        yield break;
     }
 }
