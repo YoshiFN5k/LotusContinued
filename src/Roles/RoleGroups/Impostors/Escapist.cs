@@ -102,8 +102,8 @@ public class Escapist : Impostor
             [Localized(nameof(EscapeCooldown))]
             public static string EscapeCooldown = "Cooldown After Escape";
 
-            [Localized(nameof(ClearMarkAfterMeeting))]
-            public static string ClearMarkAfterMeeting = "Clear Mark After Meeting";
+            [Localized(nameof(ClearAfterMeeting))]
+            public static string ClearAfterMeeting = "Clear Mark After Meeting";
         }
     }
 }

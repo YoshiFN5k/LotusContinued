@@ -45,4 +45,15 @@ public class Miner : Impostor
                 .BindFloat(minerAbilityCooldown.SetDuration)
                 .AddFloatRange(5, 50, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
                 .Build());
+
+    [Localized(nameof(Miner))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        internal static class Options
+        {
+            [Localized(nameof(AbilityCooldown))]
+            public static string AbilityCooldown = "Ability Cooldown";
+        }
+    }
 }

@@ -130,4 +130,24 @@ public class Ninja : Vanilla.Impostor
         Killing,
         Hunting
     }
+
+    [Localized(nameof(Ninja))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        internal static class Options
+        {
+            [Localized(nameof(TeleportToNinja))]
+            public static string TeleportToNinja = "Players Teleport to Ninja";
+
+            [Localized(nameof(AbilityActiviation))]
+            public static string AbilityActiviation = "Ninja Ability Activation";
+
+            [Localized(nameof(ShapeshiftCooldown))]
+            public static string ShapeshiftCooldown = "Shapeshift Cooldown";
+
+            [Localized(nameof(ShapeshiftDuration))]
+            public static string ShapeshiftDuration = "Shapeshift Duration";
+        }
+    }
 }
