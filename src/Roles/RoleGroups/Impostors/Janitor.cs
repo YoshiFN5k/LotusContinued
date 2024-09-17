@@ -103,7 +103,7 @@ public class Janitor : Impostor
             .OptionOverride(new IndirectKillCooldown(JanitorKillCooldown, () => cleanOnKill || cleanCooldown.NotReady()));
 
     [Localized(nameof(Janitor))]
-    private static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options
@@ -136,20 +136,6 @@ public class Janitor : Impostor
         {
             get => (meta ?? new Dictionary<string, object?>()).GetValueOrDefault(key);
             set => (meta ?? new Dictionary<string, object?>())[key] = value;
-        }
-    }
-
-    [Localized(nameof(Janitor))]
-    internal static class Translations
-    {
-        [Localized(ModConstants.Options)]
-        internal static class Options
-        {
-            [Localized(nameof(CleanOnKill))]
-            public static string CleanOnKill = "Clean on Kill";
-
-            [Localized(nameof(KillCooldownMultiplier))]
-            public static string KillCooldownMultiplier = "Kill Cooldown Multiplier";
         }
     }
 }
