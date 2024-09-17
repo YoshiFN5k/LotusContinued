@@ -8,6 +8,8 @@ using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Logging;
 using VentLib.Options.UI;
+using VentLib.Localization.Attributes;
+using Lotus.Extensions;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -41,19 +43,19 @@ public class Miner : Impostor
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream).SubOption(sub =>
-            sub.Name("Miner Ability Cooldown")
+            sub.KeyName("Miner Ability Cooldown", Translations.Options.AbilityCooldown)
                 .BindFloat(minerAbilityCooldown.SetDuration)
                 .AddFloatRange(5, 50, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
                 .Build());
 
     [Localized(nameof(Miner))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
-        internal static class Options
+        public static class Options
         {
             [Localized(nameof(AbilityCooldown))]
-            public static string AbilityCooldown = "Ability Cooldown";
+            public static string AbilityCooldown = "Miner Ability Cooldown";
         }
     }
 }

@@ -14,6 +14,7 @@ using VentLib.Options.UI;
 using VentLib.Utilities;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Options;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -95,21 +96,23 @@ public class Ninja : Vanilla.Impostor
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
         .SubOption(sub => sub
-            .Name("Players Teleport to Ninja")
+            .KeyName("Players Teleport to Ninja", Translations.Options.TeleportToNinja)
             .BindBool(v => playerTeleportsToNinja = v)
-            .AddOnOffValues(false)
+            .AddBoolean(false)
             .Build())
         .SubOption(sub => sub
-            .Name("Ninja Ability Activation")
+            .KeyName("Ninja Ability Activation", Translations.Options.AbilityActiviation)
             .BindInt(v => activationType = (ActivationType)v)
             .Value(v => v.Text("Pet Button").Value(0).Build())
             .Value(v => v.Text("Shapeshift Button").Value(1).Build())
             .ShowSubOptionPredicate(v => (int)v == 1)
-            .SubOption(sub => sub.KeyName("Shapeshift Cooldown", Shapeshifter.Translations.Options.ShapeshiftCooldown)
+            .SubOption(sub => sub
+                .KeyName("Shapeshift Cooldown", Shapeshifter.Translations.Options.ShapeshiftCooldown)
                 .AddFloatRange(0, 120, 2.5f, 12, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(f => ShapeshiftCooldown = f)
                 .Build())
-            .SubOption(sub => sub.KeyName("Shapeshift Duration", Shapeshifter.Translations.Options.ShapeshiftDuration)
+            .SubOption(sub => sub
+                .KeyName("Shapeshift Duration", Shapeshifter.Translations.Options.ShapeshiftDuration)
                 .Value(1f)
                 .AddFloatRange(2.5f, 120, 2.5f, 6, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(f => ShapeshiftDuration = f)
@@ -132,22 +135,16 @@ public class Ninja : Vanilla.Impostor
     }
 
     [Localized(nameof(Ninja))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
-        internal static class Options
+        public static class Options
         {
             [Localized(nameof(TeleportToNinja))]
             public static string TeleportToNinja = "Players Teleport to Ninja";
 
             [Localized(nameof(AbilityActiviation))]
             public static string AbilityActiviation = "Ninja Ability Activation";
-
-            [Localized(nameof(ShapeshiftCooldown))]
-            public static string ShapeshiftCooldown = "Shapeshift Cooldown";
-
-            [Localized(nameof(ShapeshiftDuration))]
-            public static string ShapeshiftDuration = "Shapeshift Duration";
         }
     }
 }

@@ -24,6 +24,7 @@ using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Optionals;
 using Lotus.API.Player;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -96,23 +97,28 @@ public class Swooper : Impostor
     private List<PlayerControl> GetUnaffected() => Players.GetAllPlayers().Where(p => !p.IsAlive() || canBeSeenByAllied && p.Relationship(MyPlayer) is Relation.FullAllies).AddItem(MyPlayer).ToList();
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) => base.RegisterOptions(optionStream)
-        .SubOption(sub => sub.Name("Invisibility Cooldown")
+        .SubOption(sub => sub
+            .KeyName("Invisibility Cooldown", Translations.Options.InvisibilityCooldown)
             .AddFloatRange(5, 120, 2.5f, 16, GeneralOptionTranslations.SecondsSuffix)
             .BindFloat(swooperCooldown.SetDuration)
             .Build())
-        .SubOption(sub => sub.Name("Swooping Duration")
+        .SubOption(sub => sub
+            .KeyName("Swooping Duration", Translations.Options.SwoopingDuration)
             .AddFloatRange(5, 60, 1f, 5, GeneralOptionTranslations.SecondsSuffix)
             .BindFloat(swoopingDuration.SetDuration)
             .Build())
-        .SubOption(sub => sub.Name("Can be Seen By Allies")
+        .SubOption(sub => sub
+            .KeyName("Can be Seen By Allies", Translations.Options.SeenByAllies)
             .AddOnOffValues()
             .BindBool(b => canBeSeenByAllied = b)
             .Build())
-        .SubOption(sub => sub.Name("Can Vent During Cooldown")
+        .SubOption(sub => sub
+            .KeyName("Can Vent During Cooldown", Translations.Options.VentDuringCooldown)
             .AddOnOffValues(false)
             .BindBool(b => canVentNormally = b)
             .Build())
-        .SubOption(sub => sub.Name("Remain Invisible on Kill")
+        .SubOption(sub => sub
+            .KeyName("Remain Invisible on Kill", Translations.Options.InvisibleOnKill)
             .AddOnOffValues()
             .BindBool(b => remainInvisibleOnKill = b)
             .Build());
@@ -122,10 +128,10 @@ public class Swooper : Impostor
             .OptionOverride(new IndirectKillCooldown(KillCooldown, () => remainInvisibleOnKill && swoopingDuration.NotReady()));
 
     [Localized(nameof(Swooper))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
-        internal static class Options
+        public static class Options
         {
             [Localized(nameof(InvisibilityCooldown))]
             public static string InvisibilityCooldown = "Invisibility Cooldown";
