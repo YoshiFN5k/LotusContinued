@@ -20,7 +20,7 @@ public class Jackal : NeutralKillingBase
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddKillCooldownOptions(base.RegisterOptions(optionStream))
             .SubOption(sub => sub
-                .Name("Can Vent")
+                .KeyName("Can Vent", RoleTranslations.CanVent)
                 .BindBool(v => canVent = v)
                 .AddOnOffValues()
                 .Build())

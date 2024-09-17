@@ -83,7 +83,7 @@ public class Grenadier : Vanilla.Impostor
                 .AddOnOffValues(false)
                 .Build())
             .SubOption(sub => sub
-                .KeyName("Can Vent", Translations.Options.CanVent)
+                .KeyName("Can Vent", RoleTranslations.CanVent)
                 .Bind(v => canVent = (bool)v)
                 .AddOnOffValues()
                 .Build());
@@ -113,9 +113,6 @@ public class Grenadier : Vanilla.Impostor
 
             [Localized(nameof(CanBlindAllies))]
             public static string CanBlindAllies = "Can Blind Allies";
-
-            [Localized(nameof(CanVent))]
-            public static string CanVent = "Can Vent";
         }
     }
 }

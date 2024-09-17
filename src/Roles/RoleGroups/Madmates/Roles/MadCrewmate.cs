@@ -20,22 +20,13 @@ public abstract class MadCrewmate : Engineer
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddTaskOverrideOptions(base.RegisterOptions(optionStream)
             .SubOption(sub => sub.Name("Has Impostor Vision")
-                .AddOnOffValues()
+                .AddBoolean()
                 .BindBool(b => impostorVision = b)
-                .Build()
-            )
-            .SubOption(sub => sub.Name("Can Vent")
-                .AddOnOffValues()
+                .Build())
+            .SubOption(sub => AddVentingOptions(sub)
+                .KeyName("Can Vent", RoleTranslations.CanVent)
+                .AddBoolean()
                 .BindBool(b => canVent = b)
-                .SubOption(sub2 => sub2.Name("Vent Cooldown")
-                    .BindFloat(f => this.VentCooldown = f)
-                    .AddFloatRange(0, 60, 2.5f, 8, GeneralOptionTranslations.SecondsSuffix)
-                    .Build())
-                .SubOption(sub2 => sub2.Name("Vent Duration")
-                    .BindFloat(f => this.VentDuration = f)
-                    .Value(1f)
-                    .AddFloatRange(2, 120, 2.5f, 4, GeneralOptionTranslations.SecondsSuffix)
-                    .Build())
                 .Build()));
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>

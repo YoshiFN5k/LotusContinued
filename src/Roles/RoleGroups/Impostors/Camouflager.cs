@@ -96,7 +96,7 @@ public class Camouflager : Shapeshifter
                 .AddFloatRange(5, 60, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
-                .KeyName("Can Vent", Translations.Options.CanVent)
+                .KeyName("Can Vent", RoleTranslations.CanVent)
                 .Bind(v => canVent = (bool)v)
                 .AddOnOffValues()
                 .Build());
@@ -115,9 +115,6 @@ public class Camouflager : Shapeshifter
 
             [Localized(nameof(CamouflageDuration))]
             public static string CamouflageDuration = "Camouflage Duration";
-
-            [Localized(nameof(CanVent))]
-            public static string CanVent = "Can Vent";
         }
     }
 }

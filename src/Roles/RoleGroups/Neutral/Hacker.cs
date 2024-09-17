@@ -61,7 +61,7 @@ public class Hacker : Engineer
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .Tab(DefaultTabs.NeutralTab)
-            .SubOption(sub => AddVentingOptions(sub.KeyName("Hacker Can Vent", GColor(HackerCanVent))
+            .SubOption(sub => AddVentingOptions(sub.KeyName("Hacker Can Vent", RoleColor.Colorize(RoleName) + " " + RoleTranslations.CanVent)
                 .AddOnOffValues()
                 .BindBool(b => hackerCanVent = b)
                 .ShowSubOptionPredicate(b => (bool)b))
@@ -99,13 +99,11 @@ public class Hacker : Engineer
                 .BindBool(b => fixingDoorsGivesPoint = b)
                 .Build());
 
-    private string GColor(string input) => TranslationUtil.Colorize(input, RoleColor);
-
-    protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        roleModifier.RoleColor(new Color(0.21f, 0.5f, 0.07f))
-            .VanillaRole(hackerCanVent ? RoleTypes.Engineer : RoleTypes.Crewmate)
-            .Faction(FactionInstances.Neutral)
-            .SpecialType(SpecialType.Neutral);
+    protected override RoleModifier Modify(RoleModifier roleModifier) => base
+        .Modify(roleModifier).RoleColor(new Color(0.21f, 0.5f, 0.07f))
+        .VanillaRole(hackerCanVent ? RoleTypes.Engineer : RoleTypes.Crewmate)
+        .Faction(FactionInstances.Neutral)
+        .SpecialType(SpecialType.Neutral);
 
     [Localized(nameof(Hacker))]
     internal static class HackerTranslations
@@ -115,9 +113,6 @@ public class Hacker : Engineer
         {
             [Localized(nameof(HackerSabotagePointAmount))]
             public static string HackerSabotagePointAmount = "Points Needed to Win";
-
-            [Localized(nameof(HackerCanVent))]
-            public static string HackerCanVent = "Hacker::0 Can Vent";
 
             [Localized(nameof(FixingDoorsGivesPoints))]
             public static string FixingDoorsGivesPoints = "Fixing Doors Gives Points";

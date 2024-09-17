@@ -72,7 +72,7 @@ public class Freezer : Vanilla.Shapeshifter
                 .AddFloatRange(5f, 60f, 2.5f, 4, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
-                .KeyName("Can Vent", Translations.Options.CanVent)
+                .KeyName("Can Vent", RoleTranslations.CanVent)
                 .Bind(v => canVent = (bool)v)
                 .AddOnOffValues()
                 .Build());
@@ -93,9 +93,6 @@ public class Freezer : Vanilla.Shapeshifter
 
             [Localized(nameof(FreezeDuration))]
             public static string FreezeDuration = "Freeze Duration";
-
-            [Localized(nameof(CanVent))]
-            public static string CanVent = "Can Vent";
         }
     }
 }
