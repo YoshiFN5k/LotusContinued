@@ -17,6 +17,7 @@ using UnityEngine;
 using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -109,12 +110,12 @@ public class Consort : Impostor
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Roleblock Cooldown")
+            .SubOption(sub => sub.KeyName("Roleblock Cooldown", Translations.Options.roleblockCooldown)
                 .BindFloat(roleblockCooldown.SetDuration)
                 .AddFloatRange(0, 120, 2.5f, 18, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
-                .Name("Roleblock Duration")
+                .KeyName("Roleblock Duration", Translations.Options.roleblockDuration)
                 .BindFloat(v => roleblockDuration = v)
                 .Value(v => v.Text("Until Meeting").Value(-1f).Build())
                 .AddFloatRange(5, 120, 5, suffix: GeneralOptionTranslations.SecondsSuffix)

@@ -17,6 +17,7 @@ using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using Lotus.Extensions;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -86,19 +87,19 @@ public class BountyHunter : Impostor
         base.RegisterOptions(optionStream)
             .Color(RoleColor)
             .SubOption(sub => sub
-                .Name("Time Until New Target")
+                .KeyName("Time Until New Target", Translations.Options.TimeUntilNewTarget)
                 .Bind(v => acquireNewTarget.Duration = (float)v)
                 .AddFloatRange(5f, 120, 5, 11)
                 .IOSettings(settings => settings.UnknownValueAction = ADEAnswer.Allow)
                 .Build())
             .SubOption(sub => sub
-                .Name("Kill Cooldown After Killing Target")
+                .KeyName("Kill Cooldown After Killing Target", Translations.Options.AfterKillingTarget)
                 .Bind(v => bountyKillCoolDown = (float)v)
                 .AddFloatRange(0, 180, 2.5f, 6)
                 .IOSettings(settings => settings.UnknownValueAction = ADEAnswer.Allow)
                 .Build())
             .SubOption(sub => sub
-                .Name("Kill Cooldown After Killing Other")
+                .KeyName("Kill Cooldown After Killing Other", Translations.Options.AfterKillingNonTarget)
                 .Bind(v => punishKillCoolDown = (float)v)
                 .AddFloatRange(0, 180, 2.5f, 15)
                 .IOSettings(settings => settings.UnknownValueAction = ADEAnswer.Allow)
@@ -113,11 +114,11 @@ public class BountyHunter : Impostor
             [Localized(nameof(TimeUntilNewTarget))]
             public static string TimeUntilNewTarget = "Time Until New Target";
 
-            [Localized(nameof(KillCooldownAfterKillingTarget))]
-            public static string KillCooldownAfterKillingTarget = "Kill Cooldown After Killing Target";
+            [Localized(nameof(AfterKillingTarget))]
+            public static string AfterKillingTarget = "Kill Cooldown After Killing Target";
 
-            [Localized(nameof(KillCooldownAfterKillingNonTarget))]
-            public static string KillCooldownAfterKillingNonTarget = "Kill Cooldown After Killing Non-Target";
+            [Localized(nameof(AfterKillingNonTarget))]
+            public static string AfterKillingNonTarget = "Kill Cooldown After Killing Non-Target";
         }
     }
 }
