@@ -39,7 +39,7 @@ public class Witch : Vanilla.Impostor
     private bool isCursingMode = true;
 
     [UIComponent(UI.Text)]
-    private string ModeDisplay() => freelySwitchModes ? isCursingMode ? cursingColor.Colorize(Translations.CursingModeText) : Color.red.Colorize(Translations.KillingModeText) : "";
+    private string ModeDisplay() => (freelySwitchModes || switchModesAfterAttack) ? (isCursingMode ? cursingColor.Colorize(Translations.CursingModeText) : Color.red.Colorize(Translations.KillingModeText)) : "";
 
     [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)

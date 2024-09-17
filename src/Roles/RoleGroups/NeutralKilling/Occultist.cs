@@ -37,7 +37,7 @@ public class Occultist : NeutralKillingBase
     private bool isCursingMode = true;
 
     [UIComponent(UI.Text)]
-    private string ModeDisplay() => freelySwitchModes ? isCursingMode ? RoleColor.Colorize(Translations.CursingModeText) : Color.red.Colorize(Translations.KillingModeText) : "";
+    private string ModeDisplay() => (freelySwitchModes || switchModesAfterAttack) ? (isCursingMode ? RoleColor.Colorize(Translations.CursingModeText) : Color.red.Colorize(Translations.KillingModeText)) : "";
 
     [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
