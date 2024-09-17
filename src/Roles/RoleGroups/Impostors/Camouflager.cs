@@ -102,4 +102,21 @@ public class Camouflager : Shapeshifter
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier).CanVent(canVent);
+
+    [Localized(nameof(Camouflager))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        internal static class Options
+        {
+            [Localized(nameof(CamouflageCooldown))]
+            public static string CamouflageCooldown = "Camouflage Cooldown";
+
+            [Localized(nameof(CamouflageDuration))]
+            public static string CamouflageDuration = "Camouflage Duration";
+
+            [Localized(nameof(CanVent))]
+            public static string CanVent = "Can Vent";
+        }
+    }
 }

@@ -85,4 +85,21 @@ public class Escapist : Impostor
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
+
+    [Localized(nameof(Escapist))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        internal static class Options
+        {
+            [Localized(nameof(MarkCooldown))]
+            public static string MarkCooldown = "Cooldown After Mark";
+
+            [Localized(nameof(EscapeCooldown))]
+            public static string EscapeCooldown = "Cooldown After Escape";
+
+            [Localized(nameof(ClearMarkAfterMeeting))]
+            public static string ClearMarkAfterMeeting = "Clear Mark After Meeting";
+        }
+    }
 }

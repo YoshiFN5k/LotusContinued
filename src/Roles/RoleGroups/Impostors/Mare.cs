@@ -117,4 +117,30 @@ public class Mare : Vanilla.Impostor
         base.Modify(roleModifier)
             .OptionOverride(Override.KillCooldown, () => abilityEnabled ? reducedKillCooldown : normalKillCooldown)
             .OptionOverride(Override.PlayerSpeedMod, () => sabotageSpeedMod, () => abilityEnabled);
+
+    [Localized(nameof(Mare))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        internal static class Options
+        {
+            [Localized(nameof(SpeedDuringSabotage))]
+            public static string SpeedDuringSabotage = "Speed Modifier During Sabotage";
+
+            [Localized(nameof(KillWithoutSabotage))]
+            public static string KillWithoutSabotage = "Can Kill Without Sabotage";
+
+            [Localized(nameof(NormalKillCooldown))]
+            public static string NormalKillCooldown = "Normal Kill Cooldown";
+
+            [Localized(nameof(ColoredNameDuringSabotage))]
+            public static string ColoredNameDuringSabotage = "Colored Name During Sabotage";
+
+            [Localized(nameof(KillCooldownDuringSabotage))]
+            public static string KillCooldownDuringSabotage = "Kill Cooldown During Sabotage";
+
+            [Localized(nameof(SabotageSettings))]
+            public static string SabotageSettings = "Specific Sabotage Settings";
+        }
+    }
 }

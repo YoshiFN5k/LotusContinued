@@ -80,4 +80,21 @@ public class Freezer : Vanilla.Shapeshifter
             .CanVent(canVent)
             .OptionOverride(Override.ShapeshiftDuration, freezeDuration.Duration)
             .OptionOverride(Override.ShapeshiftCooldown, freezeCooldown);
+
+    [Localized(nameof(Freezer))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        internal static class Options
+        {
+            [Localized(nameof(FreezeCooldown))]
+            public static string FreezeCooldown = "FreezeCooldown";
+
+            [Localized(nameof(FreezeDuration))]
+            public static string FreezeDuration = "Freeze Duration";
+
+            [Localized(nameof(CanVent))]
+            public static string CanVent = "Can Vent";
+        }
+    }
 }
