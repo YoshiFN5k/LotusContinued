@@ -224,7 +224,7 @@ public class Sheriff : Crewmate
         public static string NeutralPassiveSetting = "Can Kill Neutral::0 Passive::1";
 
         [Localized(nameof(MadmateSetting))]
-        public static string MadmateSetting = "Can Kill Madmates::0 Settings";
+        public static string MadmateSetting = "Can Kill Madmates::0";
 
         [Localized(ModConstants.Options)]
         public static class Options

@@ -119,7 +119,7 @@ public class FireWorks : Shapeshifter
             [Localized(nameof(TotalFireworks))]
             public static string TotalFireworks = "Total Firework Charges";
 
-            [Localized(nameof(AbleToDetonateText))]
+            [Localized(nameof(AbleToDetonateEarly))]
             public static string AbleToDetonateEarly = "Detonate Only When Last Impostor::0";
         }
     }

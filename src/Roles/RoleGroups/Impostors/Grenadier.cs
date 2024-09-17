@@ -91,4 +91,30 @@ public class Grenadier : Vanilla.Impostor
         base.Modify(roleModifier)
             .CanVent(canVent)
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
+
+    [Localized(nameof(Grenadier))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        internal static class Options
+        {
+            [Localized(nameof(AmountOfGrenades))]
+            public static string AmountOfGrenades = "Amount of Grenades";
+
+            [Localized(nameof(BlindCooldown))]
+            public static string BlindCooldown = "Blind Cooldown";
+
+            [Localized(nameof(BlindDuration))]
+            public static string BlindDuration = "Blind Duration";
+
+            [Localized(nameof(BlindRadius))]
+            public static string BlindRadius = "Blind Effect Radius";
+
+            [Localized(nameof(CanBlindAllies))]
+            public static string CanBlindAllies = "Can Blind Allies";
+
+            [Localized(nameof(CanVent))]
+            public static string CanVent = "Can Vent";
+        }
+    }
 }
