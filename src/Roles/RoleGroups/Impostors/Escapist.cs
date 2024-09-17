@@ -81,7 +81,7 @@ public class Escapist : Impostor
                 .BindFloat(canMarkCooldown.SetDuration)
                 .Build())
             .SubOption(sub => sub
-                .KeyName("Clear Mark After Meeting", Translations.Options.ClearMarkAfterMeeting)
+                .KeyName("Clear Mark After Meeting", Translations.Options.ClearAfterMeeting)
                 .AddOnOffValues()
                 .BindBool(b => clearMarkAfterMeeting = b)
                 .Build());

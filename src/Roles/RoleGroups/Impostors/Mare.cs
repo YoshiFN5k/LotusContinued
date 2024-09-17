@@ -73,17 +73,17 @@ public class Mare : Vanilla.Impostor
                 .ShowSubOptionPredicate(v => (bool)v)
                 .AddOnOffValues()
                 .SubOption(sub2 => sub2
-                    .KeyName("Normal Kill Cooldown", Translations.Options.NormalKillCooldown)
+                    .KeyName("Normal Kill Cooldown", Translations.Options.KillCooldown)
                     .Bind(v => normalKillCooldown = (float)v)
                     .AddFloatRange(0, 120, 2.5f, 10, GeneralOptionTranslations.SecondsSuffix)
                     .Build())
                 .Build())
             .SubOption(sub => sub
-                .KeyName("Colored Name During Sabotage", Translations.Options.ColoredNameDuringSabotage)
+                .KeyName("Colored Name During Sabotage", Translations.Options.ColoredName)
                 .Bind(v => redNameDuringSabotage = (bool)v)
                 .AddOnOffValues().Build())
             .SubOption(sub => sub
-                .KeyName("Kill Cooldown During Sabotage", Translations.Options.KillCooldownDuringSabotage)
+                .KeyName("Kill Cooldown During Sabotage", Translations.Options.SabotageKillCooldown)
                 .Bind(v => reducedKillCooldown = (float)v)
                 .AddFloatRange(0, 60, 5, 3, GeneralOptionTranslations.SecondsSuffix).Build())
             .SubOption(sub => sub
