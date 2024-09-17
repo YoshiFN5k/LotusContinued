@@ -51,13 +51,13 @@ public class BloodKnight : NeutralKillingBase
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
          AddKillCooldownOptions(base.RegisterOptions(optionStream))
              .Tab(DefaultTabs.NeutralTab)
-             .SubOption(opt =>
-                opt.Name("Protection Duration")
+             .SubOption(opt => opt
+                .Name("Protection Duration")
                 .BindFloat(v => protectionAmt = v)
                 .AddFloatRange(2.5f, 180, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
-            .SubOption(opt =>
-                opt.Name("Can Vent")
+            .SubOption(opt => opt
+                .KeyName("Can Vent", RoleTranslations.CanVent)
                 .BindBool(v => canVent = v)
                 .AddOnOffValues()
                 .Build());
@@ -66,9 +66,9 @@ public class BloodKnight : NeutralKillingBase
 
     protected override RoleModifier Modify(RoleModifier roleModifier)
     {
-        return base.Modify(roleModifier) // call base because we're utilizing some settings setup by NeutralKillingBase
+        return base.Modify(roleModifier)
             .RoleName("BloodKnight")
-            .RoleColor(new Color(0.47f, 0f, 0f)) // Using Color() because it's easier to edit and get an idea for actual color
+            .RoleColor(new Color(0.47f, 0f, 0f))
             .CanVent(canVent);
     }
 

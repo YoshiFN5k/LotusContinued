@@ -42,7 +42,7 @@ public class Juggernaut : NeutralKillingBase
                 .AddFloatRange(0, 30, 0.5f, 5)
                 .Build())
             .SubOption(sub => sub
-                .Name("Can Vent")
+                .KeyName("Can Vent", RoleTranslations.CanVent)
                 .BindBool(v => canVent = v)
                 .AddOnOffValues()
                 .Build())

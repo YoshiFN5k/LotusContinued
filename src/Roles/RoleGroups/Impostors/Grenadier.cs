@@ -12,6 +12,7 @@ using Lotus.Options;
 using Lotus.Roles.Internals;
 using VentLib.Options.UI;
 using VentLib.Utilities;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -56,33 +57,33 @@ public class Grenadier : Vanilla.Impostor
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub
-                .Name("Amount of Grenades")
+                .KeyName("Amount of Grenades", Translations.Options.AmountOfGrenades)
                 .Bind(v => grenadeAmount = (int)v)
                 .AddIntRange(1, 5, 1, 2)
                 .Build())
             .SubOption(sub => sub
-                .Name("Blind Cooldown")
+                .KeyName("Blind Cooldown", Translations.Options.BlindCooldown)
                 .Bind(v => blindCooldown.Duration = (float)v)
                 .AddFloatRange(5f, 120f, 2.5f, 10, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
-                .Name("Blind Duration")
+                .KeyName("Blind Duration", Translations.Options.BlindDuration)
                 .Bind(v => blindDuration = (float)v)
                 .AddFloatRange(5f, 60f, 2.5f, 4, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
-                .Name("Blind Effect Radius")
+                .KeyName("Blind Effect Radius", Translations.Options.BlindRadius)
                 .Bind(v => blindDistance = (float)v)
                 .Value(v => v.Text("Kill Distance").Value(-1f).Build())
                 .AddFloatRange(1.5f, 3f, 0.1f, 4)
                 .Build())
             .SubOption(sub => sub
-                .Name("Can Blind Allies")
+                .KeyName("Can Blind Allies", Translations.Options.CanBlindAllies)
                 .Bind(v => canBlindAllies = (bool)v)
                 .AddOnOffValues(false)
                 .Build())
             .SubOption(sub => sub
-                .Name("Can Vent")
+                .KeyName("Can Vent", RoleTranslations.CanVent)
                 .Bind(v => canVent = (bool)v)
                 .AddOnOffValues()
                 .Build());
@@ -93,10 +94,10 @@ public class Grenadier : Vanilla.Impostor
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     [Localized(nameof(Grenadier))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
-        internal static class Options
+        public static class Options
         {
             [Localized(nameof(AmountOfGrenades))]
             public static string AmountOfGrenades = "Amount of Grenades";
@@ -112,9 +113,6 @@ public class Grenadier : Vanilla.Impostor
 
             [Localized(nameof(CanBlindAllies))]
             public static string CanBlindAllies = "Can Blind Allies";
-
-            [Localized(nameof(CanVent))]
-            public static string CanVent = "Can Vent";
         }
     }
 }

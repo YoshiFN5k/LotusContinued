@@ -18,11 +18,14 @@ using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using Lotus.GameModes.Standard;
 using Lotus.API.Vanilla.Meetings;
+using Lotus.Roles.Managers.Interfaces;
+using System.Linq;
 
 namespace Lotus.Roles.Subroles;
 
 public class Guesser : CustomRole
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Guesser));
     private MeetingPlayerSelector voteSelector = new();
 
     private int guessesPerMeeting;
@@ -117,9 +120,9 @@ public class Guesser : CustomRole
     [RoleAction(LotusActionType.Chat)]
     public void DoGuesserVoting(string message, GameState state, bool isAlive)
     {
-        DevLogger.Log($"Message: {message} | Guessing player: {guessingPlayer}");
         if (!isAlive) return;
         if (state is not GameState.InMeeting) return;
+        log.Debug($"Message: {message} - Guessing player: {guessingPlayer}");
         if (guessingPlayer == byte.MaxValue) return;
         if (!(message.StartsWith("/role") || message.StartsWith("/r"))) return;
         string[] split = message.Replace("/role", "/r").Split(" ");
@@ -129,20 +132,25 @@ public class Guesser : CustomRole
             return;
         }
 
+        log.Debug("c1");
         string roleName = split[1..].Fuse(" ");
-        CustomRole? role = ProjectLotus.GameModeManager.CurrentGameMode.RoleManager.RoleHolder.AllRoles.FirstOrOptional(r => string.Equals(r.RoleName, roleName, StringComparison.CurrentCultureIgnoreCase))
-            .CoalesceEmpty(() => ProjectLotus.GameModeManager.CurrentGameMode.RoleManager.RoleHolder.AllRoles.FirstOrOptional(r => r.RoleName.ToLower().Contains(roleName.ToLower())))
-            .CoalesceEmpty(() => ProjectLotus.GameModeManager.CurrentGameMode.RoleManager.RoleHolder.AllRoles.FirstOrOptional(r => r.EnglishRoleName.ToLower().Contains(roleName.ToLower())))
-            .OrElse(null!);
-        if (role == null!)
+        log.Debug("c2");
+        var allRoles = IRoleManager.Current.AllCustomRoles().Where(r => r.Count > 0 && r.Chance > 0);
+        log.Debug("c3");
+        Optional<CustomRole> role = allRoles.FirstOrOptional(r => string.Equals(r.RoleName, roleName, StringComparison.CurrentCultureIgnoreCase))
+            .CoalesceEmpty(() => allRoles.FirstOrOptional(r => r.RoleName.ToLower().Contains(roleName.ToLower())));
+        log.Debug($"c4 - exists: {role.Exists()} name: {(role.Exists() ? role.Get().RoleName : string.Empty)}");
+        if (!role.Exists())
         {
             GuesserHandler(Translations.UnknownRole.Formatted(roleName)).Send(MyPlayer);
             return;
         }
+        log.Debug("c5");
 
-        guessedRole = role;
-
+        guessedRole = role.Get();
+        log.Debug("c6");
         GuesserHandler(Translations.PickedRoleText.Formatted(Players.FindPlayerById(guessingPlayer)?.name, guessedRole.RoleName)).Send(MyPlayer);
+        log.Debug("c7");
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>

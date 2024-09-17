@@ -10,4 +10,7 @@ public class RoleTranslations
 
     [Localized("SubsequentChance")]
     public static string SubsequentChanceText = "Subsequent Chance";
+
+    [Localized("CanVent")]
+    public static string CanVent = "Can Vent";
 }

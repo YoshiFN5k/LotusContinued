@@ -6,6 +6,7 @@ using Lotus.Roles.Overrides;
 using Lotus.Extensions;
 using Lotus.Options;
 using VentLib.Options.UI;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -61,17 +62,17 @@ public class Freezer : Vanilla.Shapeshifter
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub
-                .Name("Freeze Cooldown")
+                .KeyName("Freeze Cooldown", Translations.Options.FreezeCooldown)
                 .Bind(v => freezeCooldown = (float)v)
                 .AddFloatRange(5f, 120f, 2.5f, 10, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
-                .Name("Freeze Duration")
+                .KeyName("Freeze Duration", Translations.Options.FreezeDuration)
                 .Bind(v => freezeDuration.Duration = (float)v)
                 .AddFloatRange(5f, 60f, 2.5f, 4, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
-                .Name("Can Vent")
+                .KeyName("Can Vent", RoleTranslations.CanVent)
                 .Bind(v => canVent = (bool)v)
                 .AddOnOffValues()
                 .Build());
@@ -82,19 +83,16 @@ public class Freezer : Vanilla.Shapeshifter
             .OptionOverride(Override.ShapeshiftCooldown, freezeCooldown);
 
     [Localized(nameof(Freezer))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
-        internal static class Options
+        public static class Options
         {
             [Localized(nameof(FreezeCooldown))]
             public static string FreezeCooldown = "FreezeCooldown";
 
             [Localized(nameof(FreezeDuration))]
             public static string FreezeDuration = "Freeze Duration";
-
-            [Localized(nameof(CanVent))]
-            public static string CanVent = "Can Vent";
         }
     }
 }

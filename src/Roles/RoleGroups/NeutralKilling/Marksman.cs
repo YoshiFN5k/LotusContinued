@@ -59,7 +59,7 @@ public class Marksman : NeutralKillingBase
                 .BindInt(i => KillDistance = i)
                 .Build())
             .SubOption(sub => sub
-                .Name("Can Vent")
+                .KeyName("Can Vent", RoleTranslations.CanVent)
                 .BindBool(v => canVent = v)
                 .AddOnOffValues()
                 .Build())

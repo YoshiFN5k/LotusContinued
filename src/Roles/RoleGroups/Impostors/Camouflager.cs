@@ -14,6 +14,7 @@ using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Optionals;
 using Lotus.API.Player;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -85,17 +86,17 @@ public class Camouflager : Shapeshifter
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub
-                .Name("Camouflage Cooldown")
+                .KeyName("Camouflage Cooldown", Translations.Options.CamouflageCooldown)
                 .Bind(v => ShapeshiftCooldown = (float)v)
                 .AddFloatRange(5, 120, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
-                .Name("Camouflage Duration")
+                .KeyName("Camouflage Duration", Translations.Options.CamouflageDuration)
                 .Bind(v => ShapeshiftDuration = (float)v)
                 .AddFloatRange(5, 60, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
-                .Name("Can Vent")
+                .KeyName("Can Vent", RoleTranslations.CanVent)
                 .Bind(v => canVent = (bool)v)
                 .AddOnOffValues()
                 .Build());
@@ -104,19 +105,16 @@ public class Camouflager : Shapeshifter
         base.Modify(roleModifier).CanVent(canVent);
 
     [Localized(nameof(Camouflager))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
-        internal static class Options
+        public static class Options
         {
             [Localized(nameof(CamouflageCooldown))]
             public static string CamouflageCooldown = "Camouflage Cooldown";
 
             [Localized(nameof(CamouflageDuration))]
             public static string CamouflageDuration = "Camouflage Duration";
-
-            [Localized(nameof(CanVent))]
-            public static string CanVent = "Can Vent";
         }
     }
 }
