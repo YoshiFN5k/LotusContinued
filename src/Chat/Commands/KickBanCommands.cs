@@ -39,7 +39,7 @@ public class KickBanCommand : ICommandReceiver
         bool banWithId = false;
         if (int.TryParse(context.Args[0], out int result))
         {
-            targetPlayer = Utils.PlayerById(result);
+            targetPlayer = Utils.PlayerById((byte)result);
             banWithId = true;
         }
         else targetPlayer = PlayerControl.AllPlayerControls.ToArray()

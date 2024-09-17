@@ -10,7 +10,7 @@ using VentLib.Utilities.Extensions;
 namespace Lotus.Chat.Commands;
 
 [Command(CommandFlag.HostOnly, "friends", "friend", "f")]
-public class FriendCommands: CommandTranslations, ICommandReceiver
+public class FriendCommands : CommandTranslations, ICommandReceiver
 {
     [Command("add", "a")]
     public static void AddFriend(PlayerControl source, CommandContext context)
@@ -33,7 +33,7 @@ public class FriendCommands: CommandTranslations, ICommandReceiver
         }
 
         if (int.TryParse(context.Args[0], out int value))
-            Utils.PlayerById(value).Handle(AFriend, () => ChatHandler.Of(PlayerNotFoundText.Formatted("")).Send(source));
+            Utils.PlayerById((byte)value).Handle(AFriend, () => ChatHandler.Of(PlayerNotFoundText.Formatted("")).Send(source));
         else
             PlayerControl.AllPlayerControls.ToArray().FirstOrOptional(p => p.name == context.Join())
                 .Handle(AFriend, () =>
