@@ -34,8 +34,11 @@ class IntroDestroyPatch
     public static void Postfix(IntroCutscene __instance)
     {
         Profiler.Sample destroySample = Global.Sampler.Sampled();
-        Game.State = GameState.Roaming;
-        if (!AmongUsClient.Instance.AmHost) return;
+        if (!AmongUsClient.Instance.AmHost)
+        {
+            Game.State = GameState.Roaming;
+            return;
+        }
 
         string pet = GeneralOptions.MiscellaneousOptions.AssignedPet;
         while (pet == "Random") pet = ModConstants.Pets.Values.ToList().GetRandom();
@@ -56,6 +59,7 @@ class IntroDestroyPatch
         });
         Async.Schedule(() => Players.GetPlayers().ForEach(p => Async.Execute(ReverseEngineeredRPC.UnshfitButtonTrigger(p))), NetUtils.DeriveDelay(2f));
         fullSample.Stop();
+        Game.State = GameState.Roaming;
 
         Profiler.Sample propSample = Global.Sampler.Sampled("Propagation Sample");
         RoleOperations.Current.TriggerForAll(LotusActionType.RoundStart, null, true);
