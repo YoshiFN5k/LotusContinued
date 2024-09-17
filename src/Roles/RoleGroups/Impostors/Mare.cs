@@ -15,6 +15,7 @@ using UnityEngine;
 using VentLib.Logging;
 using VentLib.Options.UI;
 using Priority = Lotus.API.Priority;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -63,30 +64,30 @@ public class Mare : Vanilla.Impostor
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub
-                .Name("Speed Modifier During Sabotage")
+                .KeyName("Speed Modifier During Sabotage", Translations.Options.SpeedDuringSabotage)
                 .Bind(v => sabotageSpeedMod = (float)v)
                 .AddFloatRange(0.5f, 3, 0.1f, 10, "x").Build())
             .SubOption(sub => sub
-                .Name("Can Kill Without Sabotage")
+                .KeyName("Can Kill Without Sabotage", Translations.Options.KillWithoutSabotage)
                 .Bind(v => canKillWithoutSabotage = (bool)v)
                 .ShowSubOptionPredicate(v => (bool)v)
                 .AddOnOffValues()
                 .SubOption(sub2 => sub2
-                    .Name("Normal Kill Cooldown")
+                    .KeyName("Normal Kill Cooldown", Translations.Options.NormalKillCooldown)
                     .Bind(v => normalKillCooldown = (float)v)
                     .AddFloatRange(0, 120, 2.5f, 10, GeneralOptionTranslations.SecondsSuffix)
                     .Build())
                 .Build())
             .SubOption(sub => sub
-                .Name("Colored Name During Sabotage")
+                .KeyName("Colored Name During Sabotage", Translations.Options.ColoredNameDuringSabotage)
                 .Bind(v => redNameDuringSabotage = (bool)v)
                 .AddOnOffValues().Build())
             .SubOption(sub => sub
-                .Name("Kill Cooldown During Sabotage")
+                .KeyName("Kill Cooldown During Sabotage", Translations.Options.KillCooldownDuringSabotage)
                 .Bind(v => reducedKillCooldown = (float)v)
                 .AddFloatRange(0, 60, 5, 3, GeneralOptionTranslations.SecondsSuffix).Build())
             .SubOption(sub => sub
-                .Name("Specific Sabotage Settings")
+                .KeyName("Specific Sabotage Settings", Translations.Options.SabotageSettings)
                 .ShowSubOptionPredicate(v => (bool)v)
                 .BindBool(v => abilityLightsOnly = v)
                 .Value(v => v.Text("Lights Only").Value(false).Build())
@@ -119,10 +120,10 @@ public class Mare : Vanilla.Impostor
             .OptionOverride(Override.PlayerSpeedMod, () => sabotageSpeedMod, () => abilityEnabled);
 
     [Localized(nameof(Mare))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
-        internal static class Options
+        public static class Options
         {
             [Localized(nameof(SpeedDuringSabotage))]
             public static string SpeedDuringSabotage = "Speed Modifier During Sabotage";
