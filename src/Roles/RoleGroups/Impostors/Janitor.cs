@@ -138,4 +138,18 @@ public class Janitor : Impostor
             set => (meta ?? new Dictionary<string, object?>())[key] = value;
         }
     }
+
+    [Localized(nameof(Janitor))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        internal static class Options
+        {
+            [Localized(nameof(CleanOnKill))]
+            public static string CleanOnKill = "Clean on Kill";
+
+            [Localized(nameof(KillCooldownMultiplier))]
+            public static string KillCooldownMultiplier = "Kill Cooldown Multiplier";
+        }
+    }
 }

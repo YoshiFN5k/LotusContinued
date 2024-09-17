@@ -93,4 +93,21 @@ public class TimeThief : Vanilla.Impostor
                 .Bind(v => returnTimeAfterDeath = (bool)v)
                 .AddOnOffValues()
                 .Build());
+
+    [Localized(nameof(TimeThief))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        internal static class Options
+        {
+            [Localized(nameof(MeetingTimeStolen))]
+            public static string MeetingTimeStolen = "Meeting Time Stolen";
+
+            [Localized(nameof(MinVotingTime))]
+            public static string MinVotingTime = "Minimum Voting Time";
+
+            [Localized(nameof(ReturnTimeAfterDeath))]
+            public static string ReturnTimeAfterDeath = "Return Stolen Time After Death";
+        }
+    }
 }

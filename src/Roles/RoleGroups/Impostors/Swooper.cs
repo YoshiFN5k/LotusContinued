@@ -120,4 +120,27 @@ public class Swooper : Impostor
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .OptionOverride(new IndirectKillCooldown(KillCooldown, () => remainInvisibleOnKill && swoopingDuration.NotReady()));
+
+    [Localized(nameof(Swooper))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        internal static class Options
+        {
+            [Localized(nameof(InvisibilityCooldown))]
+            public static string InvisibilityCooldown = "Invisibility Cooldown";
+
+            [Localized(nameof(SwoopingDuration))]
+            public static string SwoopingDuration = "Swooping Duration";
+
+            [Localized(nameof(SeenByAllies))]
+            public static string SeenByAllies = "Can Be Seen By Allies";
+
+            [Localized(nameof(VentDuringCooldown))]
+            public static string VentDuringCooldown = "Can Vent During Cooldown";
+
+            [Localized(nameof(InvisibleOnKill))]
+            public static string InvisibleOnKill = "Remain Invisible on Kill";
+        }
+    }
 }

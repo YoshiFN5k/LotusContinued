@@ -130,14 +130,14 @@ public class Mare : Vanilla.Impostor
             [Localized(nameof(KillWithoutSabotage))]
             public static string KillWithoutSabotage = "Can Kill Without Sabotage";
 
-            [Localized(nameof(NormalKillCooldown))]
-            public static string NormalKillCooldown = "Normal Kill Cooldown";
+            [Localized(nameof(KillCooldown))]
+            public static string KillCooldown = "Normal Kill Cooldown";
 
-            [Localized(nameof(ColoredNameDuringSabotage))]
-            public static string ColoredNameDuringSabotage = "Colored Name During Sabotage";
+            [Localized(nameof(ColoredName))]
+            public static string ColoredName = "Colored Name During Sabotage";
 
-            [Localized(nameof(KillCooldownDuringSabotage))]
-            public static string KillCooldownDuringSabotage = "Kill Cooldown During Sabotage";
+            [Localized(nameof(SabotageKillCooldown))]
+            public static string SabotageKillCooldown = "Kill Cooldown During Sabotage";
 
             [Localized(nameof(SabotageSettings))]
             public static string SabotageSettings = "Specific Sabotage Settings";
