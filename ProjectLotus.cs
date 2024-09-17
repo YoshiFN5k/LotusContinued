@@ -137,7 +137,6 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
         GameModeManager.AddGamemodes();
         AddonManager.ImportAddons();
         GameModeManager.Setup();
-        StaticEditor.Register(Assembly.GetExecutingAssembly());
 
         RoleOptionController.Enable();
         RoleOptionController.RemoveBuiltInTabs();

@@ -4,7 +4,6 @@ using Lotus.API;
 using Lotus.Factions.Neutrals;
 using Lotus.Roles;
 using Lotus.Roles.Builtins;
-using Lotus.Roles.Builtins.Base;
 using Lotus.Roles.Debugger;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Managers.Interfaces;

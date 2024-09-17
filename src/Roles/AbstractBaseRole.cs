@@ -96,10 +96,6 @@ public abstract class AbstractBaseRole
     internal Dictionary<LotusActionType, List<RoleAction>> RoleActions = new();
 
     protected List<GameOptionOverride> RoleSpecificGameOptionOverrides = new();
-
-    public RoleEditor? Editor { get; internal set; }
-    public static List<RoleEditor> _editors = new();
-
     /// <summary>
     /// Represents an ID for the role that should be unique to THE defining assembly
     /// </summary>

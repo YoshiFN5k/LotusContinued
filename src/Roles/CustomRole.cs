@@ -82,9 +82,6 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
         cloned.RelatedRoles.Add(this.GetType());
         cloned.MyPlayer = player;
 
-        if (cloned.Editor != null)
-            cloned.Editor = cloned.Editor.Instantiate(cloned, player);
-
         CreateInstanceBasedVariables();
 
         cloned.Setup(player);
