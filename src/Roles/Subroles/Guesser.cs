@@ -132,25 +132,19 @@ public class Guesser : CustomRole
             return;
         }
 
-        log.Debug("c1");
-        string roleName = split[1..].Fuse(" ");
-        log.Debug("c2");
+        string roleName = split[1..].Fuse(" ").Trim();
         var allRoles = IRoleManager.Current.AllCustomRoles().Where(r => r.Count > 0 && r.Chance > 0);
-        log.Debug("c3");
         Optional<CustomRole> role = allRoles.FirstOrOptional(r => string.Equals(r.RoleName, roleName, StringComparison.CurrentCultureIgnoreCase))
             .CoalesceEmpty(() => allRoles.FirstOrOptional(r => r.RoleName.ToLower().Contains(roleName.ToLower())));
-        log.Debug($"c4 - exists: {role.Exists()} name: {(role.Exists() ? role.Get().RoleName : string.Empty)}");
+        log.Debug($"c4 - exists: {role.Exists()} name: {(role.Exists() ? role.Get().RoleName : roleName)}");
         if (!role.Exists())
         {
             GuesserHandler(Translations.UnknownRole.Formatted(roleName)).Send(MyPlayer);
             return;
         }
-        log.Debug("c5");
 
         guessedRole = role.Get();
-        log.Debug("c6");
         GuesserHandler(Translations.PickedRoleText.Formatted(Players.FindPlayerById(guessingPlayer)?.name, guessedRole.RoleName)).Send(MyPlayer);
-        log.Debug("c7");
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
