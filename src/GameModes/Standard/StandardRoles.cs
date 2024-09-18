@@ -120,9 +120,9 @@ public class StandardRoles : RoleHolder
         /// Madmates
 
         public CrewPostor CrewPostor = new();
-        public Madmate Madmate = new();
         public MadGuardian MadGuardian = new();
         public MadSnitch MadSnitch = new();
+        public Madmate Madmate = new();
         public Parasite Parasite = new();
 
         /// Crewmates
