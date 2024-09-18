@@ -100,4 +100,18 @@ public class Warlock : Shapeshifter
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier).OptionOverride(new IndirectKillCooldown(KillCooldown, () => !Shapeshifted));
+
+    [Localized(nameof(Warlock))]
+    public static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(CursedKillImmediately))]
+            public static string CursedKillImmediately = "Cursed Players Kill Immediately";
+
+            [Localized(nameof(LimitedCurseKillRange))]
+            public static string LimitedCurseKillRange = "Limited Cursed Kill Range";
+        }
+    }
 }

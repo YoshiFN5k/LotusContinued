@@ -24,4 +24,16 @@ public class Madmate : Impostor
             .SpecialType(SpecialType.Madmate)
             .RoleColor(ModConstants.Palette.MadmateColor)
             .Faction(FactionInstances.Madmates);
+
+    [Localized(nameof(Madmate))]
+    public static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(CanSabotage))]
+            public static string CanSabotage = "Can Sabotage";
+        }
+    }
+
 }

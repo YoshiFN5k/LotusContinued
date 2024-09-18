@@ -116,7 +116,6 @@ public class Janitor : Impostor
         }
     }
 
-
     private class FakeFatalIntent : IFatalIntent
     {
         public void Action(PlayerControl actor, PlayerControl target)
