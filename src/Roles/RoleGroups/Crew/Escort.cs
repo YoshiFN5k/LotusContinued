@@ -100,7 +100,8 @@ public class Escort : Crewmate
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Roleblock Cooldown")
+            .SubOption(sub => sub.
+                .KeyName("Role-Block Cooldown", EscortTranslations.EscortOptionTranslations.RoleblockCooldown)
                 .BindFloat(roleblockCooldown.SetDuration)
                 .AddFloatRange(0, 120, 2.5f, 18, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
@@ -172,6 +173,20 @@ public class Escort : Crewmate
         {
             BlockedIndicator.Delete();
             BlockedCounter?.Delete();
+        }
+    }
+
+    [Localized(nameof(Escort))]
+    internal static class EscortTranslations
+    {
+        [Localized(ModConstants.Options)]
+        public static class EscortOptionTranslations
+        {
+            [Localized(nameof(RoleblockCooldown))]
+            public static string RoleblockCooldown = "Role-Block Cooldown";
+
+            [Localized(nameof(RoleblockDuration))]
+            public static string RoleblockDuration = "Role-Block Duration";
         }
     }
 }

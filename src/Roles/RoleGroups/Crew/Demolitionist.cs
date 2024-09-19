@@ -80,7 +80,7 @@ public class Demolitionist : Crewmate
     protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier).RoleColor("#5e2801");
 
     [Localized(nameof(Demolitionist))]
-    private static class Translations
+    public static class Translations
     {
         [Localized(nameof(YouKilledDemoMessage))]
         public static string YouKilledDemoMessage = "You Killed the {0}! Vent to stay alive!";
