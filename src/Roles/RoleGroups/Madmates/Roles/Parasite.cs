@@ -22,15 +22,4 @@ public class Parasite : Shapeshifter
             .SpecialType(SpecialType.Madmate)
             .RoleColor(new Color(0.73f, 0.18f, 0.02f))
             .Faction(FactionInstances.Madmates);
-
-    [Localized(nameof(Warlock))]
-    public static class Translations
-    {
-        [Localized(ModConstants.Options)]
-        public static class Options
-        {
-            [Localized(nameof(KillCooldown))]
-            public static string KillCooldown = "Kill Cooldown";
-        }
-    }
 }
