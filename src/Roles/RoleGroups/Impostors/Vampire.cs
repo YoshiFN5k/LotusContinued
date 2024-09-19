@@ -64,7 +64,7 @@ public class Vampire : Impostor, IVariableRole
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub
-                .Name("Kill Delay")
+                .KeyName("Kill Delay", VampireTranslations.Options.KillDelay)
                 .Bind(v => killDelay = (float)v)
                 .AddFloatRange(2.5f, 60f, 2.5f, 2, GeneralOptionTranslations.SecondsSuffix)
                 .Build());
