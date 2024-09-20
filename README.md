@@ -3,7 +3,7 @@
 </p>
 <h1 align="center">Project: Lotus</h1>
 
-<h2 align="center"> <a href="https://discord.gg/projectlotus">Discord</a> | <a href="#table-of-contents">Table Of Contents</a> | <a href="https://beta.lotusuau.top/">Website</a> | <a href="https://github.com/Lotus-AU/LotusContinued/releases/latest">Latest Release (For AU 2024.9.4)</a>
+<h2 align="center"> <a href="https://discord.gg/projectlotus">Discord</a> | <a href="#table-of-contents">Table Of Contents</a> | <a href="https://beta.lotusau.top/">Website</a> | <a href="https://github.com/Lotus-AU/LotusContinued/releases/latest">No Public Release (At this moment.)</a>
 
 <h3 align="center">This is a continuation of the <a href="https://github.com/ImaMapleTree/Lotus">original Project Lotus mod</a> due to the original creator passing the project. </h3>
 <i align="center">This mod is not affiliated with Among Us or Innersloth LLC, and the content contained therein is not endorsed or otherwise sponsored by Innersloth LLC. Portions of the materials contained herein are the property of Innersloth LLC.</i>
@@ -34,25 +34,25 @@ This Mod only needs to be installed on the **Host**, which needs to be on a PC. 
 
 # Table of Contents.
 
-> **Note:** Most of these will link to our Website, [**lotusuau.top**](https://beta.lotusuau.top). <br>
+> **Note:** Most of these will link to our Website, [**lotusau.top**](https://beta.lotusau.top). <br>
 
-> **Versión en español del sitio web.** -> [**lotusuau.top/es**](https://beta.lotusuau.top/es)<br>
+> **Versión en español del sitio web.** -> [**lotusau.top/es**](https://beta.lotusau.top/es)<br>
 
-> **Version française du site.** -> [**lotusuau.top/fr**](https://beta.lotusuau.top/fr)<br>
+> **Version française du site.** -> [**lotusau.top/fr**](https://beta.lotusau.top/fr)<br>
 
-> [**Click here to get taken to the roles!**](https://beta.lotusuau.top/en/roles)
+> [**Click here to get taken to the roles!**](https://beta.lotusau.top/en/roles)
 >
-> - [**General Options**](https://beta.lotusuau.top/rd/options)
-> - [**Commands/Hotkeys**](https://beta.lotusuau.top/rd/commands)
-> - [**Mod Credits**](https://beta.lotusuau.top/credits)
+> - [**General Options**](https://beta.lotusau.top/rd/options)
+> - [**Commands/Hotkeys**](https://beta.lotusau.top/rd/commands)
+> - [**Mod Credits**](https://beta.lotusau.top/credits)
 
 |                     Getting Started with Project: Lotus                     |                    Features of This Mod.                     |                    For Developers                      |
 | :-------------------------------------------------------------------------: | :----------------------------------------------------------: | :--------------------------------------------------:   |
-|   [**Converting from other mods**](https://beta.lotusuau.top/rd/convert)    |     [Templates](https://beta.lotusuau.top/rd/templates)      | [Add-On System](https://beta.lotusuau.top/dev/addons)  |
-|         [Installing the mod!](https://beta.lotusuau.top/rd/install)         |   [Custom Cosmetics](https://beta.lotusuau.top/rd/touhats)   | [VentFramework Docs](https://beta.lotusuau.top/dev/vf) |
-| [Setting up your First Templates.](https://beta.lotusuau.top/rd/f-template) |    [User Tags/Titles](https://beta.lotusuau.top/rd/tags)     |                          .                             |
-|      [Making your first Tag!](https://beta.lotusuau.top/rd/first-tag)       | [Custom Friend System](https://beta.lotusuau.top/rd/friends) |                          .                             |
-|        [Afterthought.](https://beta.lotusuau.top/rd/gs-afterthought)        |             [Online Template Maker (Planned)](#)             |                          .                             |
+|   [**Converting from other mods**](https://beta.lotusau.top/rd/convert)    |     [Templates](https://beta.lotusau.top/rd/templates)      | [Add-On System](https://beta.lotusau.top/dev/addons)  |
+|         [Installing the mod!](https://beta.lotusau.top/rd/install)         |   [Custom Cosmetics](https://beta.lotusau.top/rd/touhats)   | [VentFramework Docs](https://beta.lotusau.top/dev/vf) |
+| [Setting up your First Templates.](https://beta.lotusau.top/rd/f-template) |    [User Tags/Titles](https://beta.lotusau.top/rd/tags)     |                          .                             |
+|      [Making your first Tag!](https://beta.lotusau.top/rd/first-tag)       | [Custom Friend System](https://beta.lotusau.top/rd/friends) |                          .                             |
+|        [Afterthought.](https://beta.lotusau.top/rd/gs-afterthought)        |             [Online Template Maker (Planned)](#)             |                          .                             |
 
 <br>
 <br>
