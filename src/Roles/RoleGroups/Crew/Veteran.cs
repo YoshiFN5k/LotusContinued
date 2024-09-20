@@ -76,23 +76,29 @@ public class Veteran : Crewmate
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream).Color(RoleColor)
-            .SubOption(sub => sub.Name("Number of Alerts")
+            .SubOption(sub => sub
+                .KeyName("Number of Alerts", Translations.Options.TotalAlerts)
                 .Bind(v => totalAlerts = (int)v)
                 .AddIntRange(1, 10, 1, 9).Build())
-            .SubOption(sub => sub.Name("Alert Cooldown")
+            .SubOption(sub => sub
+                .KeyName("Alert Cooldown", Translations.Options.AlertCooldown)
                 .Bind(v => veteranCooldown.Duration = (float)v)
                 .AddFloatRange(2.5f, 120, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
-            .SubOption(sub => sub.Name("Alert Duration")
+            .SubOption(sub => sub
+                .KeyName("Alert Duration", Translations.Options.AlertDuration)
                 .Bind(v => veteranDuration.Duration = (float)v)
                 .AddFloatRange(1, 20, 0.25f, 10, GeneralOptionTranslations.SecondsSuffix).Build())
-            .SubOption(sub => sub.Name("Kill Crewmates")
+            .SubOption(sub => sub
+                .KeyName("Kill Crewmates", Translations.Options.KillCrewmates)
                 .Bind(v => canKillCrewmates = (bool)v)
                 .AddOnOffValues().Build())
-            .SubOption(sub => sub.Name("Kill While Transported")
+            .SubOption(sub => sub
+                .KeyName("Kill While Transported", Translations.Options.KillWhileTransported)
                 .Bind(v => canKillWhileTransported = (bool)v)
                 .AddOnOffValues().Build())
-            .SubOption(sub => sub.Name("Kill Ranged Attackers")
+            .SubOption(sub => sub
+                .KeyName("Kill Ranged Attackers", Translations.Options.KillRangedAttackers)
                 .BindBool(v => canKillRangedAttackers = v)
                 .AddOnOffValues().Build());
 
@@ -106,6 +112,32 @@ public class Veteran : Crewmate
     {
         public VettedEvent(PlayerControl killer, PlayerControl victim) : base(killer, victim)
         {
+        }
+    }
+
+    [Localized(nameof(Veteran))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(TotalAlerts))]
+            public static string TotalAlerts = "Number of Alerts";
+
+            [Localized(nameof(AlertCooldown))]
+            public static string AlertCooldown = "Alert Cooldown";
+
+            [Localized(nameof(AlertDuration))]
+            public static string AlertDuration = "Alert Duration";
+
+            [Localized(nameof(KillCrewmates))]
+            public static string KillCrewmates = "Kill Crewmates";
+
+            [Localized(nameof(KillWhileTransported))]
+            public static string KillWhileTransported = "Kill While Transported";
+
+            [Localized(nameof(KillRangedAttackers))]
+            public static string KillRangedAttackers = "Kill Ranged Attackers";
         }
     }
 }

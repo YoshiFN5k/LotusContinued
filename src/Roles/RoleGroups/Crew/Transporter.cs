@@ -91,10 +91,12 @@ public class Transporter : Crewmate
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .Tab(DefaultTabs.CrewmateTab)
-            .SubOption(sub => sub.Name("Number of Transports")
+            .SubOption(sub => sub
+                .KeyName("Number of Transports", Translations.Options.TotalTransports)
                 .Bind(v => this.totalTransports = (int)v)
                 .Values(4, 5, 10, 15, 20, 25).Build())
-            .SubOption(sub => sub.Name("Transport Cooldown")
+            .SubOption(sub => sub
+                .KeyName("Transport Cooldown", Translations.Options.TransportCooldown)
                 .Bind(v => this.transportCooldown.Duration = Convert.ToSingle((int)v))
                 .Values(4, 10, 15, 20, 25, 30).Build());
 
@@ -128,5 +130,19 @@ public class Transporter : Crewmate
     public class TransportInteraction : LotusInteraction
     {
         public TransportInteraction(PlayerControl actor) : base(new NeutralIntent(), actor.PrimaryRole()) { }
+    }
+
+    [Localized(nameof(Transporter))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(TotalTransports))]
+            public static string TotalTransports = "Number of Transports";
+
+            [Localized(nameof(TransportCooldown))]
+            public static string TransportCooldown = "Transport Cooldown";
+        }
     }
 }
