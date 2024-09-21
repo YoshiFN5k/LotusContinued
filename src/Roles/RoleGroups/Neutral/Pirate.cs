@@ -43,11 +43,18 @@ public class Pirate : Guesser
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.KeyName("Pirate Guess Win Amount", TranslationUtil.Colorize(Translations.Options.PirateGuesses, RoleColor))
+            .SubOption(sub => sub
+                .KeyName("Guesses Per Meeting", Translations.Options.GuessesPerMeeting,)
+                .AddIntRange(0, ModConstants.MaxPlayers, 1, 3)
+                .BindInt(i => GuessesPerMeeting = i)
+                .Build())
+            .SubOption(sub => sub
+                .KeyName("Pirate Guess Win Amount", TranslationUtil.Colorize(Translations.Options.GuessWinAmount, RoleColor))
                 .AddIntRange(0, ModConstants.MaxPlayers, 1, 3)
                 .BindInt(i => pirateGuessesToWin = i)
                 .Build())
-            .SubOption(sub => sub.KeyName("Pirate Dies on Missguess", TranslationUtil.Colorize(Translations.Options.PirateDiesOnMissGues, RoleColor))
+            .SubOption(sub => sub
+                .KeyName("Pirate Dies on Missguess", TranslationUtil.Colorize(Translations.Options.DieOnMisguess, RoleColor))
                 .BindBool(b => pirateDiesOnMissguess = b)
                 .AddOnOffValues()
                 .Build());
@@ -65,9 +72,13 @@ public class Pirate : Guesser
         [Localized(ModConstants.Options)]
         public static class Options
         {
-            public static string PirateGuesses = "Pirate::0 Guess Win Amount";
+            [Localized(nameof(GuessesPerMeeting))]
+            public static string GuessesPerMeeting = "Guesses Per Meeting";
 
-            public static string PirateDiesOnMissGues = "Pirate::0 Dies on Missguess";
+            [Localized(nameof(GuessWinAmount))]
+            public static string GuessWinAmount = "Pirate Guess Win Amount";
+
+            [Localized(nameof(DieOnMisguess))]
+            public static string DieOnMisguess = "Pirate Dies on Misguess";
         }
     }
-}
