@@ -22,6 +22,7 @@ using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -100,7 +101,7 @@ public class Escort : Crewmate
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.
+            .SubOption(sub => sub
                 .KeyName("Role-Block Cooldown", EscortTranslations.EscortOptionTranslations.RoleblockCooldown)
                 .BindFloat(roleblockCooldown.SetDuration)
                 .AddFloatRange(0, 120, 2.5f, 18, GeneralOptionTranslations.SecondsSuffix)
@@ -177,7 +178,7 @@ public class Escort : Crewmate
     }
 
     [Localized(nameof(Escort))]
-    internal static class EscortTranslations
+    public static class EscortTranslations
     {
         [Localized(ModConstants.Options)]
         public static class EscortOptionTranslations

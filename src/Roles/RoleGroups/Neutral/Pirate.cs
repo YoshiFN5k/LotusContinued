@@ -44,11 +44,6 @@ public class Pirate : Guesser
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub
-                .KeyName("Guesses Per Meeting", Translations.Options.GuessesPerMeeting,)
-                .AddIntRange(0, ModConstants.MaxPlayers, 1, 3)
-                .BindInt(i => GuessesPerMeeting = i)
-                .Build())
-            .SubOption(sub => sub
                 .KeyName("Pirate Guess Win Amount", TranslationUtil.Colorize(Translations.Options.GuessWinAmount, RoleColor))
                 .AddIntRange(0, ModConstants.MaxPlayers, 1, 3)
                 .BindInt(i => pirateGuessesToWin = i)
@@ -82,3 +77,4 @@ public class Pirate : Guesser
             public static string DieOnMisguess = "Pirate Dies on Misguess";
         }
     }
+}

@@ -17,6 +17,7 @@ using VentLib.Options.UI;
 using Lotus.API.Player;
 using VentLib.Utilities.Extensions;
 using Lotus.GUI.Name.Holders;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 
@@ -60,7 +61,7 @@ public class Egoist : Shapeshifter
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .Tab(DefaultTabs.NeutralTab)
-            .SubOption(sub => sub
+            .SubOption(sub => AddShapeshiftOptions(sub
                 .KeyName("IsShapeshifter", Translations.Options.IsShapeshifter)
                 .BindBool(b => egoistIsShapeshifter = b)
                 .ShowSubOptionPredicate(b => (bool)b)
@@ -88,7 +89,7 @@ public class Egoist : Shapeshifter
     }
 
     [Localized(nameof(Egoist))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options
