@@ -74,12 +74,7 @@ public class Witch : Vanilla.Impostor
     [RoleAction(LotusActionType.MeetingEnd, ActionFlag.WorksAfterDeath)]
     public void KillCursedPlayers(Optional<NetworkedPlayerInfo> exiledPlayer)
     {
-        if (exiledPlayer.Compare(p => p.PlayerId == MyPlayer.PlayerId))
-        {
-            Finish();
-            return;
-        }
-        if (!MyPlayer.IsAlive())
+        if (exiledPlayer.Compare(p => p.PlayerId == MyPlayer.PlayerId) || !MyPlayer.IsAlive())
         {
             Finish();
             return;

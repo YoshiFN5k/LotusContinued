@@ -72,16 +72,25 @@ public class Occultist : NeutralKillingBase
     [RoleAction(LotusActionType.MeetingEnd)]
     public void KillCursedPlayers(Optional<NetworkedPlayerInfo> exiledPlayer)
     {
-        if (exiledPlayer.Compare(p => p.PlayerId == MyPlayer.PlayerId)) return;
+        if (exiledPlayer.Compare(p => p.PlayerId == MyPlayer.PlayerId) || !MyPlayer.IsAlive())
+        {
+            Finish();
+            return;
+        }
         cursedPlayers.Keys.Filter(Players.PlayerById).ForEach(p =>
         {
             IDeathEvent cod = new CustomDeathEvent(MyPlayer, p, Translations.HexedCauseOfDeath);
             MyPlayer.InteractWith(p, new UnblockedInteraction(new FatalIntent(false, () => cod), this));
             cursedPlayers[p.PlayerId]?.Delete();
         });
-        cursedPlayers.Clear();
-        indicators.ForEach(i => i.Value.Delete());
-        indicators.Clear();
+        Finish();
+
+        void Finish()
+        {
+            cursedPlayers.Clear();
+            indicators.ForEach(i => i.Value.Delete());
+            indicators.Clear();
+        }
     }
 
 
