@@ -13,6 +13,7 @@ using Lotus.Extensions;
 using UnityEngine;
 using VentLib.Options.UI;
 using VentLib.Utilities;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
@@ -64,12 +65,12 @@ public class Survivor : CustomRole
         base.RegisterOptions(optionStream)
             .Tab(DefaultTabs.NeutralTab)
             .SubOption(sub => sub
-                .KeyName("Shield Duration", Translations.Options.ShieldDuration)
+                .KeyName("Vest Duration", Translations.Options.VestDuration)
                 .BindFloat(vestDuration.SetDuration)
                 .AddFloatRange(2.5f, 180f, 2.5f, 11, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
-                .KeyName("Shield Cooldown", Translations.Options.ShieldCooldown)
+                .KeyName("Vest Cooldown", Translations.Options.VestCooldown)
                 .BindFloat(vestCooldown.SetDuration)
                 .AddFloatRange(2.5f, 180f, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
@@ -88,16 +89,16 @@ public class Survivor : CustomRole
             .RoleColor(new Color(1f, 0.9f, 0.3f));
 
     [Localized(nameof(Survivor))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options
         {
-            [Localized(nameof(ShieldDuration))]
-            public static string ShieldDuration = "Shield Duration";
+            [Localized(nameof(VestDuration))]
+            public static string VestDuration = "Shield Duration";
 
-            [Localized(nameof(ShieldCooldown))]
-            public static string ShieldCooldown = "Shield Cooldown";
+            [Localized(nameof(VestCooldown))]
+            public static string VestCooldown = "Shield Cooldown";
 
             [Localized(nameof(TotalShields))]
             public static string TotalShields = "Number of Shields";

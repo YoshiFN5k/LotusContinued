@@ -13,4 +13,7 @@ public class RoleTranslations
 
     [Localized("CanVent")]
     public static string CanVent = "Can Vent";
+
+    [Localized(nameof(CanSabotage))]
+    public static string CanSabotage = "Can Sabotage";
 }

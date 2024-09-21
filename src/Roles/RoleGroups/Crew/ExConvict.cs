@@ -12,6 +12,7 @@ using Lotus.Options;
 using UnityEngine;
 using VentLib.Options.UI;
 using VentLib.Utilities;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -86,7 +87,7 @@ public class ExConvict : Crewmate
         base.Modify(roleModifier).RoleColor(new Color(0.43f, 0f, 0.2f)).RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     [Localized(nameof(ExConvict))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options

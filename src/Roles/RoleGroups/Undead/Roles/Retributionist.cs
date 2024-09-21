@@ -24,6 +24,7 @@ using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using Object = UnityEngine.Object;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Undead.Roles;
 
@@ -132,7 +133,7 @@ public class Retributionist : NeutralKillingBase
         base.Modify(roleModifier).RoleColor(new Color(0.73f, 0.66f, 0.69f));
 
     [Localized(nameof(Retributionist))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options

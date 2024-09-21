@@ -13,6 +13,7 @@ using VentLib.Logging;
 using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Optionals;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -90,7 +91,7 @@ public class Observer : Crewmate
                 () => sabotageImmunity && HasAllTasksComplete && SabotagePatch.CurrentSabotage != null && SabotagePatch.CurrentSabotage.SabotageType() is SabotageType.Lights);
 
     [Localized(nameof(Observer))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options

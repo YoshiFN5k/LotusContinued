@@ -14,6 +14,7 @@ using Lotus.Extensions;
 using Lotus.Factions;
 using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 

@@ -11,6 +11,7 @@ using Lotus.Factions.Interfaces;
 using Lotus.Factions.Neutrals;
 using UnityEngine;
 using VentLib.Options.UI;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
@@ -87,7 +88,7 @@ public class Hitman : NeutralKillingBase
     }
 
     [Localized(nameof(Hitman))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options

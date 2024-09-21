@@ -23,6 +23,7 @@ using VentLib.Logging;
 using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -133,7 +134,7 @@ public class Transporter : Crewmate
     }
 
     [Localized(nameof(Transporter))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options

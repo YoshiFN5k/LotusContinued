@@ -13,7 +13,8 @@ public class Madmate : Impostor
 {
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Can Sabotage")
+            .SubOption(sub => sub
+                .KeyName("Can Sabotage", RoleTranslations.CanSabotage)
                 .BindBool(b => canSabotage = b)
                 .AddOnOffValues()
                 .Build());
@@ -24,16 +25,4 @@ public class Madmate : Impostor
             .SpecialType(SpecialType.Madmate)
             .RoleColor(ModConstants.Palette.MadmateColor)
             .Faction(FactionInstances.Madmates);
-
-    [Localized(nameof(Madmate))]
-    public static class Translations
-    {
-        [Localized(ModConstants.Options)]
-        public static class Options
-        {
-            [Localized(nameof(CanSabotage))]
-            public static string CanSabotage = "Can Sabotage";
-        }
-    }
-
 }

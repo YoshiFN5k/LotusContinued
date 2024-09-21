@@ -27,6 +27,7 @@ using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using Lotus.API.Player;
 using Lotus.GameModes.Standard;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Undead.Roles;
 
@@ -150,7 +151,7 @@ public class Necromancer : UndeadRole
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     [Localized(nameof(Necromancer))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options

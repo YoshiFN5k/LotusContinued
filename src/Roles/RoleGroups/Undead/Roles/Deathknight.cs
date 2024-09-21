@@ -15,6 +15,7 @@ using Lotus.Options;
 using UnityEngine;
 using VentLib.Logging;
 using VentLib.Options.UI;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Undead.Roles;
 
@@ -96,7 +97,7 @@ public class Deathknight : UndeadRole
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     [Localized(nameof(Deathknight))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options

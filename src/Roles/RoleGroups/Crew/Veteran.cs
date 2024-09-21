@@ -17,6 +17,7 @@ using Lotus.Options;
 using UnityEngine;
 using VentLib.Options.UI;
 using VentLib.Utilities;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -116,7 +117,7 @@ public class Veteran : Crewmate
     }
 
     [Localized(nameof(Veteran))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options

@@ -22,6 +22,7 @@ using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
 using Lotus.API.Player;
 using Lotus.GameModes.Standard;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
@@ -127,7 +128,7 @@ public class Executioner : CustomRole
     }
 
     [Localized(nameof(Executioner))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options
