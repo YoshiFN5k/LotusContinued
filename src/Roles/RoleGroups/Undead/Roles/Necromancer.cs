@@ -129,11 +129,13 @@ public class Necromancer : UndeadRole
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Convert Cooldown")
+            .SubOption(sub => sub
+                .KeyName("Convert Cooldown", Translations.Options.ConvertCooldown)
                 .AddFloatRange(15f, 120f, 5f, 9, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(convertCooldown.SetDuration)
                 .Build())
-            .SubOption(sub => sub.Name("Immune to Partially Converted")
+            .SubOption(sub => sub
+                .KeyName("Immune to Partially Converted", Translations.Options.PartialConvertImmunity)
                 .AddOnOffValues()
                 .BindBool(b => immuneToPartialConverted = b)
                 .Build());
@@ -146,4 +148,18 @@ public class Necromancer : UndeadRole
             .CanVent(false)
             .OptionOverride(new IndirectKillCooldown(convertCooldown.Duration))
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
+
+    [Localized(nameof(Necromancer))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(ConvertCooldown))]
+            public static string ConvertCooldown = "Convert Cooldown";
+
+            [Localized(nameof(PartialConvertImmunity))]
+            public static string PartialConvertImmunity = "Immune to Partially Converted";
+        }
+    }
 }

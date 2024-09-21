@@ -135,11 +135,13 @@ public class Postman : Crewmate
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddTaskOverrideOptions(base.RegisterOptions(optionStream)
             .Tab(DefaultTabs.NeutralTab)
-            .SubOption(sub => sub.Name("Has Arrow To Targets")
+            .SubOption(sub => sub
+                .KeyName("Has Arrow To Targets", Translations.Options.ArrowsToTargets)
                 .AddOnOffValues()
                 .BindBool(b => hasArrowToTarget = b)
                 .Build())
-            .SubOption(sub => sub.Name("When Target Dies")
+            .SubOption(sub => sub
+                .KeyName("When Target Dies", Translations.Options.TargetDies)
                 .Value(v => v.Text("Deliver to Body").Value(0).Build())
                 .Value(v => v.Text("Reassign in Meeting").Value(1).Build())
                 .Value(v => v.Text("Reassign in Game").Value(2).Build())
@@ -150,4 +152,18 @@ public class Postman : Crewmate
         .RoleColor(new Color(0.6f, 0.6f, 0.6f))
         .SpecialType(SpecialType.Neutral)
         .Faction(FactionInstances.Neutral);
+
+    [Localized(nameof(Postman))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(ArrowsToTargets))]
+            public static string ArrowsToTargets = "Has Arrows to Targets";
+
+            [Localized(nameof(TargetDies))]
+            public static string TargetDies = "When Target Dies";
+        }
+    }
 }

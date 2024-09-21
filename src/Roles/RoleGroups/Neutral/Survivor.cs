@@ -64,16 +64,17 @@ public class Survivor : CustomRole
         base.RegisterOptions(optionStream)
             .Tab(DefaultTabs.NeutralTab)
             .SubOption(sub => sub
-                .Name("Vest Duration")
+                .KeyName("Shield Duration", Translations.Options.ShieldDuration)
                 .BindFloat(vestDuration.SetDuration)
                 .AddFloatRange(2.5f, 180f, 2.5f, 11, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
-                .Name("Vest Cooldown")
+                .KeyName("Shield Cooldown", Translations.Options.ShieldCooldown)
                 .BindFloat(vestCooldown.SetDuration)
                 .AddFloatRange(2.5f, 180f, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
-            .SubOption(sub => sub.Name("Vest Usages")
+            .SubOption(sub => sub
+                .KeyName("Number of Shields", Translations.Options.TotalShields)
                 .BindInt(i => vestUsages = i)
                 .Value(v => v.Value(-1).Text("∞").Color(ModConstants.Palette.InfinityColor).Build())
                 .AddIntRange(1, 60, 1)
@@ -85,4 +86,21 @@ public class Survivor : CustomRole
             .SpecialType(SpecialType.Neutral)
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
             .RoleColor(new Color(1f, 0.9f, 0.3f));
+
+    [Localized(nameof(Survivor))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(ShieldDuration))]
+            public static string ShieldDuration = "Shield Duration";
+
+            [Localized(nameof(ShieldCooldown))]
+            public static string ShieldCooldown = "Shield Cooldown";
+
+            [Localized(nameof(TotalShields))]
+            public static string TotalShields = "Number of Shields";
+        }
+    }
 }

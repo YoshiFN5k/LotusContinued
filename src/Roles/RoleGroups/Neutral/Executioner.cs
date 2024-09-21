@@ -92,15 +92,15 @@ public class Executioner : CustomRole
         base.RegisterOptions(optionStream)
             .Tab(DefaultTabs.NeutralTab)
             .SubOption(sub => sub
-                .Name("Can Target Impostors")
+                .KeyName("Can Target Impostors", Translations.Options.TargetImpostors)
                 .Bind(v => canTargetImpostors = (bool)v)
                 .AddOnOffValues(false).Build())
             .SubOption(sub => sub
-                .Name("Can Target Neutrals")
+                .KeyName("Can Target Neutrals", Translations.Options.TargetNeutrals)
                 .Bind(v => canTargetNeutrals = (bool)v)
                 .AddOnOffValues(false).Build())
             .SubOption(sub => sub
-                .Name("Role Change When Target Dies")
+                .KeyName("Role Change When Target Dies", Translations.Options.RoleChange)
                 .Bind(v => roleChangeWhenTargetDies = (int)v)
                 .Value(v => v.Text("Jester").Value(1).Color(new Color(0.93f, 0.38f, 0.65f)).Build())
                 .Value(v => v.Text("Opportunist").Value(2).Color(Color.green).Build())
@@ -124,5 +124,22 @@ public class Executioner : CustomRole
         Opportunist,
         SchrodingersCat,
         Crewmate
+    }
+
+    [Localized(nameof(Executioner))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(TargetImpostors))]
+            public static string TargetImpostors = "Can Target Impostors";
+
+            [Localized(nameof(TargetNeutrals))]
+            public static string TargetNeutrals = "Can Target Neutrals";
+
+            [Localized(nameof(RoleChange))]
+            public static string RoleChange = "Role Change When Target Dies";
+        }
     }
 }

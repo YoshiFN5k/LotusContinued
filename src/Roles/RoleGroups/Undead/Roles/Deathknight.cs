@@ -66,20 +66,24 @@ public class Deathknight : UndeadRole
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Can Become Necromancer")
+            .SubOption(sub => sub
+                .KeyName("Can Become Necromancer", Translations.Options.CanBecomeNecromancer)
                 .AddOnOffValues()
                 .BindBool(b => CanBecomeNecromancer = b)
                 .Build())
-            .SubOption(sub => sub.Name("Influence Cooldown")
+            .SubOption(sub => sub
+                .KeyName("Influence Cooldown", Translations.Options.InfluenceCooldown)
                 .AddFloatRange(5f, 120f, 2.5f, 7, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(influenceCooldown.SetDuration)
                 .Build())
-            .SubOption(sub => sub.Name("Influence Range")
+            .SubOption(sub => sub
+                .KeyName("Influence Range", Translations.Options.InfluenceRange)
                 .BindFloat(v => influenceRange = v)
                 .Value(v => v.Text("Kill Distance").Value(-1f).Build())
                 .AddFloatRange(1.5f, 3f, 0.1f, 4)
                 .Build())
-            .SubOption(sub => sub.Name("Influences Many")
+            .SubOption(sub => sub
+                .KeyName("Influences Many", Translations.Options.InfluenceMany)
                 .BindBool(b => multiInfluence = b)
                 .AddOnOffValues()
                 .Build());
@@ -90,4 +94,24 @@ public class Deathknight : UndeadRole
         base.Modify(roleModifier).RoleColor(new Color(0.34f, 0.34f, 0.39f))
             .RoleFlags(RoleFlag.TransformationRole)
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
+
+    [Localized(nameof(Deathknight))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(CanBecomeNecromancer))]
+            public static string CanBecomeNecromancer = "Can Become Necromancer";
+
+            [Localized(nameof(InfluenceCooldown))]
+            public static string InfluenceCooldown = "Influence Cooldown";
+
+            [Localized(nameof(InfluenceRange))]
+            public static string InfluenceRange = "Influence Range";
+
+            [Localized(nameof(InfluenceMany))]
+            public static string InfluenceMany = "Influence Many";
+        }
+    }
 }

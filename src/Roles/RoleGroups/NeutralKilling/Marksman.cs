@@ -49,11 +49,13 @@ public class Marksman : NeutralKillingBase
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddKillCooldownOptions(base.RegisterOptions(optionStream))
-            .SubOption(sub => sub.Name("Kills Before Distance Increase")
+            .SubOption(sub => sub
+                .KeyName("Kills Before Distance Increase", Translations.Options.KillsBeforeIncrease)
                 .AddIntRange(0, 5, 1, 2)
                 .BindInt(i => killsBeforeIncrease = i)
                 .Build())
-            .SubOption(sub => sub.Name("Starting Kill Distance")
+            .SubOption(sub => sub
+                .KeyName("Starting Kill Distance", Translations.Options.StartingKillDistance)
                 .Value(v => v.Text(GeneralOptionTranslations.GlobalText).Value(-1).Color(new Color(1f, 0.61f, 0.33f)).Build())
                 .AddIntRange(0, 3)
                 .BindInt(i => KillDistance = i)
@@ -81,4 +83,18 @@ public class Marksman : NeutralKillingBase
             .OptionOverride(new IndirectKillCooldown(KillCooldown))
             .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod(), () => !impostorVision)
             .OptionOverride(Override.KillDistance, () => KillDistance);
+
+    [Localized(nameof(Marksman))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(KillsBeforeIncrease))]
+            public static string KillsBeforeIncrease = "Kills Before Distance Increase";
+
+            [Localized(nameof(StartingKillDistance))]
+            public static string StartingKillDistance = "Starting Kill Distance";
+        }
+    }
 }

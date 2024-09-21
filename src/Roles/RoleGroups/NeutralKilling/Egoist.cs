@@ -60,7 +60,8 @@ public class Egoist : Shapeshifter
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .Tab(DefaultTabs.NeutralTab)
-            .SubOption(sub => AddShapeshiftOptions(sub.Name("Egoist is Shapeshifter")
+            .SubOption(sub => sub
+                .KeyName("IsShapeshifter", Translations.Options.IsShapeshifter)
                 .BindBool(b => egoistIsShapeshifter = b)
                 .ShowSubOptionPredicate(b => (bool)b)
                 .AddBoolean())
@@ -83,6 +84,17 @@ public class Egoist : Shapeshifter
         {
             if (Game.State is not (GameState.InLobby or GameState.InIntro)) return Relation.None;
             return other is ImpostorFaction ? Relation.FullAllies : Relation.None;
+        }
+    }
+
+    [Localized(nameof(Egoist))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(IsShapeshifter))]
+            public static string IsShapeshifter = "Egoist is a Shapeshifter";
         }
     }
 }

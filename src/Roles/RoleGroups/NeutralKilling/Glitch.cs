@@ -97,7 +97,7 @@ public class Glitch : NeutralKillingBase
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub
-                .Name("Hacking Duration")
+                .KeyName("Hacking Duration", Translations.Options.HackingDuration)
                 .BindFloat(v => roleblockDuration = v)
                 .Value(v => v.Text("Until Meeting").Value(-1f).Build())
                 .AddFloatRange(5, 120, 5, suffix: GeneralOptionTranslations.SecondsSuffix)
@@ -106,4 +106,15 @@ public class Glitch : NeutralKillingBase
     protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier)
         .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
         .RoleColor(Color.green);
+
+    [Localized(nameof(Glitch))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(HackingDuration))]
+            public static string HackingDuration = "Hacking Duration";
+        }
+    }
 }

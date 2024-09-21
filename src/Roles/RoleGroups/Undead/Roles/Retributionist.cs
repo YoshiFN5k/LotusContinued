@@ -110,15 +110,18 @@ public class Retributionist : NeutralKillingBase
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Revenge Time Limit")
+            .SubOption(sub => sub
+                .KeyName("Revenge Time Limit", Translations.Options.RevengeTimeLimit)
                 .AddFloatRange(5, 60, 2.5f, 2, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(revengeDuration.SetDuration)
                 .Build())
-            .SubOption(sub => sub.Name("Invisible During Revenge")
+            .SubOption(sub => sub
+                .KeyName("Invisible During Revenge", Translations.Options.InvisibleRevenge)
                 .AddOnOffValues(false)
                 .BindBool(b => invisibleRevenge = b)
                 .Build())
-            .SubOption(sub => sub.Name("Number of Revenges")
+            .SubOption(sub => sub
+                .KeyName("Number of Revenges", Translations.Options.TotalRevengeAmount)
                 .Value(v => v.Text("∞").Color(ModConstants.Palette.InfinityColor).Value(-1).Build())
                 .AddIntRange(1, 20, 1, 0)
                 .BindInt(i => retributionLimit = i)
@@ -127,4 +130,21 @@ public class Retributionist : NeutralKillingBase
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier).RoleColor(new Color(0.73f, 0.66f, 0.69f));
+
+    [Localized(nameof(Retributionist))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(RevengeTimeLimit))]
+            public static string RevengeTimeLimit = "Revenge Time Limit";
+
+            [Localized(nameof(InvisibleRevenge))]
+            public static string InvisibleRevenge = "Invisible During Revenge";
+
+            [Localized(nameof(TotalRevengeAmount))]
+            public static string TotalRevengeAmount = "Number of Revenges";
+        }
+    }
 }

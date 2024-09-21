@@ -48,19 +48,19 @@ public class Hitman : NeutralKillingBase
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub
-                .Name("Wins with Absolute Winners")
+                .KeyName("Wins with Absolute Winners", Translations.Options.WinWithAbsolutes)
                 .Value(v => v.Text("None").Color(Color.red).Value(0).Build())
                 .Value(v => v.Text("All").Color(Color.cyan).Value(1).Build())
                 .Value(v => v.Text("Individual").Color(new Color(0.45f, 0.31f, 0.72f)).Value(2).Build())
                 .ShowSubOptionPredicate(o => (int)o == 2)
                 .SubOption(sub2 => sub2
-                    .Name("Executioner")
+                    .KeyName("Executioner", Translations.Options.Executioner)
                     .Color(new Color(0.55f, 0.17f, 0.33f))
                     .AddOnOffValues()
                     .BindBool(RoleUtils.BindOnOffListSetting(AdditionalWinRoles, "Executioner"))
                     .Build())
                 .SubOption(sub2 => sub2
-                    .Name("Jester")
+                    .KeyName("Jester", Translations.Options.Jester)
                     .Color(new Color(0.93f, 0.38f, 0.65f))
                     .AddOnOffValues()
                     .BindBool(RoleUtils.BindOnOffListSetting(AdditionalWinRoles, "Jester"))
@@ -83,6 +83,23 @@ public class Hitman : NeutralKillingBase
         public override Relation RelationshipOther(IFaction other)
         {
             return Relation.SharedWinners;
+        }
+    }
+
+    [Localized(nameof(Hitman))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(WinWithAbsolutes))]
+            public static string WinWithAbsolutes = "Wins With Absolute Winners";
+
+            [Localized(nameof(Executioner))]
+            public static string Executioner = "Executioner";
+
+            [Localized(nameof(Jester))]
+            public static string Jester = "Jester";
         }
     }
 }
