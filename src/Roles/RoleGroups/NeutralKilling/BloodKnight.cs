@@ -49,20 +49,18 @@ public class BloodKnight : NeutralKillingBase
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
-         AddKillCooldownOptions(base.RegisterOptions(optionStream))
-             .Tab(DefaultTabs.NeutralTab)
-             .SubOption(opt => opt
-                .Name("Protection Duration")
-                .BindFloat(v => protectionAmt = v)
-                .AddFloatRange(2.5f, 180, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
-                .Build())
+        AddKillCooldownOptions(base.RegisterOptions(optionStream))
+        .Tab(DefaultTabs.NeutralTab)
+        .SubOption(opt => opt
+            .KeyName("Protection Duration", Translations.Options.ProtectDuration)
+            .BindFloat(v => protectionAmt = v)
+            .AddFloatRange(2.5f, 180, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
+            .Build())
             .SubOption(opt => opt
                 .KeyName("Can Vent", RoleTranslations.CanVent)
                 .BindBool(v => canVent = v)
                 .AddOnOffValues()
                 .Build());
-
-
 
     protected override RoleModifier Modify(RoleModifier roleModifier)
     {
@@ -72,4 +70,14 @@ public class BloodKnight : NeutralKillingBase
             .CanVent(canVent);
     }
 
+    [Localized(nameof(BloodKnight))]
+    public static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(ProtectDuration))]
+            public static string ProtectDuration = "Protect Duration";
+        }
+    }
 }
