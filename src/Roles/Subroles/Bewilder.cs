@@ -54,16 +54,13 @@ public class Bewilder : Subrole
     [Localized(nameof(Bewilder))]
     public static class Translations
     {
-        [Localized(nameof(BewilderedStatus))]
-        public static string BewilderedStatus = "Bewildered";
-
-        [Localized(nameof(BewilderedDescription))]
-        public static string BewilderedDescription = "The Bewildered status reduces your vision by a specific multiplier.";
+        [Localized(nameof(BewilderedDescription))] public static string BewilderedDescription = "The Bewildered status reduces your vision by a specific multiplier.";
+        [Localized(nameof(BewilderedStatus))] public static string BewilderedStatus = "Bewildered";
 
         [Localized(ModConstants.Options)]
         public static class Options
         {
-            public static string VisionMultiplier = "Vision Multiplier";
+            [Localized(nameof(VisionMultiplier))] public static string VisionMultiplier = "Vision Multiplier";
         }
     }
 }
