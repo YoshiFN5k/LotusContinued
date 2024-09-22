@@ -25,10 +25,10 @@ using Lotus.Options.Roles;
 
 namespace Lotus.Roles.Subroles;
 
-public class Bloodlust : Subrole
+public class Rogue : Subrole
 {
     /// <summary>
-    /// A list of roles that Bloodlust is not compatiable with. Add your role to this list to make it not be assigned with your role.
+    /// A list of roles that Rogue is not compatiable with. Add your role to this list to make it not be assigned with your role.
     /// </summary>
     public static readonly List<Type> IncompatibleRoles = new()
     {
@@ -107,7 +107,7 @@ public class Bloodlust : Subrole
 
     protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier).RoleColor(new Color(0.41f, 0.1f, 0.18f));
 
-    [Localized(nameof(Bloodlust))]
+    [Localized(nameof(Rogue))]
     public static class Translations
     {
         [Localized(ModConstants.Options)]

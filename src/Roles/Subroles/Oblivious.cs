@@ -24,7 +24,7 @@ public class Oblivious : Subrole
     /// </summary>
     public static readonly List<Type> IncompatibleRoles = new()
     {
-        typeof(Altruist)
+        typeof(Altruist),
     };
     public override string Identifier() => "⁈";
 

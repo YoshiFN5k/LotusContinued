@@ -43,7 +43,7 @@ namespace Lotus.Roles.RoleGroups.Crew;
 public class Charmer : Crewmate
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Charmer));
-    public static HashSet<Type> CharmerBannedModifiers = new() { typeof(Bloodlust) };
+    public static HashSet<Type> CharmerBannedModifiers = new() { typeof(Rogue) };
     public override HashSet<Type> BannedModifiers() => CharmerBannedModifiers;
 
     private static IAccumulativeStatistic<int> _charmedPlayers = Statistic<int>.CreateAccumulative($"Roles.{nameof(Charmer)}.CharmedPlayers", () => Translations.CharmedStatistic);

@@ -208,13 +208,13 @@ public class StandardRoles : RoleHolder
     {
         public Bait Bait = new();
         public Bewilder Bewilder = new();
-        public Bloodlust Bloodlust = new();
         public Deadly Deadly = new();
         public Diseased Diseased = new();
         public Flash Flash = new();
         public LastResort LastResort = new();
         public Nimble Nimble = new();
         public Oblivious Oblivious = new();
+        public Rogue Rogue = new();
         public Romantic Romantic = new();
         public Sleuth Sleuth = new();
         public TieBreaker TieBreaker = new();

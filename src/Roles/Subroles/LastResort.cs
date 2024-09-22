@@ -18,6 +18,7 @@ using UnityEngine;
 using Lotus.API.Odyssey;
 using Lotus.GUI.Name.Holders;
 using System.Linq;
+using VentLib.Utilities;
 
 namespace Lotus.Roles.Subroles;
 
@@ -56,7 +57,7 @@ public class LastResort : Subrole
         if (voted.Get().PlayerId != MyPlayer.PlayerId) return;
         handle.Cancel();
         hasRevealed = true;
-        ChatHandler.Of(Translations.RevealText.Formatted(MyPlayer.name, RoleName + "/" + MyPlayer.PrimaryRole().RoleName)).LeftAlign().Send();
+        ChatHandler.Of(Translations.RevealText.Formatted(MyPlayer.name, RoleName + "/" + MyPlayer.PrimaryRole().RoleName), RoleColor.Colorize(RoleName)).LeftAlign().Send();
         MyPlayer.NameModel().GetComponentHolder<RoleHolder>().Components().ForEach(component => component.SetViewerSupplier(() => PlayerControl.AllPlayerControls.ToArray().ToList()));
     }
 
@@ -77,7 +78,7 @@ public class LastResort : Subrole
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddRestrictToCrew(base.RegisterOptions(optionStream))
-            .SubOption(sub => sub.KeyName("Restrict to Compatible Roles", Bloodlust.Translations.Options.RestrictToCompatbileRoles)
+            .SubOption(sub => sub.KeyName("Restrict to Compatible Roles", Rogue.Translations.Options.RestrictToCompatbileRoles)
                 .BindBool(b => restrictedToCompatibleRoles = b)
                 .AddOnOffValues()
                 .Build())
