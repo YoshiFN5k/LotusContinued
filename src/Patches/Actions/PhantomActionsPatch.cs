@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Lotus.API;
 using Lotus.API.Player;
 using Lotus.Extensions;
 using Lotus.Factions;
@@ -11,6 +12,7 @@ using VentLib.Networking.RPC;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Harmony.Attributes;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 
 namespace Lotus.Patches.Actions;
 
@@ -23,8 +25,28 @@ namespace Lotus.Patches.Actions;
 public static class PhantomActionsPatch
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(PhantomActionsPatch));
+
+    [QuickPrefix(typeof(PhantomRole), nameof(PhantomRole.UseAbility))]
+    public static bool UseAbility(PhantomRole __instance)
+    {
+        if (!AmongUsClient.Instance.AmHost) return true;
+        if (!__instance.Player.IsAlive() || !__instance.Player.AmOwner || !__instance.Player.moveable || Minigame.Instance || __instance.IsCoolingDown || __instance.fading) return false;
+        Func<RoleEffectAnimation, bool> roleEffectAnimation = x => x.effectType == RoleEffectAnimation.EffectType.Vanish_Charge;
+        if (__instance.Player.currentRoleAnimations.Find(roleEffectAnimation) || __instance.Player.walkingToVent || __instance.Player.inMovingPlat) return false;
+        if (__instance.isInvisible)
+        {
+            __instance.MakePlayerVisible(true, true);
+            return false;
+        }
+        DestroyableSingleton<HudManager>.Instance.AbilityButton.SetSecondImage(__instance.Ability);
+        DestroyableSingleton<HudManager>.Instance.AbilityButton.OverrideText(DestroyableSingleton<TranslationController>.Instance.GetString(StringNames.PhantomAbilityUndo,
+            new Il2CppReferenceArray<Il2CppSystem.Object>(0)));
+        __instance.Player.CmdCheckVanish(AUSettings.PhantomDuration());
+        return false;
+    }
+
     [QuickPostfix(typeof(PlayerControl), nameof(PlayerControl.SetRoleInvisibility))]
-    public static void Postifx(PlayerControl __instance, bool isActive)
+    public static void OnChangeVisibility(PlayerControl __instance, bool isActive)
     {
         if (!AmongUsClient.Instance.AmHost) return;
         log.Debug($"{__instance.name} {(isActive ? "is going invisible as Phantom." : "is appearing as Phantom.")}");
