@@ -9,6 +9,7 @@ using Lotus.Extensions;
 using UnityEngine;
 using VentLib.Options.UI;
 using VentLib.Utilities;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 
@@ -49,23 +50,13 @@ public class BloodKnight : NeutralKillingBase
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
-<<<<<<< HEAD
-        AddKillCooldownOptions(base.RegisterOptions(optionStream))
-        .Tab(DefaultTabs.NeutralTab)
-        .SubOption(opt => opt
-            .KeyName("Protection Duration", Translations.Options.ProtectDuration)
-            .BindFloat(v => protectionAmt = v)
-            .AddFloatRange(2.5f, 180, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
-            .Build())
-=======
          AddKillCooldownOptions(base.RegisterOptions(optionStream), name: RoleTranslations.KillCooldown)
              .Tab(DefaultTabs.NeutralTab)
              .SubOption(opt => opt
-                .Name("Protection Duration")
+                .KeyName("Protection Duration", Translations.Options.ProtectDuration)
                 .BindFloat(v => protectionAmt = v)
                 .AddFloatRange(2.5f, 180, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
->>>>>>> b8ad61f59b0e0fb8673dd6b12f4faae33626ba20
             .SubOption(opt => opt
                 .KeyName("Can Vent", RoleTranslations.CanVent)
                 .BindBool(v => canVent = v)
