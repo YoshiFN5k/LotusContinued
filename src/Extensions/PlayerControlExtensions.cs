@@ -251,7 +251,11 @@ public static class PlayerControlExtensions
 
         MurderPatches.Lock(player.PlayerId);
 
-        deathEvent ??= new DeathEvent(target, player);
+        deathEvent ??= Game.MatchData.GameHistory.GetCauseOfDeath(target.PlayerId)
+            .OrElseGet(() => player.PlayerId == target.PlayerId
+                ? new SuicideEvent(player)
+                : new DeathEvent(target, player)
+            );
 
         ActionHandle ignored = ActionHandle.NoInit();
         Optional<FrozenPlayer> fp = Optional<FrozenPlayer>.Of(Game.MatchData.GetFrozenPlayer(player));

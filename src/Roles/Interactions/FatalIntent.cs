@@ -34,12 +34,12 @@ public class FatalIntent : IFatalIntent
         Optional<IDeathEvent> deathEvent = CauseOfDeath();
         initiator.PrimaryRole().SyncOptions();
 
-        KillTarget(initiator, target);
         Game.MatchData.GameHistory.SetCauseOfDeath(target.PlayerId,
         deathEvent.OrElse(initiator.PlayerId == target.PlayerId
             ? new SuicideEvent(initiator)
             : new DeathEvent(target, initiator)
         ));
+        KillTarget(initiator, target);
         Game.MatchData.RegenerateFrozenPlayers(target);
 
         if (!target.IsAlive()) return;
