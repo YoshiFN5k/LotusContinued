@@ -46,7 +46,7 @@ public class RoleCommand
         else
         {
             string roleName = context.Args.Join(delimiter: " ").ToLower().Trim().Replace("[", "").Replace("]", "").ToLowerInvariant();
-            IEnumerable<CustomRole> allFoundRoles = IRoleManager.Current.AllCustomRoles().Where(r => r.RoleName.ToLowerInvariant().Contains(roleName));
+            IEnumerable<CustomRole> allFoundRoles = IRoleManager.Current.AllCustomRoles().Where(r => r.RoleName.ToLowerInvariant().Contains(roleName) || r.Aliases.Contains(roleName));
             if (allFoundRoles.Count() > 5) SendSpecial(source, AbortSearch);
             else if (allFoundRoles.Count() > 0) allFoundRoles.ForEach(r => ShowRole(source, r));
             else SendSpecial(source, NoRoles);
