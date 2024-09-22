@@ -37,10 +37,10 @@ public class Creeper : Shapeshifter
     public override bool TryKill(PlayerControl target) => canKillNormally && base.TryKill(target);
 
     [RoleAction(LotusActionType.OnPet)]
-    [RoleAction(LotusActionType.Shapeshift)]
+    [RoleAction(LotusActionType.Unshapeshift)]
     private void CreeperExplode(ActionHandle handle)
     {
-        handle.Cancel();
+        // handle.Cancel();
         if (gracePeriod.NotReady()) return;
         RoleUtils.GetPlayersWithinDistance(MyPlayer, explosionRadius).ForEach(p =>
         {
@@ -75,7 +75,7 @@ public class Creeper : Shapeshifter
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
-            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet | RoleAbilityFlag.UsesUnshiftTrigger);
 
     [Localized(nameof(Creeper))]
     internal static class CreeperTranslations

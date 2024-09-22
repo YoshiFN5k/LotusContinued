@@ -49,7 +49,7 @@ public static class ReverseEngineeredRPC
 
     public static IEnumerator UnshfitButtonTrigger(PlayerControl p)
     {
-        if (!p.PrimaryRole().RoleAbilityFlags.HasFlag(Roles.RoleAbilityFlag.UsesUnshiftTrigger)) yield return null;
+        if (!p.PrimaryRole().RoleAbilityFlags.HasFlag(Roles.RoleAbilityFlag.UsesUnshiftTrigger)) yield break;
         PlayerControl target = Players.GetAlivePlayers().Where(t => t.PlayerId != p.PlayerId).ToList().GetRandom();
         p.RpcRejectShapeshift();
         if (p.IsHost()) p.Shapeshift(target, false);
@@ -57,7 +57,7 @@ public static class ReverseEngineeredRPC
 
         yield return new WaitForSeconds(NetUtils.DeriveDelay(0.05f));
         RpcChangeSkin(p, p.Data.DefaultOutfit, p.GetClientId());
-        // update name for player
+
         yield return new WaitForSeconds(NetUtils.DeriveDelay(0.05f));
         INameModel nameModel = p.NameModel();
         nameModel.Render(force: true);
