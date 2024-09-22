@@ -69,7 +69,8 @@ public class Medium : Crewmate
     private void RelayMessagesToMedium(PlayerControl chatter, string message)
     {
         if (!connectionEstablished || chatter.PlayerId != reportedPlayer) return;
-        if (string.Equals(message, YesAnswer, StringComparison.InvariantCultureIgnoreCase) || string.Equals(message, NoAnswer, StringComparison.InvariantCultureIgnoreCase))
+        message = message.ToLower().Trim();
+        if (string.Equals(message, YesAnswer) || string.Equals(message, NoAnswer))
             ChatHandler.Of(message, chatter.name).Send(MyPlayer);
     }
 

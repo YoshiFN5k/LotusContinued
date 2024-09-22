@@ -68,7 +68,7 @@ public abstract class AbstractBaseRole
         {
             if (RoleFlags.HasFlag(RoleFlag.DoNotTranslate)) return Array.Empty<string>();
             string aliases = Localizer.Translate($"Roles.{EnglishRoleName.RemoveHtmlTags()}.Aliases", "", true, DeclaringAssembly, TranslationCreationOption.NothingIfNull);
-            return aliases == "" ? Array.Empty<string>() : aliases.ToLower().Split(",", StringSplitOptions.TrimEntries);
+            return aliases == "" ? Array.Empty<string>() : aliases.Split(",", StringSplitOptions.TrimEntries).Select(a => a.ToLowerInvariant());
         }
     }
     public string? OverridenRoleName;
