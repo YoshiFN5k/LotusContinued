@@ -100,7 +100,7 @@ public class Werewolf : NeutralKillingBase
     }
 
     [Localized(nameof(Werewolf))]
-    internal static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options

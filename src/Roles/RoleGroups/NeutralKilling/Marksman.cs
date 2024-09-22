@@ -67,12 +67,12 @@ public class Marksman : NeutralKillingBase
                 .AddOnOffValues()
                 .Build())
             .SubOption(sub => sub
-                .Name("Can Sabotage")
+                .KeyName("Can Sabotage", RoleTranslations.CanSabotage)
                 .BindBool(v => canSabotage = v)
                 .AddOnOffValues()
                 .Build())
             .SubOption(sub => sub
-                .Name("Impostor Vision")
+                .KeyName("Impostor Vision", RoleTranslations.ImpostorVision)
                 .BindBool(v => impostorVision = v)
                 .AddOnOffValues()
                 .Build());

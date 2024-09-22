@@ -49,7 +49,7 @@ public class BloodKnight : NeutralKillingBase
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
-         AddKillCooldownOptions(base.RegisterOptions(optionStream))
+         AddKillCooldownOptions(base.RegisterOptions(optionStream), name: RoleTranslations.KillCooldown)
              .Tab(DefaultTabs.NeutralTab)
              .SubOption(opt => opt
                 .Name("Protection Duration")
