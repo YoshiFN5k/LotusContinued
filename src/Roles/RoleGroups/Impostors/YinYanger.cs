@@ -98,7 +98,7 @@ public class YinYanger : Vanilla.Impostor
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddKillCooldownOptions(base.RegisterOptions(optionStream),
-            key: "Yin Yang Cooldown", name: Localizer.Translate($"Roles.{nameof(YinYanger)}.YinYangCooldown", "Yin Yang Cooldown"));
+            key: "Yin Yang Cooldown", name: Localizer.Translate($"Roles.{nameof(YinYanger)}.Options.YinYangCooldown", "Yin Yang Cooldown"));
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
