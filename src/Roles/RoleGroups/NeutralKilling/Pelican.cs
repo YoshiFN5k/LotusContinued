@@ -195,7 +195,7 @@ public class Pelican : NeutralKillingBase
 
     public override List<Statistic> Statistics() => new() { _gulpedPlayerStat };
 
-    private static class Translations
+    public static class Translations
     {
         [Localized(nameof(GulpedStatistic))]
         public static string GulpedStatistic = "Players Gulped";

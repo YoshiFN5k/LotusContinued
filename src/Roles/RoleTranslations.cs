@@ -5,15 +5,10 @@ namespace Lotus.Roles;
 [Localized("Options.Roles")]
 public class RoleTranslations
 {
-    [Localized("Maximum")]
-    public static string MaximumText = "Maximum";
-
-    [Localized("SubsequentChance")]
-    public static string SubsequentChanceText = "Subsequent Chance";
-
-    [Localized("CanVent")]
-    public static string CanVent = "Can Vent";
-
-    [Localized(nameof(CanSabotage))]
-    public static string CanSabotage = "Can Sabotage";
+    [Localized("SubsequentChance")] public static string SubsequentChanceText = "Subsequent Chance";
+    [Localized("ImpostorVision")] public static string ImpostorVision = "Impostor Vision";
+    [Localized("KillCooldown")] public static string KillCooldown = "Kill Cooldown";
+    [Localized("CanSabotage")] public static string CanSabotage = "Can Sabotage";
+    [Localized("Maximum")] public static string MaximumText = "Maximum";
+    [Localized("CanVent")] public static string CanVent = "Can Vent";
 }

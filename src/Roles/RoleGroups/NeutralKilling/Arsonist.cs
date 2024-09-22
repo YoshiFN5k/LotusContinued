@@ -135,7 +135,7 @@ public class Arsonist : NeutralKillingBase
             .RoleAbilityFlags(RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.CannotVent);
 
     [Localized(nameof(Arsonist))]
-    private static class Translations
+    public static class Translations
     {
         [Localized(nameof(IncineratedDeathName))]
         public static string IncineratedDeathName = "Incinerated";

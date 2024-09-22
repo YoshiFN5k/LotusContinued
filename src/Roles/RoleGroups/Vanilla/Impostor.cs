@@ -58,10 +58,10 @@ public class Impostor : CustomRole, ISabotagerRole
         return result is InteractionResult.Proceed;
     }
 
-    protected GameOptionBuilder AddKillCooldownOptions(GameOptionBuilder optionBuilder, string key = "Kill Cooldown", string name = "Kill Cooldown", int defaultIndex = 0)
+    protected GameOptionBuilder AddKillCooldownOptions(GameOptionBuilder optionBuilder, string key = "Kill Cooldown", string? name = null, int defaultIndex = 0)
     {
         return optionBuilder.SubOption(sub => sub
-            .KeyName(key, name)
+            .KeyName(key, name ?? RoleTranslations.KillCooldown)
             .Value(v => v.Text(GeneralOptionTranslations.GlobalText).Color(new Color(1f, 0.61f, 0.33f)).Value(DefaultFloatValue).Build())
             .AddFloatRange(0, 120, 2.5f, defaultIndex, GeneralOptionTranslations.SecondsSuffix)
             .BindFloat(f => KillCooldown = f)
