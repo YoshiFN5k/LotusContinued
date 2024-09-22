@@ -102,7 +102,7 @@ public class Copycat : CustomRole
         role = MyPlayer.PrimaryRole();
         role.RoleColor = RoleColor;
 
-        role.OverridenRoleName = Translations.CatFactionChangeName.Formatted(role.RoleName);
+        role.OverridenRoleName = Translations.CopyCatFactionChangeName.Formatted(role.RoleName);
         RoleComponent roleComponent = MyPlayer.NameModel().GCH<RoleHolder>().Last();
         roleComponent.SetMainText(new LiveString(role.RoleName, RoleColor));
         roleComponent.AddViewer(attacker);
@@ -151,15 +151,14 @@ public class Copycat : CustomRole
     [Localized(nameof(Copycat))]
     public static class Translations
     {
-        [Localized(nameof(CatFactionChangeName))]
-        public static string CatFactionChangeName = "{0}cat";
+        [Localized(nameof(CopyCatFactionChangeName))]
+        public static string CopyCatFactionChangeName = "{0}cat";
 
         [Localized(ModConstants.Options)]
         public static class Options
         {
-            public static string CopyAttackersRole = "Copy Attacker's Role";
-            public static string CopyRoleProgress = "Copy Role's Progress";
-            public static string KillerKnowsCopycat = "Killer Knows Copycat::0";
+            [Localized(nameof(KillerKnowsCopycat))] public static string KillerKnowsCopycat = "Killer Knows Copycat::0";
+            [Localized(nameof(CopyRoleProgress))] public static string CopyRoleProgress = "Copy Role's Progress";
         }
     }
 }
