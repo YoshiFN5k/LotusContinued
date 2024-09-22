@@ -13,13 +13,18 @@ using Lotus.Roles.Subroles;
 using VentLib.Commands;
 using VentLib.Commands.Attributes;
 using VentLib.Localization;
+using VentLib.Localization.Attributes;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 
 namespace Lotus.Chat.Commands.Help;
 
+
+[Localized("Commands.Role")]
 public class RoleCommand
 {
+    [Localized(nameof(AbortSearch))] public static string AbortSearch = "Search aborted. More than 5 roles were found with your search. Please be more specific.";
+    [Localized(nameof(NoRoles))] public static string NoRoles = "No roles for this gamemode matched your search.\nDid you accidentally insert a character?";
 
     [Command("mod", "modifier", "mods")]
     public static void Modifiers(PlayerControl source)
@@ -41,12 +46,10 @@ public class RoleCommand
         else
         {
             string roleName = context.Args.Join(delimiter: " ").ToLower().Trim().Replace("[", "").Replace("]", "").ToLowerInvariant();
-            // CustomRole? roleDefinition = IRoleManager.Current.AllCustomRoles().FirstOrDefault(r => r.RoleName.ToLowerInvariant().Contains(roleName));
-            // if (roleDefinition != null) ShowRole(source, roleDefinition);
             IEnumerable<CustomRole> allFoundRoles = IRoleManager.Current.AllCustomRoles().Where(r => r.RoleName.ToLowerInvariant().Contains(roleName));
-            if (allFoundRoles.Count() > 5) SendSpecial(source, "Search aborted. More than 5 roles were found with your search. Please be more specific.");
+            if (allFoundRoles.Count() > 5) SendSpecial(source, AbortSearch);
             else if (allFoundRoles.Count() > 0) allFoundRoles.ForEach(r => ShowRole(source, r));
-            else SendSpecial(source, "No roles for this gamemode matched your search.\nDid you accidentally insert a character?");
+            else SendSpecial(source, NoRoles);
         }
     }
 
