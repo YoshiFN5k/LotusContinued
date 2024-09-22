@@ -52,7 +52,7 @@ public class Bewilder : Subrole
 
 
     [Localized(nameof(Bewilder))]
-    private static class Translations
+    public static class Translations
     {
         [Localized(nameof(BewilderedStatus))]
         public static string BewilderedStatus = "Bewildered";
@@ -66,5 +66,4 @@ public class Bewilder : Subrole
             public static string VisionMultiplier = "Vision Multiplier";
         }
     }
-
 }

@@ -14,7 +14,6 @@ using VentLib.Utilities;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 
-[Localized("Roles.Werewolf")]
 public class Werewolf : NeutralKillingBase
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Werewolf));
@@ -28,13 +27,10 @@ public class Werewolf : NeutralKillingBase
     [UIComponent(UI.Cooldown)]
     private Cooldown rampageCooldown;
 
-    [Localized("Rampage")]
-    private string rampagingString = "RAMPAGING";
-
     protected override void PostSetup()
     {
         base.PostSetup();
-        MyPlayer.NameModel().GetComponentHolder<CooldownHolder>()[1].SetPrefix(RoleColor.Colorize(rampagingString + " "));
+        MyPlayer.NameModel().GetComponentHolder<CooldownHolder>()[1].SetPrefix(RoleColor.Colorize(Translations.Rampage + " "));
     }
 
     [RoleAction(LotusActionType.Attack)]
@@ -102,6 +98,8 @@ public class Werewolf : NeutralKillingBase
     [Localized(nameof(Werewolf))]
     public static class Translations
     {
+        [Localized(nameof(Rampage))] public static string Rampage = "RAMPAGING";
+
         [Localized(ModConstants.Options)]
         public static class Options
         {

@@ -105,7 +105,8 @@ public class Medium : Crewmate
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier).RoleColor("#A680FF");
 
-    internal static class Translations
+    [Localized(nameof(Medium))]
+    public static class Translations
     {
         [Localized(nameof(MediumTitle))]
         public static string MediumTitle = "Meditation";

@@ -149,7 +149,7 @@ public class Copycat : CustomRole
             .OptionOverride(Override.ShapeshiftCooldown, 30f);
 
     [Localized(nameof(Copycat))]
-    private static class Translations
+    public static class Translations
     {
         [Localized(nameof(CatFactionChangeName))]
         public static string CatFactionChangeName = "{0}cat";
