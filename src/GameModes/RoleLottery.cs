@@ -48,21 +48,17 @@ public class RoleLottery : IEnumerator<CustomRole>, IEnumerable<CustomRole>
             for (int i = 0; i < role.Count - 1; i++) AddRole(role, true);
         }
 
-        if (chance >= 100)
-        {
-            Tickets.Add(new Ticket { Id = id, Batch = batch, RoleId = roleId });
-        }
+        if (chance >= 100) Finish();
         else
         {
             if (rng.Next(0, 100) > chance) return;
-            Tickets.Add(new Ticket { Id = id, Batch = batch, RoleId = roleId });
+            Finish();
         }
-
-        // // Add tickets for the new role first
-        // for (int i = 0; i < chance; i++) Tickets.Add(new Ticket { Id = id, Batch = batch, RoleId = roleId });
-
-        // // Add tickets for the new role second
-        // for (int i = 0; i < 100 - chance; i++) Tickets.Add(new Ticket { Id = 0, Batch = batch, RoleId = roleId });
+        void Finish()
+        {
+            if (!role.RoleFlags.HasFlag(RoleFlag.RemoveRoleMaximum)) Tickets.Add(new Ticket { Id = id, Batch = batch, RoleId = roleId });
+            else for (int i = 0; i < ModConstants.MaxPlayers - 1; i++) Tickets.Add(new Ticket { Id = id, Batch = batch, RoleId = roleId });
+        }
     }
 
 
