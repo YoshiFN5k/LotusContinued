@@ -4,6 +4,7 @@ using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.Extensions;
 using Lotus.GUI.Name.Interfaces;
+using Lotus.Patches.Actions;
 using System.Collections;
 using System.IO;
 using System.Linq;
@@ -52,13 +53,21 @@ public static class ReverseEngineeredRPC
         if (!p.PrimaryRole().RoleAbilityFlags.HasFlag(Roles.RoleAbilityFlag.UsesUnshiftTrigger)) yield break;
         PlayerControl target = Players.GetAlivePlayers().Where(t => t.PlayerId != p.PlayerId).ToList().GetRandom();
         p.RpcRejectShapeshift();
-        if (p.IsHost()) p.Shapeshift(target, false);
-        else RpcV3.Immediate(p.NetId, (byte)RpcCalls.Shapeshift).Write(target).Write(false).Send();
+        // if (p.IsHost()) p.Shapeshift(target, false);
+        // else RpcV3.Immediate(p.NetId, (byte)RpcCalls.Shapeshift).Write(target).Write(false).Send();
 
-        yield return new WaitForSeconds(NetUtils.DeriveDelay(0.05f));
+        // yield return new WaitForSeconds(NetUtils.DeriveDelay(0.05f));
+        // RpcChangeSkin(p, p.Data.DefaultOutfit, p.GetClientId());
+
+        // yield return new WaitForSeconds(NetUtils.DeriveDelay(0.05f));
+        // INameModel nameModel = p.NameModel();
+        // nameModel.Render(force: true);
+        p.CRpcShapeshift(target, false);
+        yield return new WaitForSeconds(NetUtils.DeriveDelay(0.1f));
         RpcChangeSkin(p, p.Data.DefaultOutfit, p.GetClientId());
 
-        yield return new WaitForSeconds(NetUtils.DeriveDelay(0.05f));
+        yield return new WaitForSeconds(NetUtils.DeriveDelay(0.1f));
+        ShapeshiftFixPatch._shapeshifted.Remove(p.PlayerId);
         INameModel nameModel = p.NameModel();
         nameModel.Render(force: true);
     }

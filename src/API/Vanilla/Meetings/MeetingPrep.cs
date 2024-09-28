@@ -13,6 +13,8 @@ using VentLib.Utilities.Optionals;
 using Lotus.GameModes.Standard;
 using Lotus.Options;
 using HarmonyLib;
+using Lotus.Extensions;
+using Lotus.RPC;
 
 namespace Lotus.API.Vanilla.Meetings;
 
@@ -82,6 +84,10 @@ public class MeetingPrep
             catch
             {
                 // ignored. just so a meeting isn't forcefully stopped
+            }
+            finally
+            {
+                if (p.PrimaryRole().RoleAbilityFlags.HasFlag(Roles.RoleAbilityFlag.UsesUnshiftTrigger)) p.CRpcShapeshift(p, false);
             }
         });
 

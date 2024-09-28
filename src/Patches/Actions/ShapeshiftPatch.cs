@@ -96,7 +96,7 @@ public static class ShapeshiftPatch
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.Shapeshift))]
 public static class ShapeshiftFixPatch
 {
-    private static Dictionary<byte, byte> _shapeshifted = new();
+    internal static Dictionary<byte, byte> _shapeshifted = new();
 
     public static void Postfix(PlayerControl __instance, [HarmonyArgument(0)] PlayerControl target, [HarmonyArgument(1)] bool shouldAnimate)
     {
