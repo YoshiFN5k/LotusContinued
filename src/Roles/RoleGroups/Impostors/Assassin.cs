@@ -10,6 +10,8 @@ using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Subroles;
 using UnityEngine;
 using Lotus.Roles.Builtins;
+using Lotus.Roles.RoleGroups.Vanilla;
+using Lotus.Factions.Impostors;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -24,6 +26,7 @@ public class Assassin : GuesserRole, ISabotagerRole
         Game.MatchData.GameHistory.AddEvent(new KillEvent(MyPlayer, target, result is InteractionResult.Proceed));
         return result is InteractionResult.Proceed;
     }
+    protected override bool CanGuessRole(CustomRole role) => role.Faction.GetType() != typeof(ImpostorFaction);
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
@@ -31,11 +34,4 @@ public class Assassin : GuesserRole, ISabotagerRole
             .Faction(FactionInstances.Impostors)
             .RoleAbilityFlags(RoleAbilityFlag.IsAbleToKill)
             .VanillaRole(RoleTypes.Impostor);
-
-    private static class Translations
-    {
-        public static class Options
-        {
-        }
-    }
 }

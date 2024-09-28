@@ -199,9 +199,6 @@ public class StandardRoles : RoleHolder
         public Taskrunner Taskrunner = new();
         public Terrorist Terrorist = new();
         public Vulture Vulture = new();
-
-        /// extra stuff
-        public Guesser Guesser = new();
     }
 
     public class Modifiers
@@ -211,6 +208,7 @@ public class StandardRoles : RoleHolder
         public Deadly Deadly = new();
         public Diseased Diseased = new();
         public Flash Flash = new();
+        public Guesser Guesser = new();
         public LastResort LastResort = new();
         public Nimble Nimble = new();
         public Oblivious Oblivious = new();
@@ -229,11 +227,6 @@ public class StandardRoles : RoleHolder
         public IllegalRole IllegalRole = new();
         public GameMaster GM = new();
         // public Debugger Debugger = new Debugger();
-
-        // public CrewGuesser CrewGuesser = new CrewGuesser();
-        // public ImpGuesser ImpGuesser = new ImpGuesser();
-        // public NeutralKillerGuesser NeutralKillerGuesser = new NeutralKillerGuesser();
-        // public NeutralGuesser NeutralGuesser = new NeutralGuesser();
     }
 }
 
