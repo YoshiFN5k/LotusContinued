@@ -418,7 +418,7 @@ public abstract class AbstractBaseRole
     {
         GameOptionBuilder b = GetBaseBuilder();
 
-        if (GetRoleType() is not RoleType.Normal) return RegisterOptions(b);
+        if (GetRoleType() is not RoleType.Normal || RoleFlags.HasFlag(RoleFlag.RemoveRoleMaximum)) return RegisterOptions(b);
         b = b.SubOption(s => s.Name(RoleTranslations.MaximumText)
             .Key("Maximum")
             .AddIntRange(1, ModConstants.MaxPlayers)
