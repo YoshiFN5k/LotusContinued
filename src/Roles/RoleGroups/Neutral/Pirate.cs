@@ -13,10 +13,11 @@ using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
+using Lotus.Roles.Builtins;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
-public class Pirate : Guesser
+public class Pirate : GuesserRole
 {
     private int pirateGuessesToWin;
     private bool pirateDiesOnMissguess;
@@ -56,7 +57,8 @@ public class Pirate : Guesser
 
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        roleModifier.RoleColor(new Color(0.93f, 0.76f, 0.25f))
+        base.Modify(roleModifier)
+            .RoleColor(new Color(0.93f, 0.76f, 0.25f))
             .Faction(FactionInstances.Neutral)
             .SpecialType(SpecialType.Neutral);
 

@@ -1,11 +1,11 @@
 using Lotus.Factions;
-using Lotus.Roles.Subroles;
+using Lotus.Roles.Builtins;
 using UnityEngine;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
 
-public class Vigilante: Guesser
+public class Vigilante : GuesserRole
 {
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)

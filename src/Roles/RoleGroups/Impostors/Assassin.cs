@@ -9,10 +9,11 @@ using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Subroles;
 using UnityEngine;
+using Lotus.Roles.Builtins;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
-public class Assassin : Guesser, ISabotagerRole
+public class Assassin : GuesserRole, ISabotagerRole
 {
     public bool CanSabotage() => true;
 
