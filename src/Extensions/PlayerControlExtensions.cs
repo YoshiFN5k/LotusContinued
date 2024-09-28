@@ -312,7 +312,7 @@ public static class PlayerControlExtensions
     public static void RpcResetAbilityCooldown(this PlayerControl target)
     {
         if (!AmongUsClient.Instance.AmHost) return;
-        if (PlayerControl.LocalPlayer.PlayerId == target.PlayerId)
+        if (PlayerControl.LocalPlayer == target)
         {
             log.Debug($"Resetting Ability Cooldown for Host (Current Player).");
             PlayerControl.LocalPlayer.Data.Role.SetCooldown();
@@ -320,7 +320,10 @@ public static class PlayerControlExtensions
         else
         {
             log.Debug($"Resetting Ability Cooldown for Non-Host ({target.name})");
-            RpcV3.Immediate(target.NetId, (byte)RpcCalls.ProtectPlayer, SendOption.None).Write(target).Write(0).Send(target.GetClientId());
+            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(target.NetId, (byte)RpcCalls.ProtectPlayer, SendOption.None, target.GetClientId());
+            writer.WriteNetObject(target);
+            writer.Write(0);
+            AmongUsClient.Instance.FinishRpcImmediately(writer);
         }
     }
 }
