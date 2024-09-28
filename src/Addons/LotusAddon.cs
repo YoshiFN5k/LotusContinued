@@ -9,6 +9,7 @@ using Lotus.GameModes;
 using Lotus.GameModes.Standard;
 using VentLib.Utilities.Extensions;
 using Version = VentLib.Version.Version;
+using Lotus.Factions;
 
 namespace Lotus.Addons;
 
@@ -113,6 +114,7 @@ public abstract class LotusAddon
         factions.ForEach(f =>
         {
             log.Trace($"Exporting Faction ({f.Name}) for {Name}");
+            FactionInstances.AddonFactions[f.GetType()] = f;
             Factions.Add(f);
         });
     }
