@@ -20,8 +20,6 @@ public abstract class RoleHolder : IRoleHolder
     {
 
     }
-
-    public void AddOnFinishCall(Action action) => this.FinishedCallbacks().Add(action);
     public bool Intialized
     {
         get { return _initialized; }

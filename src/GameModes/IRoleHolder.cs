@@ -14,6 +14,4 @@ public interface IRoleHolder
     public List<CustomRole> SpecialRoles { get; set; }
 
     public List<CustomRole> AllRoles { get; set; }
-
-    public void AddOnFinishCall(Action action);
 }
