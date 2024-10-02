@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Lotus.API.Player;
 using Lotus.Chat;
+using Lotus.Logging;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -39,20 +40,32 @@ public class BugReportCommand : ICommandReceiver
 
     private IEnumerator SendWebRequest(PlayerControl source, CommandContext context)
     {
+        string message = string.Join(" ", context.Args);
+        if (source == PlayerControl.LocalPlayer && message == "log")
+        {
+            LogManager.SendInGame("Uploading your log file to the forum is currently not supported. Please try again in another dev.");
+            reportingPlayerIds.Remove(source.PlayerId);
+            yield break;
+        }
+        if (string.IsNullOrEmpty(message) || message.Length < 7)
+        {
+            reportingPlayerIds.Remove(source.PlayerId);
+            yield break;
+        }
         FrozenPlayer frozenPlayer = new(source);
         string? errorMessage = null;
 
         // send report.
 
         string jsonData = $@"{{
-            ""PlayerName"": ""{source.name}"",
-            ""FriendCode"": ""{source.FriendCode}"",
-            ""ReportMessage"": ""{string.Join(" ", context.Args)}""
+            ""playerName"": ""{source.name}"",
+            ""friendCode"": ""{source.FriendCode}"",
+            ""message"": ""{message}""
         }}";
         byte[] postData = new System.Text.UTF8Encoding().GetBytes(jsonData);
 
         // Send POST request
-        UnityWebRequest webRequest = new(NetConstants.BugReportAPI, UnityWebRequest.kHttpVerbPOST)
+        UnityWebRequest webRequest = new(NetConstants.Host + "reportbug", UnityWebRequest.kHttpVerbPOST)
         {
             uploadHandler = new UploadHandlerRaw(postData),
             downloadHandler = new DownloadHandlerBuffer()
