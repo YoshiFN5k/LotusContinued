@@ -24,10 +24,15 @@ public static class ShapeshiftPatch
 
     public static bool Prefix(PlayerControl __instance, [HarmonyArgument(0)] PlayerControl target, [HarmonyArgument(1)] bool shouldAnimate)
     {
-        string invokerName = new StackTrace(5)?.GetFrame(0)?.GetMethod()?.Name;
+        string invokerName = Mirror.GetCaller()?.Name;
         log.Debug($"(ShapeshiftEvent) Shapeshift Cause (Invoker): {invokerName}");
         if (invokerName is "RpcShapeshiftV2" or "RpcRevertShapeshiftV2" or "<Shapeshift>b__0" or "<RevertShapeshift>b__0") return true;
         if (invokerName is "CRpcShapeshift" or "CRpcRevertShapeshift" or "<Shapeshift>b__0" or "<RevertShapeshift>b__0") return true;
+        if (Game.State is GameState.InMeeting)
+        {
+            log.Debug("Game.State is Meeting so we do not send a role action.");
+            return true;
+        }
         log.Info($"{__instance?.GetNameWithRole()} => {target?.GetNameWithRole()}", "Shapeshift");
         if (!AmongUsClient.Instance.AmHost) return true;
 
