@@ -12,6 +12,7 @@ using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Roles.RoleGroups.NeutralKilling;
 using UnityEngine;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles.Subroles.Romantics;
 
@@ -39,6 +40,8 @@ public class RuthlessRomantic : NeutralKillingBase
         cooldown.Start();
         MyPlayer.InteractWith(MyPlayer, new UnblockedInteraction(new FatalIntent(), this));
     }
+
+    protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) => AddKillCooldownOptions(base.RegisterOptions(optionStream));
 
     protected override RoleType GetRoleType() => RoleType.Variation;
 
