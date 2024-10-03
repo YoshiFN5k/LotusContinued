@@ -189,6 +189,8 @@ public class StandardRoleAssignment
         {
             CustomRole role = subRoleLottery.Next();
             if (role is IllegalRole) continue;
+            if (role is IRoleCandidate candidate)
+                if (candidate.ShouldSkip()) continue;
             CustomRole variant = role is Subrole sr ? IVariantSubrole.PickAssignedRole(sr) : IVariableRole.PickAssignedRole(role);
             List<PlayerControl> players = Players.GetAllPlayers().Where(CanAssignTo).ToList();
             if (players.Count == 0)
