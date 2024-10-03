@@ -30,7 +30,7 @@ public class ModKeybindings
     static ModKeybindings()
     {
         // Dump Log
-        Bind(KeyCode.F, KeyCode.LeftControl, KeyCode.Return).Do(DumpLog);
+        // Bind(KeyCode.F, KeyCode.LeftControl, KeyCode.Return).Do(DumpLog);  // crashes the game and ultimately causes some issues.
         Bind(KeyCode.D, KeyCode.LeftControl, KeyCode.Return).Do(() => LogManager.WriteSessionLog(""));
 
         // Profile All

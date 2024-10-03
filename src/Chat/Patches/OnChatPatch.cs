@@ -25,10 +25,10 @@ public static class OnChatPatch
     public static bool EatMessage;
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    internal static bool Prefix(ChatController __instance, PlayerControl sourcePlayer, string chatText)
+    internal static bool Prefix(ChatController __instance, PlayerControl sourcePlayer, string chatText, bool censor)
     {
         log.Log(LogLevel.All, $"{sourcePlayer.name} => {chatText.Replace("\\", "(backwards slash here)")}"); // fix "\" crash. cant believe this crashes the game.
-        if (!AmongUsClient.Instance.AmHost) return true;
+        if (!AmongUsClient.Instance.AmHost || censor == false) return true;
         if (UtilsSentList.Contains(sourcePlayer.PlayerId))
         {
             UtilsSentList.RemoveAt(UtilsSentList.FindIndex(b => b == sourcePlayer.PlayerId));
