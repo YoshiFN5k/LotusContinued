@@ -62,14 +62,21 @@ public class IdentityThief : Impostor
     }
 
     // might conflict with camouflager
-    [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector, priority: Priority.Low)]
-    private void HandleMeetingCall(PlayerControl reporter, Optional<NetworkedPlayerInfo> reported, ActionHandle handle)
+    // [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector, priority: Priority.Low)]
+    // private void HandleMeetingCall(PlayerControl reporter, Optional<NetworkedPlayerInfo> reported, ActionHandle handle)
+    // {
+    //     if (!shapeshiftedThisRound) return;
+    //     shapeshiftedThisRound = false;
+    //     MyPlayer.CRpcRevertShapeshift(false);
+    //     handle.Cancel();
+    //     Async.Schedule(() => MeetingPrep.PrepMeeting(reporter, reported.OrElse(null!)), 0.5f);
+    // }
+    [RoleAction(LotusActionType.RoundEnd, ActionFlag.WorksAfterDeath)]
+    private void HandleMeetingCall()
     {
         if (!shapeshiftedThisRound) return;
         shapeshiftedThisRound = false;
         MyPlayer.CRpcRevertShapeshift(false);
-        handle.Cancel();
-        Async.Schedule(() => MeetingPrep.PrepMeeting(reporter, reported.OrElse(null!)), 0.5f);
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
