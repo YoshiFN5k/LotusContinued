@@ -374,6 +374,7 @@ public class Guesser : Subrole
             [Localized(nameof(RestrictedToNonVote))] public static string RestrictedToNonVote = "Restricted to Non Vote-Related Roles";
             [Localized(nameof(GuesserPerMeeting))] public static string GuesserPerMeeting = "Guesses per Meeting";
             [Localized(nameof(CanGuessTeammates))] public static string CanGuessTeammates = "Can Guess Teammates";
+            [Localized(nameof(FollowGuesserSettings))] public static string FollowGuesserSettings = "Follow Guesser Settings";
 
             [Localized(nameof(FactionMaxGuessers))] public static string FactionMaxGuessers = "{0}::0 Faction Max Guessers";
 

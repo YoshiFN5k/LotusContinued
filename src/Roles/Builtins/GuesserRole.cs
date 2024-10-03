@@ -23,6 +23,7 @@ using System.Linq;
 using Lotus.Roles.Subroles;
 using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name.Holders;
+using System.Collections.Generic;
 
 namespace Lotus.Roles.Builtins;
 
@@ -32,6 +33,8 @@ public class GuesserRole : CustomRole
     private MeetingPlayerSelector voteSelector = new();
 
     private int guessesPerMeeting;
+    private bool followGuesserSettings;
+
     private bool hasMadeGuess;
     private byte guessingPlayer = byte.MaxValue;
     private bool skippedVote;
@@ -166,7 +169,19 @@ public class GuesserRole : CustomRole
             guessedRole = null;
             return;
         }
-        GuesserHandler(Guesser.Translations.PickedRoleText.Formatted(Players.FindPlayerById(guessingPlayer)?.name, guessedRole.RoleName)).Send(MyPlayer);
+        if (!followGuesserSettings)
+        {
+            GuesserHandler(Guesser.Translations.PickedRoleText.Formatted(Players.FindPlayerById(guessingPlayer)?.name, guessedRole.RoleName)).Send(MyPlayer);
+            return;
+        }
+        int setting = Guesser.RoleTypeBuilders.FirstOrOptional(rtb => rtb.predicate(guessedRole)).Map(rtb => rtb.setting).OrElse(0);
+        if (setting == 2) setting = Guesser.CanGuessDictionary.GetValueOrDefault(role.GetType(), 0);
+        if (setting == 1) GuesserHandler(Guesser.Translations.PickedRoleText.Formatted(Players.FindPlayerById(guessingPlayer)?.name, guessedRole.RoleName)).Send(MyPlayer);
+        else
+        {
+            GuesserHandler(Guesser.Translations.CantGuessRole.Formatted(guessedRole.RoleName)).Send(MyPlayer);
+            guessedRole = null;
+        }
     }
 
     protected virtual void HandleBadGuess()
@@ -188,6 +203,10 @@ public class GuesserRole : CustomRole
             .SubOption(sub => sub.KeyName("Guesses per Meeting", Guesser.Translations.Options.GuesserPerMeeting)
                 .AddIntRange(1, 10, 1, 0)
                 .BindInt(i => guessesPerMeeting = i)
+                .Build())
+            .SubOption(sub => sub.KeyName("Follow Guesser Settings", Guesser.Translations.Options.FollowGuesserSettings)
+                .AddBoolean()
+                .BindBool(b => followGuesserSettings = b)
                 .Build());
 
     protected ChatHandler GuesserHandler(string message) => ChatHandler.Of(message, RoleColor.Colorize(Guesser.Translations.GuesserTitle)).LeftAlign();
