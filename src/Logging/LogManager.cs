@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Lotus.API.Odyssey;
 using Lotus.API.Reactive;
+using Lotus.Managers;
 using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Logging.Appenders;
@@ -105,16 +106,37 @@ public class LogManager
         }
         if (!logName.Contains('.')) logName += ".log";
 
-        var appender = _sessionAppender.Get();
+        DirectoryInfo logsDirectory = new("logs");
+        if (!logsDirectory.Exists)
+        {
+            LogManager.SendInGame($"Could not find logs folder. Please make sure the folder is created.", LogLevel.High);
+            return;
+        }
+        FileInfo[] logs = logsDirectory.GetFiles();
+        if (logs.Length == 0)
+        {
+            LogManager.SendInGame($"Could not find any logs in the folder. Please make sure logs are enabled", LogLevel.High);
+            return;
+        }
 
-        log.High($"Dumping session logs as pattern: \"{logName}\".");
-        appender.FileNamePattern = logName;
-        FileInfo file = appender.CreateNewFile();
-        int logCount = GetLineCount(appender.LogFile);
-        appender.Clear();
-        _logIndex += logCount;
+        var lastModifiedFile = logs
+            .OrderByDescending(file => file.LastWriteTime)
+            .FirstOrDefault();
 
-        LogManager.SendInGame($"Successfully saved {logCount} logs from current session. (Filename={file.Name})", LogLevel.High);
+        if (lastModifiedFile == null)
+        {
+            LogManager.SendInGame($"Could not get latest log file. Please try again.", LogLevel.High);
+            return;
+        }
+        try
+        {
+            FileInfo file = lastModifiedFile.CopyTo(Path.Combine(PluginDataManager.ModifiableDataDirectory.FullName, logName), true);
+            LogManager.SendInGame($"Successfully saved log from current session. (Filename={file.Name})", LogLevel.High);
+        }
+        catch
+        {
+            LogManager.SendInGame($"Could not copy the log file. Please try again.", LogLevel.High);
+        }
     }
 
     private static string CreateSessionDirectory()
