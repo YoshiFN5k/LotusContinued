@@ -32,7 +32,7 @@ public class MeetingOptions
             .IsHeader(true)
             .Name(MeetingOptionTranslations.SingleMeetingPool)
             .BindInt(i => MeetingButtonPool = i)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Color(Color.red).Value(0).Build())
@@ -41,7 +41,7 @@ public class MeetingOptions
             .Builder("Resolve Tie Mode", _optionColor)
             .Name(MeetingOptionTranslations.ResolveTieMode)
             .BindInt(i => ResolveTieMode = (ResolveTieMode)i)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Color(Color.red).Value(0).Build())
@@ -51,7 +51,7 @@ public class MeetingOptions
             .Builder("No Vote Mode", _optionColor)
             .Name(MeetingOptionTranslations.SkipVoteMode)
             .BindInt(i => NoVoteMode = (SkipVoteMode)i)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.AddRange(additionalOptions);
     }

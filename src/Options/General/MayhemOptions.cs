@@ -55,17 +55,17 @@ public class MayhemOptions
                 .BindBool(FlagSetter(AuMap.Airship))
                 .Build())
             .IsHeader(true)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Random Spawn")
             .Name(MayhemOptionTranslations.RandomSpawnText)
             .BindBool(b => RandomSpawn = b)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Camo Comms")
             .Name(MayhemOptionTranslations.CamoCommText)
             .BindBool(b => CamoComms = b)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.AddRange(additionalOptions);
     }

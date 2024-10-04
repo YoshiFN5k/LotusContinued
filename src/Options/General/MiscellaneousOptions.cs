@@ -45,7 +45,7 @@ public class MiscellaneousOptions
             .Name(MiscOptionTranslations.AssignedPetText)
             .IsHeader(true)
             .BindString(s => AssignedPet = s)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .Value(v => v.Value(0).Text(GeneralOptionTranslations.OffText).Color(Color.red).Build())
@@ -55,7 +55,7 @@ public class MiscellaneousOptions
             .Name(MiscOptionTranslations.AllowNameCommand)
             .BindInt(b => ChangeNameUsers = b)
             .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .Value(v => v.Value(0).Text(GeneralOptionTranslations.OffText).Color(Color.red).Build())
@@ -65,7 +65,7 @@ public class MiscellaneousOptions
             .Name(MiscOptionTranslations.AllowColorAndLevelCommand)
             .BindInt(b => ChangeColorAndLevelUsers = b)
             .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .Value(v => v.Value(0).Text(GeneralOptionTranslations.OffText).Color(Color.red).Build())
@@ -75,28 +75,28 @@ public class MiscellaneousOptions
             .Name(MiscOptionTranslations.AllowTeleportCommand)
             .BindInt(b => AllowTeleportInLobby = b)
             .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .AddOnOffValues()
             .Builder("Auto Display Results", _optionColor)
             .Name(MiscOptionTranslations.AutoDisplayResultsText)
             .BindBool(b => AutoDisplayLastResults = b)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .AddOnOffValues()
             .Builder("Auto Display Cause of Death", _optionColor)
             .Name(MiscOptionTranslations.AutoDisplayCauseOfDeath)
             .BindBool(b => AutoDisplayCOD = b)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .AddBoolean(false)
             .Builder("Color Names", _optionColor)
             .Name(MiscOptionTranslations.ColorNames)
             .BindBool(b => ColoredNameMode = b)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.AddRange(additionalOptions);
         AllOptions.ForEach(o => o.Register(GeneralOptions.MainOptionManager, VentLib.Options.OptionLoadMode.LoadOrCreate));

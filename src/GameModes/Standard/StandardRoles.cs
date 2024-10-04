@@ -138,7 +138,7 @@ public class StandardRoles : RoleHolder
         public Demolitionist Demolitionist = new();
         public Dictator Dictator = new();
         public Doctor Doctor = new();
-        public Duplicator Duplicator = new();
+        // public Duplicator Duplicator = new();
         public Engineer Engineer = new();
         public Escort Escort = new();
         public ExConvict ExConvict = new();

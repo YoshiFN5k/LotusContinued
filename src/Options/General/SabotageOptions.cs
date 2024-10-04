@@ -89,43 +89,40 @@ public class SabotageOptions
                 .Name(SabotageOptionTranslations.DisableHelicopters)
                 .BindBool(FlagSetter(SabotageType.Helicopter))
                 .Build())
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Skeld Reactor Countdown")
             .Name(AuMap.Skeld + " " + SabotageOptionTranslations.ReactorCountdown)
             .BindInt(i => SkeldReactorCountdown = i)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Skeld Oxygen Countdown")
             .Name(AuMap.Skeld + " " + SabotageOptionTranslations.OxygenCountdown)
             .BindInt(i => SkeldOxygenCountdown = i)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Mira Reactor Countdown")
             .Name(AuMap.Mira + " " + SabotageOptionTranslations.ReactorCountdown)
             .BindInt(i => MiraReactorCountdown = i)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Mira Oxygen Countdown")
             .Name(AuMap.Mira + " " + SabotageOptionTranslations.OxygenCountdown)
             .BindInt(i => MiraOxygenCountdown = i)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Polus Reactor Countdown")
             .Name(AuMap.Polus + " " + SabotageOptionTranslations.ReactorCountdown)
             .BindInt(i => PolusReactorCountdown = i)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Airship Crash Course Countdown")
             .Name(AuMap.Airship + " " + SabotageOptionTranslations.CrashCourseCountdown)
             .BindInt(i => AirshipReactorCountdown = i)
-            .BuildAndRegister());
+            .Build());
 
-        additionalOptions.ForEach(o =>
-        {
-            o.Register();
-            AllOptions.Add(o);
-        });
+        AllOptions.AddRange(additionalOptions);
+        AllOptions.ForEach(o => o.Register(GeneralOptions.MainOptionManager, VentLib.Options.OptionLoadMode.LoadOrCreate));
     }
 
     /// <summary>

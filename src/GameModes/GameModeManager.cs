@@ -12,6 +12,7 @@ using VentLib.Options.UI.Tabs;
 using VentLib.Utilities.Extensions;
 using Lotus.Options;
 using Lotus.Addons;
+using Lotus.Extensions;
 
 namespace Lotus.GameModes;
 
@@ -73,7 +74,8 @@ public class GameModeManager
             builder.Value(v => v.Text(gameMode.Name).Value(index).Build());
         }
 
-        gamemodeOption = builder.Name("GameMode").IsHeader(true).BindInt(SetGameMode).BuildAndRegister(GeneralOptions.MainOptionManager);
+        gamemodeOption = builder.KeyName("GameMode", GamemodeTranslations.GamemodeText).IsHeader(true).BindInt(SetGameMode).Build();
+        gamemodeOption.Register(GeneralOptions.MainOptionManager, OptionLoadMode.LoadOrCreate);
         GameModes.ForEach(gm => AddGamemodeSettingToOptions(gm.MainTab().GetOptions()));
     }
 
@@ -88,7 +90,7 @@ public class GameModeManager
         // Add gamemode switcher at top
         options.Insert(0, gamemodeOption);
         options.Insert(0, new GameOptionTitleBuilder()
-            .Title("Gamemode Selection")
+            .Title(GamemodeTranslations.GamemodeSelection)
             .Build());
 
         // Add Admin Options

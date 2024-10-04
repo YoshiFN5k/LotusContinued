@@ -28,23 +28,18 @@ public class DebugOptions
             .Name(DebugOptionTranslations.NoGameEndText)
             .BindBool(b => NoGameEnd = b)
             .IsHeader(true)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Name Based Role Assignment")
             .Name(DebugOptionTranslations.NameBasedRoleAssignmentText)
             .BindBool(b => NameBasedRoleAssignment = b)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Advanced Role Assignment")
             .Name(DebugOptionTranslations.AdvancedRoleAssignment)
             .BindBool(b => ProjectLotus.AdvancedRoleAssignment = b)
-            .BuildAndRegister());
+            .Build());
 
-        additionalOptions.ForEach(o =>
-        {
-            o.Register();
-            AllOptions.Add(o);
-        });
         AllOptions.AddRange(additionalOptions);
         AllOptions.ForEach(o => o.Register(GeneralOptions.MainOptionManager, VentLib.Options.OptionLoadMode.LoadOrCreate));
     }
