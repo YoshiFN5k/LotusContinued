@@ -47,18 +47,18 @@ public class AdminOptions
 
         AllOptions.Add(new GameOptionBuilder()
             .AddBoolean(false)
-            .KeyName("HostGM", AdminOptionTranslations.HostGmText)
+            .KeyName("Host GM", AdminOptionTranslations.HostGmText)
             .Color(_optionColor)
             .BindBool(b => HostGM = b)
             .IsHeader(true)
             .ShowSubOptionPredicate(v => (bool)v)
             .SubOption(sub => sub
-                .KeyName("SpectatorMode", AdminOptionTranslations.SpectatorMode)
+                .KeyName("Spectator Mode", AdminOptionTranslations.SpectatorMode)
                 .AddBoolean()
                 .BindBool(b => SpectatorMode = b)
                 .ShowSubOptionPredicate(v => (bool)v)
                 .SubOption(sub2 => sub2
-                    .KeyName("AutoHauntCooldown", AdminOptionTranslations.AutoHauntCooldown)
+                    .KeyName("Auto Haunt Cooldown", AdminOptionTranslations.AutoHauntCooldown)
                     .AddFloatRange(2.5f, 60f, 2.5f, 9, "s")
                     .BindFloat(v => AutoHauntCooldown = v)
                     .Build())
@@ -81,24 +81,24 @@ public class AdminOptions
             .Build());
 
         AllOptions.Add(new GameOptionBuilder()
+            .Builder("Kick Players Under Level", _optionColor)
             .AddIntRange(1, 100, 1)
             .Value(v => v.Text(GeneralOptionTranslations.DisabledText).Value(0).Color(Color.red).Build())
-            .Builder("Kick Players Under Level", _optionColor)
             .Name(AdminOptionTranslations.AutoKickUnderLevel)
             .BindInt(i => KickPlayersUnderLevel = i)
             .Build());
 
         AllOptions.Add(new GameOptionBuilder()
-            .AddBoolean(false)
             .Builder("Kick Mobile Players", _optionColor)
             .Name(AdminOptionTranslations.AutoKickMobile)
+            .AddBoolean(false)
             .BindBool(b => KickMobilePlayers = b)
             .Build());
 
         AllOptions.Add(new GameOptionBuilder()
-            .AddBoolean(false)
             .Builder("Auto Start", _optionColor)
             .Name(AdminOptionTranslations.AutoStartText)
+            .AddBoolean(false)
             .BindBool(b =>
             {
                 AutoStartEnabled = b;
@@ -108,14 +108,14 @@ public class AdminOptions
             .SubOption(sub2 => sub2
                 .AddIntRange(5, ModConstants.MaxPlayers, suffix: " " + AdminOptionTranslations.AutoStartSuffix)
                 .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(-1).Color(Color.red).Build())
-                .Name(AdminOptionTranslations.AutoStartPlayerThreshold)
+                .KeyName("Auto Start Player Threshold", AdminOptionTranslations.AutoStartPlayerThreshold)
                 .IOSettings(io => io.UnknownValueAction = ADEAnswer.Allow)
                 .BindInt(i => AutoStartPlayerThreshold = i)
                 .Build())
             .SubOption(sub2 => sub2
                 .AddIntRange(30, 540, ModConstants.MaxPlayers, 0, GeneralOptionTranslations.SecondsSuffix)
                 .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(-1).Color(Color.red).Build())
-                .Name(AdminOptionTranslations.AutoStartMaxWaitTime)
+                .KeyName("Auto Start Max Wait Time", AdminOptionTranslations.AutoStartMaxWaitTime)
                 .IOSettings(io => io.UnknownValueAction = ADEAnswer.Allow)
                 .BindInt(i =>
                 {
@@ -132,23 +132,20 @@ public class AdminOptions
                 .Build())
             .SubOption(sub2 => sub2
                 .AddIntRange(4, 20, 2, 3, GeneralOptionTranslations.SecondsSuffix)
-                .Name(AdminOptionTranslations.AutoStartGameCountdown)
+                .KeyName("Auto Start Game Countdown", AdminOptionTranslations.AutoStartGameCountdown)
                 .BindInt(i => AutoStartGameCountdown = i)
                 .Build())
             .Build());
 
         AllOptions.Add(new GameOptionBuilder()
-            .AddBoolean()
             .Builder("Auto Play Again", _optionColor)
             .Name(AdminOptionTranslations.AutoPlayAgain)
+            .AddBoolean()
             .BindBool(b => AutoPlayAgain = b)
             .Build());
 
-        additionalOptions.ForEach(o =>
-        {
-            o.Register();
-            AllOptions.Add(o);
-        });
+        AllOptions.AddRange(additionalOptions);
+        AllOptions.ForEach(o => o.Register(GeneralOptions.MainOptionManager, VentLib.Options.OptionLoadMode.LoadOrCreate));
     }
 
     /// <summary>

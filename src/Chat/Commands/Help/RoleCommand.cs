@@ -6,6 +6,7 @@ using Lotus.API.Player;
 using Lotus.Managers;
 using Lotus.Managers.Hotkeys;
 using Lotus.Managers.Templates.Models.Backing;
+using Lotus.Options;
 using Lotus.Roles;
 using Lotus.Roles.Managers.Interfaces;
 using Lotus.Roles.Properties;
@@ -56,7 +57,7 @@ public class RoleCommand
     private static void ShowRole(PlayerControl source, CustomRole role)
     {
         if (!PluginDataManager.TemplateManager.TryFormat(role, "help-role", out string formatted))
-            formatted = $"{role.RoleName} ({role.Faction.Name()})\n{role.Blurb}\n{role.Description}\n\nOptions:\n{GetRoleText(role)}";
+            formatted = $"{role.RoleName} ({role.Faction.Name()})\n{role.Blurb}\n{role.Description}\n\n{GeneralOptionTranslations.Options}:\n{GetRoleText(role)}";
 
         SendSpecial(source, formatted);
     }

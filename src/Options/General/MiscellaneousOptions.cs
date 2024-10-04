@@ -98,11 +98,8 @@ public class MiscellaneousOptions
             .BindBool(b => ColoredNameMode = b)
             .BuildAndRegister());
 
-        additionalOptions.ForEach(o =>
-        {
-            o.Register();
-            AllOptions.Add(o);
-        });
+        AllOptions.AddRange(additionalOptions);
+        AllOptions.ForEach(o => o.Register(GeneralOptions.MainOptionManager, VentLib.Options.OptionLoadMode.LoadOrCreate));
     }
 
     /// <summary>

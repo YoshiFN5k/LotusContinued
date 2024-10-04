@@ -67,11 +67,7 @@ public class MayhemOptions
             .BindBool(b => CamoComms = b)
             .BuildAndRegister());
 
-        additionalOptions.ForEach(o =>
-        {
-            o.Register();
-            AllOptions.Add(o);
-        });
+        AllOptions.AddRange(additionalOptions);
     }
 
     /// <summary>

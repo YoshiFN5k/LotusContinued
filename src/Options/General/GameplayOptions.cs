@@ -75,9 +75,9 @@ public class GameplayOptions
             .BuildAndRegister());
 
         AllOptions.Add(new GameOptionBuilder()
-            .AddBoolean(false)
             .Builder("Disable Tasks", _optionColor)
             .Name(GameplayOptionTranslations.DisableTaskText)
+            .AddBoolean(false)
             .ShowSubOptionPredicate(b => (bool)b)
             .SubOption(sub => sub
                 .AddOnOffValues()
@@ -139,27 +139,23 @@ public class GameplayOptions
             .BuildAndRegister());
 
         AllOptions.Add(new GameOptionBuilder()
-            .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(-1).Color(Color.red).Build())
-            .AddIntRange(10, 100, 5, suffix: "%")
             .Builder("Ladder Death", _optionColor)
             .Name(GameplayOptionTranslations.LadderDeathText)
+            .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(-1).Color(Color.red).Build())
+            .AddIntRange(10, 100, 5, suffix: "%")
             .BindInt(i => LadderDeathChance = i)
             .BuildAndRegister());
 
         AllOptions.Add(new GameOptionBuilder()
+            .Builder("Modifier Text Mode", _optionColor)
+            .Name(GameplayOptionTranslations.ModifierTextMode)
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(1).Color(Color.red).Build())
             .Value(v => v.Text(GameplayOptionTranslations.FirstValue).Value(0).Color(ModConstants.Palette.InfinityColor).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(2).Color(Color.green).Build())
-            .Builder("Modifier Text Mode", _optionColor)
-            .Name(GameplayOptionTranslations.ModifierTextMode)
             .BindInt(i => ModifierTextMode = (ModifierTextMode)i)
             .BuildAndRegister());
 
-        additionalOptions.ForEach(o =>
-        {
-            o.Register();
-            AllOptions.Add(o);
-        });
+        AllOptions.AddRange(additionalOptions);
     }
 
     /// <summary>

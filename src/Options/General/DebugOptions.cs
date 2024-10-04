@@ -24,7 +24,7 @@ public class DebugOptions
             .Color(_optionColor)
             .Build());
 
-        AllOptions.Add(Builder("NoGameEnd")
+        AllOptions.Add(Builder("No Game End")
             .Name(DebugOptionTranslations.NoGameEndText)
             .BindBool(b => NoGameEnd = b)
             .IsHeader(true)
@@ -45,6 +45,8 @@ public class DebugOptions
             o.Register();
             AllOptions.Add(o);
         });
+        AllOptions.AddRange(additionalOptions);
+        AllOptions.ForEach(o => o.Register(GeneralOptions.MainOptionManager, VentLib.Options.OptionLoadMode.LoadOrCreate));
     }
 
     /// <summary>

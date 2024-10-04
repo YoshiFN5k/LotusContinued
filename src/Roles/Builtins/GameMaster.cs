@@ -20,14 +20,6 @@ namespace Lotus.Roles.Builtins;
 public sealed class GameMaster : CustomRole, IPhantomRole
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(GameMaster));
-    public bool IsSpectatorMode
-    {
-        get => GeneralOptions.AdminOptions.SpectatorMode;
-    }
-    public float AutoHauntCooldown
-    {
-        get => GeneralOptions.AdminOptions.AutoHauntCooldown;
-    }
     private byte lastHauntedPlayer = 255;
     private Cooldown hauntCooldown = null!;
     public static Color GMColor = new(1f, 0.4f, 0.4f);
@@ -35,9 +27,11 @@ public sealed class GameMaster : CustomRole, IPhantomRole
     [RoleAction(LotusActionType.RoundStart, ActionFlag.WorksAfterDeath)]
     private void ExileGM(bool roundStart)
     {
+        lastHauntedPlayer = 255;
+        log.Debug($"is Spectator: {GeneralOptions.AdminOptions.SpectatorMode}");
         if (!roundStart)
         {
-            if (IsSpectatorMode && MyPlayer.Data.Role.IsDead) Async.Schedule(MyPlayer.Data.Role.UseAbility, 1f);
+            if (GeneralOptions.AdminOptions.SpectatorMode && MyPlayer.Data.Role.IsDead) Async.Schedule(Reset, 1f);
             return;
         }
         MyPlayer.RpcExileV2(false);
@@ -52,18 +46,25 @@ public sealed class GameMaster : CustomRole, IPhantomRole
             );
 
         MyPlayer.NameModel().Render(force: true);
-        if (IsSpectatorMode)
+        if (GeneralOptions.AdminOptions.SpectatorMode)
         {
             // generates haunt minigame
-            if (MyPlayer.Data.Role.IsDead) MyPlayer.Data.Role.UseAbility();
-            else Async.Schedule(MyPlayer.Data.Role.UseAbility, 1f);
+            Async.Schedule(Reset, 1f);
         }
+    }
+
+    private void Reset()
+    {
+        HauntMenuMinigame minigame = DestroyableSingleton<HudManager>.Instance.GetComponentInChildren<HauntMenuMinigame>();
+        if (minigame != null) return;
+        if (MyPlayer.Data.Role.IsDead) MyPlayer.Data.Role.UseAbility();
+        hauntCooldown.Finish();
     }
 
     [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath, priority: API.Priority.Last)]
     private void ShowChatOnMeeting()
     {
-        if (!IsSpectatorMode) return;
+        if (!GeneralOptions.AdminOptions.SpectatorMode) return;
         Async.Schedule(() =>
         {
             if (MeetingHud.Instance == null) return;
@@ -75,9 +76,10 @@ public sealed class GameMaster : CustomRole, IPhantomRole
     [RoleAction(LotusActionType.FixedUpdate, ActionFlag.WorksAfterDeath)]
     private void OnUpdate()
     {
-        if (!IsSpectatorMode || hauntCooldown.NotReady()) return;
-        hauntCooldown.Start(AutoHauntCooldown);
+        if (!GeneralOptions.AdminOptions.SpectatorMode || hauntCooldown.NotReady()) return;
+        hauntCooldown.Start(GeneralOptions.AdminOptions.AutoHauntCooldown);
         HauntMenuMinigame minigame = DestroyableSingleton<HudManager>.Instance.GetComponentInChildren<HauntMenuMinigame>();
+        log.Debug($"Trying to set player for gm. {MyPlayer.Data.Role.IsDead}");
         if (minigame == null)
         {
             // try to generate it

@@ -53,11 +53,7 @@ public class MeetingOptions
             .BindInt(i => NoVoteMode = (SkipVoteMode)i)
             .BuildAndRegister());
 
-        additionalOptions.ForEach(o =>
-        {
-            o.Register();
-            AllOptions.Add(o);
-        });
+        AllOptions.AddRange(additionalOptions);
     }
 
     private GameOptionBuilder Builder(string key) => new GameOptionBuilder().Key(key).Color(_optionColor);

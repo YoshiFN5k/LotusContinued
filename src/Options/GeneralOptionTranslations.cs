@@ -58,4 +58,7 @@ public static class GeneralOptionTranslations
 
     [Localized(nameof(SecondsSuffix))]
     public static string SecondsSuffix = "s";
+
+    [Localized(nameof(Options))]
+    public static string Options = "Options";
 }
