@@ -122,7 +122,6 @@ public class SabotageOptions
             .Build());
 
         AllOptions.AddRange(additionalOptions);
-        AllOptions.ForEach(o => o.Register(GeneralOptions.MainOptionManager, VentLib.Options.OptionLoadMode.LoadOrCreate));
     }
 
     /// <summary>

@@ -68,8 +68,7 @@ public class GameplayOptions
             .ShowSubOptionPredicate(i => (int)i == 1)
             .SubOption(sub => sub
                 .AddFloatRange(0, 120, 2.5f, 4, GeneralOptionTranslations.SecondsSuffix)
-                .Key("Set Cooldown Value")
-                .Name(GameplayOptionTranslations.SetCooldownValue)
+                .KeyName("Set Cooldown Value", GameplayOptionTranslations.SetCooldownValue)
                 .BindFloat(f => setCooldown = f)
                 .Build())
             .Build());

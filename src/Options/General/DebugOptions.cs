@@ -41,7 +41,7 @@ public class DebugOptions
             .Build());
 
         AllOptions.AddRange(additionalOptions);
-        AllOptions.ForEach(o => o.Register(GeneralOptions.MainOptionManager, VentLib.Options.OptionLoadMode.LoadOrCreate));
+        AllOptions.ForEach(o => GeneralOptions.MainOptionManager.Register(o, VentLib.Options.OptionLoadMode.LoadOrCreate));
     }
 
     /// <summary>

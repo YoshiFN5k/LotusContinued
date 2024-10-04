@@ -55,13 +55,13 @@ public class Guesser : Subrole
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
             .ShowSubOptionPredicate(i => (int)i == 2), 0),
-        (r => r.Faction is Factions.Impostors.Madmates, new GameOptionBuilder()
+        (r => r.Faction is Madmates, new GameOptionBuilder()
             .KeyName("Madmates Settings", TranslationUtil.Colorize(Translations.Options.MadmateSetting, ModConstants.Palette.MadmateColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
             .ShowSubOptionPredicate(i => (int)i == 2), 0),
-        (r => r.Faction is Factions.Crew.Crewmates, new GameOptionBuilder()
+        (r => r.Faction is Crewmates, new GameOptionBuilder()
             .KeyName("Crewmate Settings", TranslationUtil.Colorize(Translations.Options.CrewmateSetting, ModConstants.Palette.CrewmateColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
