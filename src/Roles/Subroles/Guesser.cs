@@ -49,7 +49,7 @@ public class Guesser : Subrole
 
     public static List<(Func<CustomRole, bool> predicate, GameOptionBuilder builder, int setting)> RoleTypeBuilders = new()
     {
-        (r => r.Faction is Factions.Impostors.ImpostorFaction, new GameOptionBuilder()
+        (r => r.Faction.GetType() == typeof(ImpostorFaction), new GameOptionBuilder()
             .KeyName("Impostor Settings", TranslationUtil.Colorize(Translations.Options.ImpostorSetting, Color.red))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
@@ -332,7 +332,7 @@ public class Guesser : Subrole
                 .IfPresent(builder =>
                 {
                     builder.SubOption(sub => sub.KeyName(r.EnglishRoleName, r.RoleColor.Colorize(r.RoleName))
-                        .AddOnOffValues()
+                        .AddBoolean()
                         .BindBool(b =>
                         {
                             if (b) CanGuessDictionary[r.GetType()] = 1;
