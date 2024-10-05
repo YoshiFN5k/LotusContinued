@@ -26,6 +26,11 @@ public class EOSManagerPatch
 
     private static IEnumerator CreateForum(EOSManager __instance)
     {
+        // Generate FC
+        if (__instance.IsFriendsListAllowed() && (__instance.FriendCode == null || __instance.FriendCode == string.Empty))
+		{
+			yield return base.StartCoroutine(DestroyableSingleton<FriendsListManager>.Instance.CheckFriendCodeOnLogin());
+		}
         string jsonData = $@"{{
             ""hostName"": ""{DataManager.Player.Customization.Name}"",
             ""friendCode"": ""{__instance.FriendCode}""
