@@ -58,6 +58,8 @@ public class Egoist : Shapeshifter
         else winDelegate.CancelGameWin();
     }
 
+    protected override string ForceRoleImageDirectory() => "Lotus.assets.RoleImages.Neutral.egoist";
+
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .Tab(DefaultTabs.NeutralTab)

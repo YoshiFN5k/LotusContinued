@@ -128,6 +128,8 @@ public class Necromancer : UndeadRole
         else undeadWinners.Where(tc => IsConvertedUndead(tc) || MyPlayer.IsAlive() && IsUnconvertedUndead(tc)).ForEach(uw => winners.Remove(uw));
     }
 
+    protected override string ForceRoleImageDirectory() => "Lotus.assets.RoleImages.Neutral.necromancer";
+
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub

@@ -352,7 +352,7 @@ public abstract class AbstractBaseRole
 
     /// <summary>
     /// Force the path for the Role Image or Role Outfit.
-    /// Override GetRoleImage() instead of you are making an Addon.
+    /// Overriding GetRoleOutfit() isnt currently supported.
     /// </summary>
     protected virtual string ForceRoleImageDirectory() => "N/A";
 
@@ -368,8 +368,9 @@ public abstract class AbstractBaseRole
         resourceDirectory = "";
 
         if (this is GameMaster) resourceDirectory = "gm";
-        else if (Faction is ImpostorFaction | SpecialType is SpecialType.Madmate && this is not NeutralKillingBase) resourceDirectory = "Imposter." + EnglishRoleName.ToLower();
-        else if (Faction is Crewmates) resourceDirectory = "Crew." + EnglishRoleName.ToLower();
+        else if ((Faction is ImpostorFaction | SpecialType is SpecialType.Madmate) && this is not NeutralKillingBase && SpecialType is SpecialType.None) resourceDirectory = "Imposter." + EnglishRoleName.ToLower();
+        else if (Faction is Crewmates && SpecialType is SpecialType.None) resourceDirectory = "Crew." + EnglishRoleName.ToLower();
+        else if (Faction is Modifiers | RoleFlags.HasFlag(RoleFlag.IsSubrole)) resourceDirectory = "Modifiers." + EnglishRoleName.ToLower();
         else resourceDirectory = "Neutral." + EnglishRoleName.ToLower();
 
         resourceDirectory = "Lotus.assets.RoleImages." + resourceDirectory;
@@ -394,7 +395,7 @@ public abstract class AbstractBaseRole
                 fakePlayer.enabled = true;
                 fakePlayer.cosmetics.initialized = false;
                 fakePlayer.cosmetics.EnsureInitialized(PlayerBodyTypes.Normal);
-                fakePlayer.UpdateFromPlayerOutfit(OutfitFile.FromManifestFile(resourceDirectory).ToPlayerOutfit(), PlayerMaterial.MaskType.SimpleUI, false, false);
+                fakePlayer.UpdateFromPlayerOutfit(OutfitFile.FromManifestFile(resourceDirectory, DeclaringAssembly).ToPlayerOutfit(), PlayerMaterial.MaskType.SimpleUI, false, false);
                 fakePlayer.FindChild<Transform>("Names", true).gameObject.SetActive(false);
             };
         }
