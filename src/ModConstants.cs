@@ -39,7 +39,11 @@ public static class ModConstants
 
     public const string DiscordInvite = "https://discord.gg/projectlotus";
 
-    public const string LinkTree = "linktr.ee/lotusau";
+    public const string LinkTree = "https://linktr.ee/lotusau";
+
+    public const string WebsiteLink = "https://lotusau.top/";
+
+    public const string SupportEmail = "theta@eps.lol";
 
     public static class Palette
     {
