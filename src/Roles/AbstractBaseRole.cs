@@ -402,7 +402,7 @@ public abstract class AbstractBaseRole
         else
         {
             // log we can't find it and default to an empty image
-            string? debugMessage = $"Could not find RoleImage for {EnglishRoleName}. Defaulting to the GM image. Path (.png/.yaml): {resourceDirectory}";
+            string? debugMessage = $"Could not find RoleImage for {EnglishRoleName}. Defaulting to no image. Path (.png/.yaml): {resourceDirectory}";
             return (roleOption) =>
             {
                 if (debugMessage != null)
