@@ -6,6 +6,7 @@ using System.Text;
 using Lotus.API.Player;
 using Lotus.Chat;
 using Lotus.Logging;
+using Lotus.Network.PrivacyPolicy;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -31,6 +32,10 @@ public class BugReportCommand : ICommandReceiver
     private static readonly List<byte> reportingPlayerIds = new();
     public void Receive(PlayerControl source, CommandContext context)
     {
+        if (PrivacyPolicyInfo.Instance != null)
+        {
+            if (!PrivacyPolicyInfo.Instance.ConnectWithAPI) return;
+        }
         if (reportingPlayerIds.Contains(source.PlayerId))
         {
             ChatHandlers.NotPermitted(WaitingOnReport).Send(source);
@@ -45,6 +50,7 @@ public class BugReportCommand : ICommandReceiver
     private IEnumerator SendWebRequest(PlayerControl source, CommandContext context)
     {
         string message = string.Join(" ", context.Args);
+        bool flag = (PrivacyPolicyInfo.Instance != null && PrivacyPolicyInfo.Instance.AnonymousBugReports);
         if (source == PlayerControl.LocalPlayer && message == "log")
         {
             reportingPlayerIds.Remove(source.PlayerId);
@@ -68,7 +74,7 @@ public class BugReportCommand : ICommandReceiver
             // Prepare the headers and file data
             byte[] headerBytes = Encoding.UTF8.GetBytes(sb.ToString());
             byte[] footerBytes = Encoding.UTF8.GetBytes("\r\n--" + boundary + "\r\n" +
-                "Content-Disposition: form-data; name=\"hostName\"\r\n\r\n" + source.name + "\r\n" +
+                "Content-Disposition: form-data; name=\"hostName\"\r\n\r\n" + GetName() + "\r\n" +
                 "--" + boundary + "--\r\n");
 
             // Combine header, file data, and footer
@@ -109,13 +115,14 @@ public class BugReportCommand : ICommandReceiver
         // send report.
 
         string jsonData = $@"{{
-            ""playerName"": ""{source.name}"",
-            ""friendCode"": ""{source.FriendCode}"",
+            ""playerName"": ""{GetName()}"",
+            ""friendCode"": ""{GetFriendCode()}"",
             ""message"": ""{message}""
         }}";
         byte[] postData = new System.Text.UTF8Encoding().GetBytes(jsonData);
 
         // Send POST request
+        // Server checks for anon FC and sends it to the specified channel.
         UnityWebRequest webRequest = new(NetConstants.Host + "reportbug", UnityWebRequest.kHttpVerbPOST)
         {
             uploadHandler = new UploadHandlerRaw(postData),
@@ -140,6 +147,8 @@ public class BugReportCommand : ICommandReceiver
         webRequest.Dispose();
 
         reportingPlayerIds.Remove(frozenPlayer.PlayerId);
+        string GetName() => flag ? "Anonymous" : source.name;
+        string GetFriendCode() => flag ? "anonymous#1234" : source.FriendCode;
     }
 
     public static FileInfo? GetLatestLogFile()

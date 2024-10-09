@@ -2,6 +2,7 @@ using System.Collections;
 using AmongUs.Data;
 using HarmonyLib;
 using Lotus.Logging;
+using Lotus.Network.PrivacyPolicy;
 using UnityEngine.Networking;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
@@ -26,11 +27,15 @@ public class EOSManagerPatch
 
     private static IEnumerator CreateForum(EOSManager __instance)
     {
+        if (PrivacyPolicyInfo.Instance != null)
+        {
+            if (!PrivacyPolicyInfo.Instance.ConnectWithAPI) yield break;
+        }
         // Generate FC
         if (__instance.IsFriendsListAllowed() && (__instance.FriendCode == null || __instance.FriendCode == string.Empty))
-		{
-			yield return __instance.StartCoroutine(DestroyableSingleton<FriendsListManager>.Instance.CheckFriendCodeOnLogin());
-		}
+        {
+            yield return __instance.StartCoroutine(DestroyableSingleton<FriendsListManager>.Instance.CheckFriendCodeOnLogin());
+        }
         string jsonData = $@"{{
             ""hostName"": ""{DataManager.Player.Customization.Name}"",
             ""friendCode"": ""{__instance.FriendCode}""
