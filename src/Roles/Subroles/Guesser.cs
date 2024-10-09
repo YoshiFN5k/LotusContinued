@@ -319,7 +319,7 @@ public class Guesser : Subrole
         {
             string keyName = Translations.Options.FactionMaxGuessers.Formatted(kvp.Value.Name());
             Option option = new GameOptionBuilder()
-                .KeyName(keyName, TranslationUtil.Colorize(keyName, kvp.Value.Color))
+                .KeyName(TranslationUtil.Remove(keyName), TranslationUtil.Colorize(keyName, kvp.Value.Color))
                 .AddIntRange(0, ModConstants.MaxPlayers, 1, 0)
                 .BindInt(i => FactionMaxDictionary[kvp.Key] = i)
                 .Build();
