@@ -41,26 +41,26 @@ public class Sheriff : Crewmate
 
     public static Dictionary<Type, int> RoleKillerDictionary = new();
 
-    public static List<(Func<CustomRole, bool> predicate, GameOptionBuilder builder, bool allKillable)> RoleTypeBuilders = new()
+    public static List<(Func<CustomRole, bool> predicate, GameOptionBuilder builder, int curSetting)> RoleTypeBuilders = new()
     {
         (r => r.SpecialType is SpecialType.NeutralKilling, new GameOptionBuilder()
             .KeyName("Neutral Killing Settings", TranslationUtil.Colorize(Translations.NeutralKillingSetting, ModConstants.Palette.NeutralColor, ModConstants.Palette.KillingColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
-            .ShowSubOptionPredicate(i => (int)i == 2), false),
+            .ShowSubOptionPredicate(i => (int)i == 2), 0),
         (r => r.SpecialType is SpecialType.Neutral, new GameOptionBuilder()
             .KeyName("Neutral Passive Settings", TranslationUtil.Colorize(Translations.NeutralPassiveSetting, ModConstants.Palette.NeutralColor, ModConstants.Palette.PassiveColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
-            .ShowSubOptionPredicate(i => (int)i == 2), false),
+            .ShowSubOptionPredicate(i => (int)i == 2), 0),
         (r => r.Faction is Factions.Impostors.Madmates, new GameOptionBuilder()
             .KeyName("Madmates Settings", TranslationUtil.Colorize(Translations.MadmateSetting, ModConstants.Palette.MadmateColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
-            .ShowSubOptionPredicate(i => (int)i == 2), false)
+            .ShowSubOptionPredicate(i => (int)i == 2), 0)
     };
 
 
@@ -116,17 +116,20 @@ public class Sheriff : Crewmate
         shotsRemaining--;
         if (!isSheriffDesync) shootCooldown.Start();
 
-
         CustomRole role = target.PrimaryRole();
-        int setting = RoleTypeBuilders.FirstOrOptional(rtb => rtb.predicate(role)).Map(rtb => rtb.allKillable ? 1 : 0).OrElse(0);
-        if (setting == 0)
-        {
-            setting = RoleKillerDictionary.GetValueOrDefault(role.GetType(), 0);
-            if (setting == 0) setting = role.Faction.GetType() == typeof(ImpostorFaction) ? 1 : 2;
-        }
+        int setting = RoleTypeBuilders.FirstOrOptional(b => b.predicate(role)).Transform(rtb => rtb.curSetting, () => -1);
+        log.Debug($"{role.EnglishRoleName} - {setting} (c1)");
 
-        if (setting == 2) return Suicide(target);
-        return MyPlayer.InteractWith(target, LotusInteraction.FatalInteraction.Create(this)) is InteractionResult.Proceed;
+        if (setting == 0) return Suicide(target);
+        else if (setting == 1) return KillPlayer();
+
+        setting = RoleKillerDictionary.GetValueOrDefault(role.GetType(), -1);
+        log.Debug($"{role.EnglishRoleName} - {setting} (c2)");
+        if (setting == -1) setting = role.Faction.GetType() == typeof(ImpostorFaction) ? 1 : 2;
+        log.Debug($"{role.EnglishRoleName} - {setting} (c3)");
+
+        return setting == 1 ? KillPlayer() : Suicide(target);
+        bool KillPlayer() => MyPlayer.InteractWith(target, LotusInteraction.FatalInteraction.Create(this)) is InteractionResult.Proceed;
     }
 
     private bool Suicide(PlayerControl target)
@@ -204,7 +207,7 @@ public class Sheriff : Crewmate
         });
         RoleTypeBuilders.ForEach(rtb =>
         {
-            rtb.builder.BindInt(i => rtb.allKillable = i == 1);
+            rtb.builder.BindInt(i => rtb.curSetting = i);
             Option option = rtb.builder.Build();
             RoleOptions.AddChild(option);
             GlobalRoleManager.RoleOptionManager.Register(option, OptionLoadMode.LoadOrCreate);
