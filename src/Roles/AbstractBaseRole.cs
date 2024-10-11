@@ -214,6 +214,7 @@ public abstract class AbstractBaseRole
             currentActions.Count > 0)
             throw new ConstraintException("LotusActionType.FixedUpdate is limited to one per class. If you're inheriting a class that uses FixedUpdate you can add Override=METHOD_NAME to your annotation to override its Update method.");
 
+        action.SetExecuter(this);
         if (action.Attribute.Subclassing || action.Method.DeclaringType == this.GetType())
             currentActions.Add(action);
 

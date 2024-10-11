@@ -136,7 +136,7 @@ public class Copycat : CustomRole
         log.Trace("Adding shapeshift action to base role", "Copycat::AssignRole");
         RoleAction action = this.GetActions(LotusActionType.Shapeshift).First().Item1.Clone();
         role.AddRoleAction(action);
-        action.Executer = this;
+        action.SetForcedExecuter(this);
     }
 
     private void AddCatToWinners(WinDelegate winDelegate)

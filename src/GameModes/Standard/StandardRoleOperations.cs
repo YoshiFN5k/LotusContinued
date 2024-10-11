@@ -119,8 +119,7 @@ public class StandardRoleOperations : RoleOperations
 
             if (handle.Cancellation is not (ActionHandle.CancelType.None or ActionHandle.CancelType.Soft)) continue;
 
-            if (roleAction.Executer == null)
-                roleAction.SetExecuter(roleDefinition); // Ensure correct executer is set
+            roleAction.SetExecuter(roleDefinition); // Ensure correct executer is set
 
             var sentParams = roleAction.Flags.HasFlag(ActionFlag.GlobalDetector) ? globalActionParameters : parameters;
             var methodParameters = roleAction.Method.GetParameters();

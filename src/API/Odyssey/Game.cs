@@ -43,7 +43,7 @@ public static class Game
 
     public static ulong NextMatchID() => MatchData.MatchID++;
 
-    public static GameState[] InGameStates => new[] { GameState.Roaming, GameState.InMeeting };
+    public static GameState[] InGameStates => [GameState.Roaming, GameState.InMeeting];
 
     public static INameModel NameModel(this PlayerControl playerControl) => NameModels.GetOrCompute(playerControl.PlayerId, () => new SimpleNameModel(playerControl));
 

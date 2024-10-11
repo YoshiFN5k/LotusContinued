@@ -18,6 +18,7 @@ public class LotusAction
     internal LotusActionAttribute Attribute;
     internal MethodInfo Method;
     internal object Executer = null!;
+    internal object ForcedExecutor = null!;
 
     public LotusAction(LotusActionAttribute attribute, MethodInfo method)
     {
@@ -29,19 +30,19 @@ public class LotusAction
 
     public virtual void Execute(object[] args)
     {
-        if (Executer == null)
+        if (ForcedExecutor == null && Executer == null)
             throw new InvalidOperationException("Executer is not set.");
 
-        var executer = Executer as CustomRole;
+        var executer = (ForcedExecutor ?? Executer) as CustomRole;
 
         if (executer?.MyPlayer == null)
             throw new InvalidOperationException("MyPlayer is not set in the instance.");
-        log.Trace($"RoleAction(type={ActionType}, executer={Executer}, priority={Priority}, method={Method}))", "RoleAction::Execute");
+        log.Trace($"RoleAction(type={ActionType}, executer={ForcedExecutor ?? Executer}, priority={Priority}, method={Method}))", "RoleAction::Execute");
         Profiler.Sample sample1 = Profilers.Global.Sampler.Sampled($"Action::{ActionType}");
         Profiler.Sample sample2 = Profilers.Global.Sampler.Sampled((Method.ReflectedType?.FullName ?? "") + "." + Method.Name);
         try
         {
-            Method.Invoke(Executer, args);
+            Method.Invoke(ForcedExecutor ?? Executer, args);
         }
         catch (TargetParameterCountException _)
         {
@@ -89,15 +90,20 @@ public class LotusAction
 
     public virtual void ExecuteFixed(object? role = null)
     {
-        if (Executer == null && role == null)
+        if (ForcedExecutor == null && Executer == null && role == null)
             throw new InvalidOperationException("Executer is not set and role is not provided.");
 
-        Method.Invoke(Executer ?? role, null);
+        Method.Invoke(ForcedExecutor ?? Executer ?? role, null);
     }
 
     public void SetExecuter(object executer)
     {
         Executer = executer;
+    }
+
+    public void SetForcedExecuter(object forcedExec)
+    {
+        ForcedExecutor = forcedExec;
     }
 
     public LotusAction Clone()
