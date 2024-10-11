@@ -20,11 +20,13 @@ using VentLib.Localization.Attributes;
 using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
 using Lotus.GameModes.Standard;
+using Lotus.Victory;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
 public class SchrodingersCat : CustomRole
 {
+    private PlayerControl? turnedAttacker;
     private Type? turnedType;
     private int numberOfLives;
 
@@ -46,15 +48,32 @@ public class SchrodingersCat : CustomRole
         CustomRole? role;
         if (actor.PrimaryRole().GetActions(LotusActionType.Attack).Any()) role = actor.PrimaryRole();
         else role = actor.GetSubroles().FirstOrDefault(sub => sub.GetActions(LotusActionType.Attack).Any()) ?? actor.PrimaryRole();
+        turnedAttacker = actor;
         turnedType = role.GetType();
         IFaction faction = role.Faction;
         Faction = faction;
         RoleColor = role.RoleColor;
         OverridenRoleName = Translations.CatFactionChangeName.Formatted(role.RoleName);
 
-        PlayerControl[] viewers = (StandardGameMode.Instance.RoleManager.RoleHolder as StandardRoles).Static.Copycat.KillerKnowsCopycat ? new[] { actor, MyPlayer } : new[] { MyPlayer };
+        PlayerControl[] viewers = StandardGameMode.Instance.RoleManager.RoleHolder.Static.Copycat.KillerKnowsCopycat ? [actor, MyPlayer] : [MyPlayer];
         MyPlayer.NameModel().GetComponentHolder<RoleHolder>().Add(new RoleComponent(new LiveString(OverridenRoleName, RoleColor), Game.InGameStates, ViewMode.Replace, viewers: viewers));
         actor.NameModel().GCH<RoleHolder>().Last().AddViewer(MyPlayer);
+        Game.GetWinDelegate().AddSubscriber(AddCatToWinners);
+    }
+
+    private void AddCatToWinners(WinDelegate winDelegate)
+    {
+        if (turnedType == null || turnedAttacker == null)
+        {
+            winDelegate.RemoveWinner(MyPlayer);
+            return;
+        }
+        bool winnerContainsKiller;
+        if (turnedAttacker != null) winnerContainsKiller = winDelegate.GetWinners().Concat(winDelegate.GetAdditionalWinners()).Any(p => p.PlayerId == turnedAttacker.PlayerId);
+        else winnerContainsKiller = winDelegate.GetWinners().Concat(winDelegate.GetAdditionalWinners()).Any(p => p.PrimaryRole().GetType() == turnedType);
+
+        if (winnerContainsKiller) winDelegate.AddAdditionalWinner(MyPlayer);
+        else winDelegate.RemoveWinner(MyPlayer);
     }
 
     public override Relation Relationship(CustomRole role) => role.GetType() == turnedType ? Relation.FullAllies : base.Relationship(role);
