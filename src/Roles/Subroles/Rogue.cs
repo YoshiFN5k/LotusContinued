@@ -105,7 +105,9 @@ public class Rogue : Subrole
                 .AddOnOffValues()
                 .Build());
 
-    protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier).RoleColor(new Color(0.41f, 0.1f, 0.18f));
+    protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier)
+        .RoleColor(new Color(0.41f, 0.1f, 0.18f))
+        .RoleAbilityFlags(RoleAbilityFlag.IsAbleToKill);
 
     [Localized(nameof(Rogue))]
     public static class Translations
