@@ -31,6 +31,7 @@ using VentLib.Utilities.Extensions;
 using MonoMod.Utils;
 using Lotus.GameModes.Standard;
 using Lotus.Logging;
+using Lotus.Victory;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
@@ -41,6 +42,7 @@ public class Copycat : CustomRole
     /// A dict of role types and roles for the cat to fallback upon if the role cannot be copied properly (ex: Crewpostor bc Copycat cannot gain tasks)
     /// </summary>
     public static readonly Dictionary<Type, Func<CustomRole>> FallbackTypes = new();
+    private PlayerControl? turnedAttacker;
 
     public bool KillerKnowsCopycat;
     private bool copyRoleProgress;
@@ -97,7 +99,8 @@ public class Copycat : CustomRole
         CustomRole role = copyRoleProgress ? attackerRole : ProjectLotus.GameModeManager.CurrentGameMode.RoleManager.GetCleanRole(attackerRole);
 
         log.Trace($"Copycat ({MyPlayer.name}) copying role of {attacker.name} : {role.RoleName}", "Copycat::AssignRole");
-        Game.AssignRole(MyPlayer, role);
+        StandardGameMode.Instance.Assign(MyPlayer, role);
+        turnedAttacker = attacker;
 
         role = MyPlayer.PrimaryRole();
         role.RoleColor = RoleColor;
@@ -105,26 +108,42 @@ public class Copycat : CustomRole
         role.OverridenRoleName = Translations.CopyCatFactionChangeName.Formatted(role.RoleName);
         RoleComponent roleComponent = MyPlayer.NameModel().GCH<RoleHolder>().Last();
         roleComponent.SetMainText(new LiveString(role.RoleName, RoleColor));
-        roleComponent.AddViewer(attacker);
+        if (KillerKnowsCopycat) roleComponent.AddViewer(attacker);
 
         if (attackerRole.Relationship(MyPlayer) is Relation.FullAllies) attacker.NameModel().GCH<RoleHolder>().LastOrDefault()?.AddViewer(MyPlayer);
 
         Game.MatchData.GameHistory.AddEvent(new RoleChangeEvent(MyPlayer, role, this));
+        Game.GetWinDelegate().AddSubscriber(AddCatToWinners);
 
         float killCooldown = role.GetOverride(Override.KillCooldown)?.GetValue() as float? ?? AUSettings.KillCooldown();
-        role.SyncOptions(new[] { new GameOptionOverride(Override.KillCooldown, killCooldown * 2) });
+        role.SyncOptions([new GameOptionOverride(Override.KillCooldown, killCooldown * 2)]);
         Async.Schedule(() =>
         {
             MyPlayer.RpcMark(MyPlayer);
             role.SyncOptions();
         }, NetUtils.DeriveDelay(0.05f));
 
+        if (role is Subrole)
+        {
+            // killing subrole detection
+            if (role.Faction == FactionInstances.Modifiers)
+                role.Faction = FactionInstances.Neutral;
+            role.SpecialType = SpecialType.NeutralKilling;
+        }
 
         if (role.GetActions(LotusActionType.Shapeshift).Any() || role.RealRole is RoleTypes.Shapeshifter) return;
 
         log.Trace("Adding shapeshift action to base role", "Copycat::AssignRole");
         RoleAction action = this.GetActions(LotusActionType.Shapeshift).First().Item1.Clone();
+        role.AddRoleAction(action);
         action.Executer = this;
+    }
+
+    private void AddCatToWinners(WinDelegate winDelegate)
+    {
+        if (turnedAttacker == null) winDelegate.RemoveWinner(MyPlayer);
+        else if (winDelegate.GetWinners().Concat(winDelegate.GetAdditionalWinners()).Any(p => p.PlayerId == turnedAttacker.PlayerId)) winDelegate.AddAdditionalWinner(MyPlayer);
+        else winDelegate.RemoveWinner(MyPlayer);
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
