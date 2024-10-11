@@ -1,7 +1,7 @@
 Name:
-  Gradient: "#ecedea, #f8f8f6, #dcdbd8"
+  # Gradient: "#ecedea, #f8f8f6, #dcdbd8"
+  Gradient: "#69000a, #ce081b, #69000a"
 
 LowerText:
-  Text: imthespikesir
-  Gradient: "#69000a, #ce081b, #69000a"
-  
+  Text: El Lobo Escarlata
+  Color: "#ce081b"
