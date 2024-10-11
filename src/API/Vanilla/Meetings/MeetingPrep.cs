@@ -15,6 +15,7 @@ using Lotus.Options;
 using HarmonyLib;
 using Lotus.Extensions;
 using Lotus.RPC;
+using Lotus.Patches.Meetings;
 
 namespace Lotus.API.Vanilla.Meetings;
 
@@ -79,7 +80,7 @@ public class MeetingPrep
             ActionHandle handle = ActionHandle.NoInit();
             try
             {
-                RoleOperations.Current.TriggerFor(p, LotusActionType.RoundEnd, null, handle, _meetingDelegate, false);
+                MeetingStartPatch.SendTemplates(p);
             }
             catch
             {
@@ -87,7 +88,8 @@ public class MeetingPrep
             }
             finally
             {
-                if (p.PrimaryRole().RoleAbilityFlags.HasFlag(Roles.RoleAbilityFlag.UsesUnshiftTrigger)) p.CRpcShapeshift(p, false);
+                RoleOperations.Current.TriggerFor(p, LotusActionType.RoundEnd, null, handle, _meetingDelegate, false);
+                if (p.PrimaryRole().RoleAbilityFlags.HasFlag(Roles.RoleAbilityFlag.UsesUnshiftTrigger)) p.CRpcRevertShapeshift(false);
             }
         });
 

@@ -37,6 +37,18 @@ public class MeetingStartPatch
         PluginDataManager.TemplateManager.RegisterTag("meeting-start", "The template to show during each meeting.");
     }
 
+    public static void SendTemplates(PlayerControl viewer)
+    {
+        PluginDataManager.TemplateManager.GetTemplates("meeting-start")
+            ?.ForEach(t => t.SendMessage(PlayerControl.LocalPlayer, viewer));
+        if (Game.MatchData.MeetingsCalled == 0)
+            PluginDataManager.TemplateManager.GetTemplates("meeting-first")
+                ?.ForEach(t => t.SendMessage(PlayerControl.LocalPlayer, viewer));
+        else
+            PluginDataManager.TemplateManager.GetTemplates("meeting-subsequent")
+                ?.ForEach(t => t.SendMessage(PlayerControl.LocalPlayer, viewer));
+    }
+
     public static void Prefix(MeetingHud __instance)
     {
         if (!AmongUsClient.Instance.AmHost) return;
@@ -45,31 +57,22 @@ public class MeetingStartPatch
         MeetingDelegate meetingDelegate = MeetingPrep.PrepMeeting()!;
         PlayerControl reporter = Utils.GetPlayerById(__instance.reporterId)!;
 
-
-        Players.GetPlayers().Do(p =>
-        {
-            ActionHandle handle = ActionHandle.NoInit();
-            try
-            {
-                if (Game.MatchData.MeetingsCalled == 0)
-                    PluginDataManager.TemplateManager.GetTemplates("meeting-first")
-                        ?.ForEach(t => t.SendMessage(PlayerControl.LocalPlayer, p));
-                else
-                    PluginDataManager.TemplateManager.GetTemplates("meeting-subsequent")
-                        ?.ForEach(t => t.SendMessage(PlayerControl.LocalPlayer, p));
-
-                PluginDataManager.TemplateManager.GetTemplates("meeting-start")
-                    ?.ForEach(t => t.SendMessage(PlayerControl.LocalPlayer, p));
-            }
-            catch (Exception ex)
-            {
-                log.Exception("Error Sending Template Information!", ex);
-            }
-            finally
-            {
-                // RoleOperations.Current.TriggerFor(p, LotusActionType.RoundEnd, null, handle, meetingDelegate, false);
-            }
-        });
+        // Players.GetPlayers().Do(p =>
+        // {
+        //     ActionHandle handle = ActionHandle.NoInit();
+        //     try
+        //     {
+        //         // SendTemplates(p);
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         log.Exception("Error Sending Template Information!", ex);
+        //     }
+        //     finally
+        //     {
+        //         RoleOperations.Current.TriggerFor(p, LotusActionType.RoundEnd, null, handle, meetingDelegate, false);
+        //     }
+        // });
 
         Hooks.MeetingHooks.MeetingCalledHook.Propagate(new MeetingHookEvent(reporter, MeetingPrep.Reported, meetingDelegate));
         Hooks.GameStateHooks.RoundEndHook.Propagate(new GameStateHookEvent(Game.MatchData, ProjectLotus.GameModeManager.CurrentGameMode));
