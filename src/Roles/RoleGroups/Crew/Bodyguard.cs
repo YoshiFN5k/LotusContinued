@@ -142,7 +142,7 @@ public class Bodyguard : Crewmate
 
         if (result is InteractionResult.Proceed) Game.MatchData.GameHistory.AddEvent(new KillEvent(MyPlayer, interactor));
 
-        if (!interactor.PrimaryRole().GetActions(LotusActionType.Attack).Any() || interactor.GetSubroles().Any(r => r.GetActions(LotusActionType.Attack).Any()))
+        if (interactor.PrimaryRole().GetActions(LotusActionType.Attack).Any() || interactor.GetSubroles().Any(r => r.GetActions(LotusActionType.Attack).Any()))
         {
             if (interactor.InteractWith(MyPlayer, LotusInteraction.FatalInteraction.Create(this)) is InteractionResult.Proceed)
                 Game.MatchData.GameHistory.AddEvent(new KillEvent(interactor, MyPlayer));
