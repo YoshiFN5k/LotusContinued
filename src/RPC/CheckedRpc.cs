@@ -14,7 +14,7 @@ public static class CheckedRpc
     // TODO Shapeshift queue so that i dont need to stacktrace shapeshifting
     public static void CRpcShapeshift(this PlayerControl player, PlayerControl target, bool animate)
     {
-        log.Trace("CRpcShapeshift");
+        log.Trace($"CRpcShapeshift ({player.name} => {target.name}, {animate})");
         if (!player.IsAlive()) return;
         if (AmongUsClient.Instance.AmClient) player.Shapeshift(target, animate);
 
@@ -25,7 +25,7 @@ public static class CheckedRpc
 
     public static void CRpcRevertShapeshift(this PlayerControl player, bool animate)
     {
-        log.Trace("CRevertShapeshift");
+        log.Trace($"CRevertShapeshift ({player.name}, {animate})");
         if (!player.IsAlive()) return;
         if (AmongUsClient.Instance.AmClient) player.Shapeshift(player, animate);
         RpcV3.Immediate(player.NetId, RpcCalls.Shapeshift, SendOption.None).Write(player).Write(animate).Send();
