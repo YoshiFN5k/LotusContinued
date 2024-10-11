@@ -58,7 +58,7 @@ public class Camouflager : Shapeshifter
     {
         if (!camouflaged) return;
         camouflaged = false;
-        Players.GetAlivePlayers().Where(p => p.PlayerId != MyPlayer.PlayerId).Do(p => p.CRpcRevertShapeshift(true));
+        Players.GetAlivePlayers().Where(p => p.PlayerId != MyPlayer.PlayerId).Do(p => p.CRpcRevertShapeshift(false));
     }
 
     [RoleAction(LotusActionType.PlayerDeath)]
@@ -70,13 +70,13 @@ public class Camouflager : Shapeshifter
     }
 
 
-    [RoleAction(LotusActionType.Shapeshift, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath, priority: API.Priority.VeryLow)]
+    [RoleAction(LotusActionType.Shapeshift, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath, priority: API.Priority.VeryHigh)]
     private void StopShapeshift(PlayerControl player, ActionHandle handle)
     {
         if (!camouflaged) return;
         if (player.PlayerId != MyPlayer.PlayerId) handle.Cancel();
     }
-    [RoleAction(LotusActionType.Unshapeshift, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath, priority: API.Priority.VeryLow)]
+    [RoleAction(LotusActionType.Unshapeshift, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath, priority: API.Priority.VeryHigh)]
     private void StopUnShapeshift(PlayerControl player, ActionHandle handle)
     {
         if (!camouflaged) return;
