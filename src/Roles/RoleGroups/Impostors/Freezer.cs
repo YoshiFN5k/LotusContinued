@@ -12,20 +12,17 @@ namespace Lotus.Roles.RoleGroups.Impostors;
 
 public class Freezer : Vanilla.Shapeshifter
 {
-    private PlayerControl currentFreezerTarget;
-    private float freezeCooldown;
+    private PlayerControl? currentFreezerTarget;
+
     private Cooldown freezeDuration;
+    private float freezeCooldown;
     private bool canVent;
 
     [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target) => base.TryKill(target);
 
-    [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector)]
-    private void OnBodyReport()
-    {
-        if (currentFreezerTarget != null)
-            ResetSpeed();
-    }
+    [RoleAction(LotusActionType.RoundEnd)]
+    private void OnBodyReport() => OnUnshapeshift();
 
     [RoleAction(LotusActionType.PlayerDeath)]
     [RoleAction(LotusActionType.Exiled)]

@@ -70,7 +70,7 @@ public class Romantic : Subrole
         Async.Schedule(() => protectionCooldown.Start(), protectionDuration.Duration);
     }
 
-    [RoleAction(LotusActionType.ReportBody)]
+    [RoleAction(LotusActionType.RoundEnd)]
     public void SendMeetingMessage()
     {
         if (partner != byte.MaxValue) return;
