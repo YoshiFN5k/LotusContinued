@@ -5,13 +5,9 @@ using VentLib.Localization.Attributes;
 
 namespace Lotus.Factions;
 
-[Localized("Factions.Modifiers")]
-public class Modifiers: IFaction<Modifiers>
+public class Modifiers : IFaction<Modifiers>
 {
-    [Localized(nameof(Name))]
-    private static string name = "Modifiers";
-
-    public string Name() => name;
+    public string Name() => FactionTranslations.Modifiers.Name;
 
     public Relation Relationship(Modifiers sameFaction) => Relation.None;
 

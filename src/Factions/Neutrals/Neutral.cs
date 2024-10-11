@@ -5,18 +5,13 @@ using UnityEngine;
 using VentLib.Localization.Attributes;
 
 namespace Lotus.Factions.Neutrals;
-
-[Localized($"Factions.{nameof(Neutral)}")]
 public class Neutral : Faction<Neutral>
 {
-    [Localized(nameof(Name))]
-    private static string _name = "Neutrals";
-
     private readonly string factionName;
 
     public Neutral(string? factionName = null)
     {
-        this.factionName = factionName ?? _name;
+        this.factionName = factionName ?? FactionTranslations.Neutral.Name;
     }
 
     public override string Name() => this.factionName;

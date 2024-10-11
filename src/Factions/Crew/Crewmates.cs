@@ -8,6 +8,8 @@ namespace Lotus.Factions.Crew;
 
 public class Crewmates : Faction<Crewmates>
 {
+    public override string Name() => FactionTranslations.Crewmates.Name;
+
     public override Relation Relationship(Crewmates sameFaction) => Relation.FullAllies;
 
     public override bool CanSeeRole(PlayerControl player) => false;

@@ -8,7 +8,7 @@ namespace Lotus.Factions.Undead;
 
 public abstract partial class TheUndead : Faction<TheUndead>
 {
-    public override string Name() => "The Undead";
+    public override string Name() => FactionTranslations.TheUndead.Name;
 
     public override Relation Relationship(TheUndead sameFaction) => Relation.FullAllies;
 
