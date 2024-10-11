@@ -113,7 +113,7 @@ public abstract class LotusAddon
         // more will be done soon for factions, as we need to replicate them over as well. but this is all for now.
         factions.ForEach(f =>
         {
-            log.Trace($"Exporting Faction ({f.Name}) for {Name}");
+            log.Trace($"Exporting Faction ({f.Name()}) for {Name}");
             FactionInstances.AddonFactions[f.GetType()] = f;
             Factions.Add(f);
         });
