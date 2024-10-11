@@ -25,10 +25,10 @@ public abstract class RoleHolder : IRoleHolder
         get { return _initialized; }
         set
         {
-            if (_initialized != true)
-                FinishedCallbacks().All(fc => { fc(); return true; });
+            if (value == true)
+                FinishedCallbacks().ForEach(finc => finc());
 
-            _initialized = true;
+            _initialized = value;
         }
     }
     private bool _initialized;
