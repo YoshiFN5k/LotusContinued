@@ -30,11 +30,11 @@ public class PlayerJoinPatch
 
     public static void Postfix(AmongUsClient __instance, [HarmonyArgument(0)] ClientData client)
     {
-        log.Trace($"{client.PlayerName} (ClientID={client.Id}) (Platform={client.PlatformData.PlatformName}) joined the game.", "Session");
+        log.Trace($"{client.PlayerName} (ClientID={client.Id}) (Platform={client.PlatformData.Platform}) (FriendCode={client.FriendCode}) joined the game.", "Session");
         if (DestroyableSingleton<FriendsListManager>.Instance.IsPlayerBlockedUsername(client.FriendCode) && AmongUsClient.Instance.AmHost)
         {
             AmongUsClient.Instance.KickPlayer(client.Id, true);
-            log.Info($"ブロック済みのプレイヤー{client?.PlayerName}({client.FriendCode})をBANしました。", "BAN");
+            log.Info($"ブロック済みのプレイヤー{client.PlayerName}({client.FriendCode})をBANしました。", "BAN");
         }
 
         Hooks.NetworkHooks.ClientConnectHook.Propagate(new ClientConnectHookEvent(client));
@@ -43,6 +43,11 @@ public class PlayerJoinPatch
 
     private static void EnforceAdminSettings(ClientData client, PlayerControl player)
     {
+        if (player == null || client == null)
+        {
+            log.Trace($"Could not enforce admin settings for {client?.PlayerName}.");
+            return;
+        }
         player.name = client.PlayerName;
         bool kickPlayer = false;
         kickPlayer = kickPlayer || GeneralOptions.AdminOptions.KickPlayersWithoutFriendcodes && client.FriendCode == "";
