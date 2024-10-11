@@ -21,6 +21,7 @@ using VentLib.Utilities.Optionals;
 using static Lotus.Roles.RoleGroups.Crew.Snitch.SnitchTranslations.SnitchOptionTranslations;
 using static Lotus.Utilities.TranslationUtil;
 using Lotus.API.Player;
+using Lotus.Factions;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -39,8 +40,6 @@ public class Snitch : Crewmate
 
     [RoleAction(LotusActionType.PlayerDeath)]
     private void ClearComponents() => indicatorComponents.ForEach(c => c.Delete());
-
-
 
     protected override void OnTaskComplete(Optional<NormalPlayerTask> _)
     {
