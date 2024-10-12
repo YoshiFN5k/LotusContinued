@@ -5,6 +5,7 @@ using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.Chat.Patches;
 using Lotus.Managers;
+using Lotus.Network;
 using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization.Attributes;
@@ -161,7 +162,7 @@ public class ChatHandler
                     .Write(title.Replace("@n", "\n"))
                     .End()
                     .Start(sender.NetId, RpcCalls.SendChat)
-                    .Write(recipient.IsModded() ? subMessage : subMessage.RemoveHtmlTags())
+                    .Write((recipient.IsModded() | !ConnectionManager.IsVanillaServer) ? subMessage : subMessage.RemoveHtmlTags())
                     .End()
                     .Send(recipient.GetClientId());
         }
@@ -175,7 +176,7 @@ public class ChatHandler
                 .Write(title.Replace("@n", "\n"))
                 .End()
                 .Start(sender.NetId, RpcCalls.SendChat)
-                .Write(recipient.IsModded() ? message : message.RemoveHtmlTags())
+                .Write((recipient.IsModded() | !ConnectionManager.IsVanillaServer) ? message : message.RemoveHtmlTags())
                 .End();
         if (Game.State is not GameState.Roaming)
             massRpc.Start(sender.NetId, RpcCalls.SetName)
@@ -209,7 +210,7 @@ public class ChatHandler
                 .Write(subTitle)
                 .End()
                 .Start(sender.NetId, RpcCalls.SendChat)
-                .Write(recipient.IsModded() ? message.Replace("@n", "\n") : message.RemoveHtmlTags().Replace("@n", "\n"))
+                .Write((recipient.IsModded() | !ConnectionManager.IsVanillaServer) ? message.Replace("@n", "\n") : message.RemoveHtmlTags().Replace("@n", "\n"))
                 .End()
                 .Send(recipient.GetClientId());
         }
@@ -221,7 +222,7 @@ public class ChatHandler
             .Write(title)
             .End()
             .Start(sender.NetId, RpcCalls.SendChat)
-            .Write(recipient.IsModded() ? message.Replace("@n", "\n") : message.RemoveHtmlTags().Replace("@n", "\n"))
+            .Write((recipient.IsModded() | !ConnectionManager.IsVanillaServer) ? message.Replace("@n", "\n") : message.RemoveHtmlTags().Replace("@n", "\n"))
             .End();
 
         if (Game.State is not GameState.Roaming)
@@ -244,8 +245,6 @@ public class ChatHandler
         message = message[..lastIndex];
         return lastIndex + index;
     }
-
-
 
     public class TitleBuilder
     {

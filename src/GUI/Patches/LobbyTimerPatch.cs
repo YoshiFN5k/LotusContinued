@@ -6,6 +6,7 @@ using VentLib.Utilities;
 using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
 using VentLib.Networking.RPC;
+using Lotus.Network;
 
 namespace Lotus.GUI.Patches;
 
@@ -20,7 +21,7 @@ public static class SendTimerToOtherPlayers
 
     public static void SendTimer(PlayerHookEvent hookEvent)
     {
-        if (!AmongUsClient.Instance.AmHost || !GameData.Instance || AmongUsClient.Instance.NetworkMode == NetworkModes.LocalGame || LobbyBehaviour.Instance == null) return;
+        if (!AmongUsClient.Instance.AmHost || !GameData.Instance || !ConnectionManager.IsVanillaServer || LobbyBehaviour.Instance == null) return;
         TimeSpan elapsed = DateTime.Now - LobbyTimerPatch.lobbyStart;
         double remainingTime = Math.Clamp(600 - elapsed.TotalSeconds, 0, 600);
         RpcV3.Immediate(LobbyBehaviour.Instance.NetId, RpcCalls.LobbyTimeExpiring).WritePacked((int)remainingTime).Send(hookEvent.Player.GetClientId());
@@ -33,7 +34,7 @@ public class LobbyTimerPatch
     public static DateTime lobbyStart;
     public static void Postfix(GameStartManager __instance)
     {
-        if (!AmongUsClient.Instance.AmHost || !GameData.Instance || AmongUsClient.Instance.NetworkMode == NetworkModes.LocalGame) return; // Not host or no instance or LocalGame
+        if (!AmongUsClient.Instance.AmHost || !GameData.Instance || !ConnectionManager.IsVanillaServer) return; // Not host or no instance or LocalGame
         lobbyStart = DateTime.Now;
         HudManager.Instance.ShowLobbyTimer(600);
         HudManager.Instance.LobbyTimerExtensionUI.timerText.transform.parent.transform.Find("LabelBackground").gameObject.SetActive(false);

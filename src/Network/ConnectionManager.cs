@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Hazel;
 using Hazel.Udp;
 using InnerNet;
@@ -33,5 +34,21 @@ public class ConnectionManager
     private static void TrackConnectionStatistics(Connection connection)
     {
         DevLogger.Log($"Packets Sent: {connection.Statistics.packetsSent} | Unreliable Packets Sent: {connection.Statistics.unreliableMessagesSent}");
+    }
+
+
+    public static bool IsVanillaServer
+    {
+        get
+        {
+            if (AmongUsClient.Instance.NetworkMode != NetworkModes.OnlineGame) return false;
+
+            const string Domain = "among.us";
+
+            // From Reactor.gg
+            return ServerManager.Instance.CurrentRegion?.TryCast<StaticHttpRegionInfo>() is { } regionInfo &&
+                regionInfo.PingServer.EndsWith(Domain, System.StringComparison.Ordinal) &&
+                regionInfo.Servers.All(serverInfo => serverInfo.Ip.EndsWith(Domain, System.StringComparison.Ordinal));
+        }
     }
 }
