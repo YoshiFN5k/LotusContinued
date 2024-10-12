@@ -78,7 +78,7 @@ public class RoleCommand
         if (addSubRoles)
         {
             if (!source.SecondaryRoles().IsEmpty()) output += "\n";
-            output += source.SecondaryRoles().Select(sr => $"{sr.ColoredRoleName()}\n{OptionUtils.OptionText(sr.RoleOptions)}").Fuse("\n");
+            output += source.SecondaryRoles().Select(sr => $"{sr.ColoredRoleName()}\n{GetRoleText(sr)}").Fuse("\n");
         }
 
         ChatHandler.Of(output).LeftAlign().Send(source);

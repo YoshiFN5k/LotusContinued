@@ -15,6 +15,7 @@ using VentLib.Commands.Interfaces;
 using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
+using Lotus.API.Odyssey;
 
 namespace Lotus.Chat.Commands;
 
@@ -71,7 +72,7 @@ public class NowCommand : ICommandReceiver
     {
         string title = "";
         string content = "";
-        foreach (GameOption option in GeneralOptions.AllOptions)
+        foreach (GameOption option in Game.CurrentGameMode.MainTab().GetOptions())
         {
             if (!option.IsTitle)
             {
