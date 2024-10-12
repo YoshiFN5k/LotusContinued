@@ -7,6 +7,8 @@ using VentLib.Commands;
 using VentLib.Commands.Attributes;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
+using Lotus.Chat.Commands.Help;
+using System;
 
 namespace Lotus.Chat.Commands;
 
@@ -30,8 +32,9 @@ public class MyRoleCommand
             return;
         }
         string pageString = context.Args[0];
+        context.Args = Array.Empty<string>();
         if (!int.TryParse(pageString, out int page) || page <= 1) ShowRoleDescription(source);
-        else ShowRoleOptions(source);
+        else RoleCommand.Options(source, context);
     }
 
     private static void ShowRoleDescription(PlayerControl source)
@@ -46,19 +49,5 @@ public class MyRoleCommand
     private static void ShowFirstMeetingText(PlayerControl source)
     {
         PluginDataManager.TemplateManager.GetTemplates("meeting-first")?.ForEach(t => t.SendMessage(source, source));
-    }
-
-    [Command(CommandFlag.InGameOnly, "o", "option", "options")]
-    private static void ShowRoleOptions(PlayerControl source)
-    {
-        CustomRole role = source.PrimaryRole();
-        string output = $"{role.RoleColor.Colorize(role.RoleName)} ({role.Faction.Color.Colorize(role.Faction.Name())}):\n";
-
-        output += OptionUtils.OptionText(role.RoleOptions);
-
-        if (!source.SecondaryRoles().IsEmpty()) output += "\n";
-        output += source.SecondaryRoles().Select(sr => $"{sr.ColoredRoleName()}\n{OptionUtils.OptionText(sr.RoleOptions)}").Fuse("\n");
-
-        ChatHandler.Of(output).LeftAlign().Send(source);
     }
 }

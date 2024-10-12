@@ -3,6 +3,7 @@ using System.Linq;
 using HarmonyLib;
 using Lotus.API;
 using Lotus.API.Player;
+using Lotus.Extensions;
 using Lotus.Managers;
 using Lotus.Managers.Hotkeys;
 using Lotus.Managers.Templates.Models.Backing;
@@ -52,6 +53,35 @@ public class RoleCommand
             else if (allFoundRoles.Count() > 0) allFoundRoles.ForEach(r => ShowRole(source, r));
             else SendSpecial(source, NoRoles);
         }
+    }
+
+    [Command(CommandFlag.InGameOnly, "o", "option", "options")]
+    public static void Options(PlayerControl source, CommandContext context)
+    {
+        if (context.Args.Length == 0)
+        {
+            ShowRoleOptions(source, source.PrimaryRole(), true);
+            return;
+        }
+        string roleName = context.Args.Join(delimiter: " ").ToLower().Trim().Replace("[", "").Replace("]", "").ToLowerInvariant();
+        IEnumerable<CustomRole> allFoundRoles = IRoleManager.Current.AllCustomRoles().Where(r => r.RoleName.ToLowerInvariant().Contains(roleName) || r.Aliases.Contains(roleName));
+        if (allFoundRoles.Count() > 5) SendSpecial(source, AbortSearch);
+        else if (allFoundRoles.Count() > 0) allFoundRoles.ForEach(r => ShowRoleOptions(source, r, false));
+        else SendSpecial(source, NoRoles);
+    }
+    private static void ShowRoleOptions(PlayerControl source, CustomRole role, bool addSubRoles)
+    {
+        string output = $"{role.RoleColor.Colorize(role.RoleName)} ({role.Faction.Color.Colorize(role.Faction.Name())}):\n";
+
+        output += OptionUtils.OptionText(role.RoleOptions);
+
+        if (addSubRoles)
+        {
+            if (!source.SecondaryRoles().IsEmpty()) output += "\n";
+            output += source.SecondaryRoles().Select(sr => $"{sr.ColoredRoleName()}\n{OptionUtils.OptionText(sr.RoleOptions)}").Fuse("\n");
+        }
+
+        ChatHandler.Of(output).LeftAlign().Send(source);
     }
 
     private static void ShowRole(PlayerControl source, CustomRole role)
