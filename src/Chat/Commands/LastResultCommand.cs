@@ -50,13 +50,13 @@ public class LastResultCommand : CommandTranslations
     {
         if (PlayerHistories == null) ErrorHandler(source).Message(NoPreviousGameText).Send();
         else if (context.Args.Length == 0) GeneralResults(source);
-        else PlayerResults(source, context.Join());
+        else PlayerResults(source, context.Join().ToLower());
     }
 
     public static void PlayerResults(PlayerControl source, string name)
     {
         HashSet<byte> winners = Game.MatchData.GameHistory.LastWinners.Select(p => p.MyPlayer.PlayerId).ToHashSet();
-        PlayerHistory? foundPlayer = PlayerHistories!.FirstOrDefault(p => p.Name == name);
+        PlayerHistory? foundPlayer = PlayerHistories!.FirstOrDefault(p => p.Name.ToLower().Contains(name));
         if (foundPlayer == null)
         {
             ErrorHandler(source).Message(PlayerNotFoundText.Formatted(name)).Send();
@@ -78,7 +78,7 @@ public class LastResultCommand : CommandTranslations
 
         text += foundPlayer.MainRole.Statistics().Select(s => $"{s.Name()}: {s.GetGenericValue(foundPlayer.UniquePlayerId)}").Fuse("\n") + "\n.";
 
-        ChatHandler.Of(text, titleText).LeftAlign().Send(source);
+        ChatHandler.Of("\n", titleText).LeftAlign().Send(source);
     }
 
     public static void GeneralResults(PlayerControl source)
@@ -117,7 +117,7 @@ public class LastResultCommand : CommandTranslations
 
         string content = $"<size=1.7>{text + winResult}</size>";
 
-        ChatHandler.Of("\n".Repeat(PlayerHistories.Count - 1), content).LeftAlign().Send(source);
+        ChatHandler.Of("\n", content).LeftAlign().Send(source);
         return;
 
         float DeathTimeOrder(PlayerHistory ph) => ph.CauseOfDeath == null ? 0f : (7200f - (float)ph.CauseOfDeath.Timestamp().TimeSpan().TotalSeconds) / 7200f;
