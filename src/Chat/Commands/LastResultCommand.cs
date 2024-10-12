@@ -21,6 +21,7 @@ using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using static Lotus.ModConstants.Palette;
+using VentLib.Networking;
 
 namespace Lotus.Chat.Commands;
 
@@ -41,7 +42,7 @@ public class LastResultCommand : CommandTranslations
         {
             if (!GeneralOptions.MiscellaneousOptions.AutoDisplayLastResults) return;
             if (gameJoinEvent.IsNewLobby) return;
-            Async.WaitUntil(() => PlayerControl.LocalPlayer, p => p != null, GeneralResults, 0.1f, 30);
+            Async.WaitUntil(() => PlayerControl.LocalPlayer, p => p != null, p => GeneralResults(p), 0.1f, 30);
         });
     }
 
@@ -49,7 +50,7 @@ public class LastResultCommand : CommandTranslations
     public static void LastGame(PlayerControl source, CommandContext context)
     {
         if (PlayerHistories == null) ErrorHandler(source).Message(NoPreviousGameText).Send();
-        else if (context.Args.Length == 0) GeneralResults(source);
+        else if (context.Args.Length == 0 || (context.Args.Length > 0 && context.Args[0] == "s")) GeneralResults(source, context.Args.Length > 0 && context.Args[0] == "s");
         else PlayerResults(source, context.Join().ToLower());
     }
 
@@ -73,21 +74,47 @@ public class LastResultCommand : CommandTranslations
         titleText += $"{LRTranslations.RoleText.Formatted(foundPlayer.MainRole.RoleColor.Colorize(foundPlayer.MainRole.RoleName))} ({playerStatus})\n";
         if (foundPlayer.Subroles.Count > 0) titleText += LRTranslations.ModifierText.Formatted(foundPlayer.Subroles.Select(sr => sr.RoleColor.Colorize(sr.RoleName)).Fuse());
 
-        string text = "";
-        text += "\n\n";
-
-        text += foundPlayer.MainRole.Statistics().Select(s => $"{s.Name()}: {s.GetGenericValue(foundPlayer.UniquePlayerId)}").Fuse("\n") + "\n.";
-
         ChatHandler.Of("\n", titleText).LeftAlign().Send(source);
     }
 
-    public static void GeneralResults(PlayerControl source)
+    public static void GeneralResults(PlayerControl source, bool SeparateResults = false)
     {
         if (PlayerHistories == null) return;
 
         HashSet<byte> winners = Game.MatchData.GameHistory.LastWinners.Select(p => p.MyPlayer.PlayerId).ToHashSet();
+        List<string> messages = new();
 
-        string text = PlayerHistories
+        string text = "";
+
+        if (SeparateResults)
+        {
+            int _maxMessagePacketSize = NetworkRules.MaxPacketSize + 200;
+            List<string> playerResults = PlayerHistories
+                .Where(ph => ph.MainRole is not GameMaster)
+                .OrderBy(StatusOrder)
+                .Select(p => CreateSmallPlayerResult(p, winners.Contains(p.PlayerId)))
+                .ToList();
+
+            int i = 1;
+            int lastI = 0;
+
+            while (i <= playerResults.Count)
+            {
+                IEnumerable<string> curText = playerResults.Skip(lastI).Take(i - lastI);
+                string fusedText = curText.Fuse("<line-height=4>\n</line-height>");
+
+                if (fusedText.Length >= _maxMessagePacketSize)
+                {
+                    int difference = i - lastI;
+                    messages.Add(playerResults.GetRange(lastI, difference - 1).Fuse("<line-height=4>\n</line-height>"));
+                    lastI = i - 1;
+                }
+                else i++;
+            }
+
+            if (lastI < playerResults.Count) messages.Add(playerResults.Skip(lastI).Fuse("<line-height=4>\n</line-height>"));
+        }
+        else text = PlayerHistories
             .Where(ph => ph.MainRole is not GameMaster)
             .OrderBy(StatusOrder)
             .Select(p => CreateSmallPlayerResult(p, winners.Contains(p.PlayerId)))
@@ -115,9 +142,17 @@ public class LastResultCommand : CommandTranslations
         }).OrElse("");
 
 
-        string content = $"<size=1.7>{text + winResult}</size>";
-
-        ChatHandler.Of("\n", content).LeftAlign().Send(source);
+        if (SeparateResults)
+        {
+            string content = $"<size=1.7>{text + winResult}</size>";
+            ChatHandler.Of("\n", content).LeftAlign().Send(source);
+        }
+        else
+        {
+            messages.ForEach(m => ChatHandler.Of("\n", m).LeftAlign().Send(source));
+            ChatHandler.Of("\n", $"<size=1.7>{winResult}</size>").LeftAlign().Send(source);
+        }
+        messages.Clear();
         return;
 
         float DeathTimeOrder(PlayerHistory ph) => ph.CauseOfDeath == null ? 0f : (7200f - (float)ph.CauseOfDeath.Timestamp().TimeSpan().TotalSeconds) / 7200f;
