@@ -25,25 +25,31 @@ using VentLib.Utilities;
 using VentLib.Utilities.Optionals;
 using Lotus.API.Player;
 using VentLib.Localization.Attributes;
+using System.Numerics;
+using Lotus.Utilities;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
 public class Swooper : Impostor
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Swooper));
-    private bool canVentNormally;
-    private bool canBeSeenByAllied;
+    private ReturnLocation returnLocation;
     private bool remainInvisibleOnKill;
-    private Optional<Vent> initialVent = null!;
+    private bool canBeSeenByAllied;
+    private bool canVentNormally;
 
     [UIComponent(UI.Cooldown)]
     private Cooldown swoopingDuration = null!;
 
     [UIComponent(UI.Cooldown)]
     private Cooldown swooperCooldown = null!;
+    private Optional<Vent> initialVent = null!;
+
+    [RoleAction(LotusActionType.RoundStart)]
+    private void OnRoundStart(bool gameStart) => swooperCooldown.Start(gameStart ? 10 : float.MinValue);
 
     [RoleAction(LotusActionType.Attack)]
-    public new bool TryKill(PlayerControl target)
+    public override bool TryKill(PlayerControl target)
     {
         if (!remainInvisibleOnKill || swoopingDuration.IsReady()) return base.TryKill(target);
         MyPlayer.RpcMark(target);
@@ -73,10 +79,9 @@ public class Swooper : Impostor
         List<PlayerControl> unaffected = GetUnaffected();
         initialVent = Optional<Vent>.Of(vent);
 
-        swoopingDuration.Start();
+        swoopingDuration.StartThenRun(EndSwooping);
         Game.MatchData.GameHistory.AddEvent(new GenericAbilityEvent(MyPlayer, $"{MyPlayer.name} began swooping."));
         Async.Schedule(() => KickFromVent(vent, unaffected), 0.4f);
-        Async.Schedule(EndSwooping, swoopingDuration.Duration);
     }
 
     private void KickFromVent(Vent vent, List<PlayerControl> unaffected)
@@ -87,10 +92,20 @@ public class Swooper : Impostor
 
     private void EndSwooping()
     {
+        if (Game.State is not GameState.Roaming) return;
         int ventId = initialVent.Map(v => v.Id).OrElse(0);
         log.Trace($"Ending Swooping (ID: {ventId})");
-
-        Async.Schedule(() => MyPlayer.MyPhysics.RpcBootFromVent(ventId), 0.4f);
+        switch (returnLocation)
+        {
+            case ReturnLocation.Start:
+                Async.Schedule(() => MyPlayer.MyPhysics.RpcBootFromVent(ventId), 0.4f);
+                break;
+            case ReturnLocation.Current:
+                UnityEngine.Vector2 currentLocation = MyPlayer.GetTruePosition();
+                Async.Schedule(() => MyPlayer.MyPhysics.RpcBootFromVent(ventId), 0.4f);
+                Async.Schedule(() => Utils.Teleport(MyPlayer.NetTransform, currentLocation), 0.8f);
+                break;
+        }
         swooperCooldown.Start();
     }
 
@@ -109,18 +124,24 @@ public class Swooper : Impostor
             .Build())
         .SubOption(sub => sub
             .KeyName("Can be Seen By Allies", Translations.Options.SeenByAllies)
-            .AddOnOffValues()
+            .AddBoolean()
             .BindBool(b => canBeSeenByAllied = b)
             .Build())
         .SubOption(sub => sub
             .KeyName("Can Vent During Cooldown", Translations.Options.VentDuringCooldown)
-            .AddOnOffValues(false)
+            .AddBoolean(false)
             .BindBool(b => canVentNormally = b)
             .Build())
         .SubOption(sub => sub
             .KeyName("Remain Invisible on Kill", Translations.Options.InvisibleOnKill)
-            .AddOnOffValues()
+            .AddBoolean()
             .BindBool(b => remainInvisibleOnKill = b)
+            .Build())
+        .SubOption(sub => sub
+            .KeyName("Return Location on Invisibility End", Translations.Options.ReturnLocation)
+            .Value(v => v.Text(Translations.Options.CurrentLocation).Color(Color.cyan).Value(0).Build())
+            .Value(v => v.Text(Translations.Options.StartLocation).Color(Color.blue).Value(1).Build())
+            .BindInt(i => returnLocation = (ReturnLocation)i)
             .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
@@ -133,20 +154,21 @@ public class Swooper : Impostor
         [Localized(ModConstants.Options)]
         public static class Options
         {
-            [Localized(nameof(InvisibilityCooldown))]
-            public static string InvisibilityCooldown = "Invisibility Cooldown";
+            [Localized(nameof(ReturnLocation))] public static string ReturnLocation = "Return Location on Invisibility End";
+            [Localized(nameof(InvisibilityCooldown))] public static string InvisibilityCooldown = "Invisibility Cooldown";
+            [Localized(nameof(VentDuringCooldown))] public static string VentDuringCooldown = "Can Vent During Cooldown";
+            [Localized(nameof(InvisibleOnKill))] public static string InvisibleOnKill = "Remain Invisible on Kill";
+            [Localized(nameof(SwoopingDuration))] public static string SwoopingDuration = "Swooping Duration";
+            [Localized(nameof(SeenByAllies))] public static string SeenByAllies = "Can Be Seen By Allies";
 
-            [Localized(nameof(SwoopingDuration))]
-            public static string SwoopingDuration = "Swooping Duration";
-
-            [Localized(nameof(SeenByAllies))]
-            public static string SeenByAllies = "Can Be Seen By Allies";
-
-            [Localized(nameof(VentDuringCooldown))]
-            public static string VentDuringCooldown = "Can Vent During Cooldown";
-
-            [Localized(nameof(InvisibleOnKill))]
-            public static string InvisibleOnKill = "Remain Invisible on Kill";
+            [Localized(nameof(CurrentLocation))] public static string CurrentLocation = "Current";
+            [Localized(nameof(StartLocation))] public static string StartLocation = "Start";
         }
+    }
+
+    private enum ReturnLocation
+    {
+        Current,
+        Start
     }
 }
