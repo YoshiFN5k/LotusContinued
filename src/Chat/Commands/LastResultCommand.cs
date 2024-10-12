@@ -142,7 +142,7 @@ public class LastResultCommand : CommandTranslations
         }).OrElse("");
 
 
-        if (SeparateResults)
+        if (!SeparateResults)
         {
             string content = $"<size=1.7>{text + winResult}</size>";
             ChatHandler.Of("\n", content).LeftAlign().Send(source);
