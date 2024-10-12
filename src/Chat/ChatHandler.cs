@@ -157,27 +157,27 @@ public class ChatHandler
 
 
             RpcV3.Mass()
-                    .Start(sender.NetId, RpcCalls.SetName)
-                    .Write(sender.Data.NetId)
-                    .Write(title.Replace("@n", "\n"))
-                    .End()
-                    .Start(sender.NetId, RpcCalls.SendChat)
-                    .Write((recipient.IsModded() | !ConnectionManager.IsVanillaServer) ? subMessage : subMessage.RemoveHtmlTags())
-                    .End()
-                    .Send(recipient.GetClientId());
+                .Start(sender.NetId, RpcCalls.SetName)
+                .Write(sender.Data.NetId)
+                .Write(title.Replace("@n", "\n"))
+                .End()
+                .Start(sender.NetId, RpcCalls.SendChat)
+                .Write((recipient.IsModded() | !ConnectionManager.IsVanillaServer) ? subMessage : subMessage.RemoveHtmlTags())
+                .End()
+                .Send(recipient.GetClientId());
         }
 
         message = message[leftIndex..rightIndex].Trim('\n').Replace("@n", "\n");
 
 
         massRpc = RpcV3.Mass()
-                .Start(sender.NetId, RpcCalls.SetName)
-                .Write(sender.Data.NetId)
-                .Write(title.Replace("@n", "\n"))
-                .End()
-                .Start(sender.NetId, RpcCalls.SendChat)
-                .Write((recipient.IsModded() | !ConnectionManager.IsVanillaServer) ? message : message.RemoveHtmlTags())
-                .End();
+            .Start(sender.NetId, RpcCalls.SetName)
+            .Write(sender.Data.NetId)
+            .Write(title.Replace("@n", "\n"))
+            .End()
+            .Start(sender.NetId, RpcCalls.SendChat)
+            .Write((recipient.IsModded() | !ConnectionManager.IsVanillaServer) ? message : message.RemoveHtmlTags())
+            .End();
         if (Game.State is not GameState.Roaming)
             massRpc.Start(sender.NetId, RpcCalls.SetName)
                 .Write(sender.Data.NetId)
@@ -207,6 +207,7 @@ public class ChatHandler
 
             RpcV3.Mass()
                 .Start(sender.NetId, RpcCalls.SetName)
+                .Write(sender.Data.NetId)
                 .Write(subTitle)
                 .End()
                 .Start(sender.NetId, RpcCalls.SendChat)
@@ -219,6 +220,7 @@ public class ChatHandler
 
         MassRpc massRpc = RpcV3.Mass()
             .Start(sender.NetId, RpcCalls.SetName)
+            .Write(sender.Data.NetId)
             .Write(title)
             .End()
             .Start(sender.NetId, RpcCalls.SendChat)
@@ -227,6 +229,7 @@ public class ChatHandler
 
         if (Game.State is not GameState.Roaming)
             massRpc.Start(sender.NetId, RpcCalls.SetName)
+                .Write(sender.Data.NetId)
                 .Write(originalName)
                 .End()
                 .Send(recipient.GetClientId());
