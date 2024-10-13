@@ -41,28 +41,31 @@ public class Sheriff : Crewmate
 
     public static Dictionary<Type, int> RoleKillerDictionary = new();
 
-    public static List<(Func<CustomRole, bool> predicate, GameOptionBuilder builder, int curSetting)> RoleTypeBuilders = new()
+    private static bool NeutralKillingCheck(CustomRole r) => r.SpecialType is SpecialType.NeutralKilling;
+    private static bool NeutralCheck(CustomRole r) => r.SpecialType is SpecialType.Neutral;
+    private static bool MadmateCheck(CustomRole r) => r.Faction is Factions.Impostors.Madmates;
+    public static List<(Func<CustomRole, bool> predicate, GameOptionBuilder builder)> RoleTypeBuilders = new()
     {
-        (r => r.SpecialType is SpecialType.NeutralKilling, new GameOptionBuilder()
+        (NeutralKillingCheck, new GameOptionBuilder()
             .KeyName("Neutral Killing Settings", TranslationUtil.Colorize(Translations.NeutralKillingSetting, ModConstants.Palette.NeutralColor, ModConstants.Palette.KillingColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
-            .ShowSubOptionPredicate(i => (int)i == 2), 0),
-        (r => r.SpecialType is SpecialType.Neutral, new GameOptionBuilder()
+            .ShowSubOptionPredicate(i => (int)i == 2)),
+        (NeutralCheck, new GameOptionBuilder()
             .KeyName("Neutral Passive Settings", TranslationUtil.Colorize(Translations.NeutralPassiveSetting, ModConstants.Palette.NeutralColor, ModConstants.Palette.PassiveColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
-            .ShowSubOptionPredicate(i => (int)i == 2), 0),
-        (r => r.Faction is Factions.Impostors.Madmates, new GameOptionBuilder()
+            .ShowSubOptionPredicate(i => (int)i == 2)),
+        (MadmateCheck, new GameOptionBuilder()
             .KeyName("Madmates Settings", TranslationUtil.Colorize(Translations.MadmateSetting, ModConstants.Palette.MadmateColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
-            .ShowSubOptionPredicate(i => (int)i == 2), 0)
+            .ShowSubOptionPredicate(i => (int)i == 2))
     };
-
+    public static List<int> RoleTypeSettings = new() { 0, 0, 0 };
 
     private int totalShots;
     private bool oneShotPerRound;
@@ -117,8 +120,10 @@ public class Sheriff : Crewmate
         if (!isSheriffDesync) shootCooldown.Start();
 
         CustomRole role = target.PrimaryRole();
-        int setting = RoleTypeBuilders.FirstOrOptional(b => b.predicate(role)).Transform(rtb => rtb.curSetting, () => -1);
+        int setting = -1;
+        RoleTypeBuilders.FirstOrOptional(b => b.predicate(role)).IfPresent(rtb => setting = RoleTypeSettings[RoleTypeBuilders.IndexOf(rtb)]);
         log.Debug($"{role.EnglishRoleName} - {setting} (c1)");
+        log.Debug($"{role.SpecialType} - {role.Faction.Name()}");
 
         if (setting == 0) return Suicide(target);
         else if (setting == 1) return KillPlayer();
@@ -205,9 +210,9 @@ public class Sheriff : Crewmate
                         .Build());
                 });
         });
-        RoleTypeBuilders.ForEach(rtb =>
+        RoleTypeBuilders.ForEach((rtb, index) =>
         {
-            rtb.builder.BindInt(i => rtb.curSetting = i);
+            rtb.builder.BindInt(i => RoleTypeSettings[index] = i);
             Option option = rtb.builder.Build();
             RoleOptions.AddChild(option);
             GlobalRoleManager.RoleOptionManager.Register(option, OptionLoadMode.LoadOrCreate);
