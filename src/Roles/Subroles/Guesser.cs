@@ -47,45 +47,46 @@ public class Guesser : Subrole
     public static Dictionary<Type, int> CanGuessDictionary = new();
     public static Dictionary<Type, int> FactionMaxDictionary = new();
 
-    public static List<(Func<CustomRole, bool> predicate, GameOptionBuilder builder, int setting)> RoleTypeBuilders = new()
+    public static List<(Func<CustomRole, bool> predicate, GameOptionBuilder builder)> RoleTypeBuilders = new()
     {
         (r => r.Faction.GetType() == typeof(ImpostorFaction), new GameOptionBuilder()
             .KeyName("Impostor Settings", TranslationUtil.Colorize(Translations.Options.ImpostorSetting, Color.red))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
-            .ShowSubOptionPredicate(i => (int)i == 2), 0),
+            .ShowSubOptionPredicate(i => (int)i == 2)),
         (r => r.Faction is Madmates, new GameOptionBuilder()
             .KeyName("Madmates Settings", TranslationUtil.Colorize(Translations.Options.MadmateSetting, ModConstants.Palette.MadmateColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
-            .ShowSubOptionPredicate(i => (int)i == 2), 0),
+            .ShowSubOptionPredicate(i => (int)i == 2)),
         (r => r.Faction is Crewmates, new GameOptionBuilder()
             .KeyName("Crewmate Settings", TranslationUtil.Colorize(Translations.Options.CrewmateSetting, ModConstants.Palette.CrewmateColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
-            .ShowSubOptionPredicate(i => (int)i == 2), 0),
+            .ShowSubOptionPredicate(i => (int)i == 2)),
         (r => r.SpecialType is SpecialType.NeutralKilling, new GameOptionBuilder()
             .KeyName("Neutral Killing Settings", TranslationUtil.Colorize(Translations.Options.NeutralKillingSetting, ModConstants.Palette.NeutralColor, ModConstants.Palette.KillingColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
-            .ShowSubOptionPredicate(i => (int)i == 2), 0),
+            .ShowSubOptionPredicate(i => (int)i == 2)),
         (r => r.SpecialType is SpecialType.Neutral, new GameOptionBuilder()
             .KeyName("Neutral Passive Settings", TranslationUtil.Colorize(Translations.Options.NeutralPassiveSetting, ModConstants.Palette.NeutralColor, ModConstants.Palette.PassiveColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
-            .ShowSubOptionPredicate(i => (int)i == 2), 0),
+            .ShowSubOptionPredicate(i => (int)i == 2)),
         (r => r.RoleFlags.HasFlag(RoleFlag.IsSubrole), new GameOptionBuilder()
             .KeyName("Modifier Settings", TranslationUtil.Colorize(Translations.Options.SubroleSetting, ModConstants.Palette.ModifierColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
-            .ShowSubOptionPredicate(i => (int)i == 2), 0)
+            .ShowSubOptionPredicate(i => (int)i == 2))
     };
+    public static List<int> RoleTypeSettings = new() { 0, 0, 0, 0, 0, 0 };
 
     private bool restrictToNonVotingRoles;
     private bool canGuessTeammates;
@@ -234,8 +235,9 @@ public class Guesser : Subrole
             return;
         }
 
-        int setting = RoleTypeBuilders.FirstOrOptional(rtb => rtb.predicate(guessedRole)).Map(rtb => rtb.setting).OrElse(0);
-        if (setting == 2) setting = CanGuessDictionary.GetValueOrDefault(role.GetType(), 0);
+        int setting = -1;
+        RoleTypeBuilders.FirstOrOptional(b => b.predicate(guessedRole)).IfPresent(rtb => setting = RoleTypeSettings[RoleTypeBuilders.IndexOf(rtb)]);
+        if (setting == -1 || setting == 2) setting = CanGuessDictionary.GetValueOrDefault(role.GetType(), -1);
         if (setting == 1) GuesserHandler(Translations.PickedRoleText.Formatted(Players.FindPlayerById(guessingPlayer)?.name, guessedRole.RoleName)).Send(MyPlayer);
         else
         {
@@ -309,10 +311,10 @@ public class Guesser : Subrole
     private void PopulateGuesserSettings()
     {
         Dictionary<Type, IFaction> allFactions = new() {
-            {typeof(ImpostorFaction), FactionInstances.Impostors},
-            {typeof(Crewmates), FactionInstances.Crewmates},
-            {typeof(Neutral), FactionInstances.Neutral},
-            {typeof(TheUndead), FactionInstances.TheUndead}
+            {FactionInstances.Impostors.GetType(), FactionInstances.Impostors},
+            {FactionInstances.Crewmates.GetType(), FactionInstances.Crewmates},
+            {FactionInstances.Neutral.GetType(), FactionInstances.Neutral},
+            {FactionInstances.TheUndead.GetType(), FactionInstances.TheUndead}
         };
         allFactions.AddRange(FactionInstances.AddonFactions);
         allFactions.ForEach(kvp =>
@@ -326,7 +328,7 @@ public class Guesser : Subrole
             RoleOptions.AddChild(option);
             GlobalRoleManager.RoleOptionManager.Register(option, OptionLoadMode.LoadOrCreate);
         });
-        StandardGameMode.Instance.RoleManager.RoleHolder.AllRoles.OrderBy(r => r.EnglishRoleName).ForEach(r =>
+        StandardRoles.Instance.AllRoles.OrderBy(r => r.EnglishRoleName).ForEach(r =>
         {
             RoleTypeBuilders.FirstOrOptional(b => b.predicate(r)).Map(i => i.builder)
                 .IfPresent(builder =>
@@ -341,9 +343,9 @@ public class Guesser : Subrole
                         .Build());
                 });
         });
-        RoleTypeBuilders.ForEach(rtb =>
+        RoleTypeBuilders.ForEach((rtb, index) =>
         {
-            rtb.builder.BindInt(i => rtb.setting = i);
+            rtb.builder.BindInt(i => RoleTypeSettings[index] = i);
             Option option = rtb.builder.Build();
             RoleOptions.AddChild(option);
             GlobalRoleManager.RoleOptionManager.Register(option, OptionLoadMode.LoadOrCreate);
