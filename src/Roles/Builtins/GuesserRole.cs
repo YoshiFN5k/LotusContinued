@@ -174,8 +174,9 @@ public class GuesserRole : CustomRole
             GuesserHandler(Guesser.Translations.PickedRoleText.Formatted(Players.FindPlayerById(guessingPlayer)?.name, guessedRole.RoleName)).Send(MyPlayer);
             return;
         }
-        int setting = Guesser.RoleTypeBuilders.FirstOrOptional(rtb => rtb.predicate(guessedRole)).Map(rtb => rtb.setting).OrElse(0);
-        if (setting == 2) setting = Guesser.CanGuessDictionary.GetValueOrDefault(role.GetType(), 0);
+        int setting = -1;
+        Guesser.RoleTypeBuilders.FirstOrOptional(b => b.predicate(guessedRole)).IfPresent(rtb => setting = Guesser.RoleTypeSettings[Guesser.RoleTypeBuilders.IndexOf(rtb)]);
+        if (setting == -1 || setting == 2) setting = Guesser.CanGuessDictionary.GetValueOrDefault(role.GetType(), -1);
         if (setting == 1) GuesserHandler(Guesser.Translations.PickedRoleText.Formatted(Players.FindPlayerById(guessingPlayer)?.name, guessedRole.RoleName)).Send(MyPlayer);
         else
         {
