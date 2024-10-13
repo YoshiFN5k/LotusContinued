@@ -21,13 +21,18 @@ using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
 using Lotus.GameModes.Standard;
 using Lotus.Victory;
+using Lotus.Utilities;
+using System.Collections.Generic;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
 public class SchrodingersCat : CustomRole
 {
+
     private PlayerControl? turnedAttacker;
     private Type? turnedType;
+
+    private bool KillerKnowsCat;
     private int numberOfLives;
 
     [UIComponent(UI.Counter)]
@@ -55,7 +60,7 @@ public class SchrodingersCat : CustomRole
         RoleColor = role.RoleColor;
         OverridenRoleName = Translations.CatFactionChangeName.Formatted(role.RoleName);
 
-        PlayerControl[] viewers = StandardGameMode.Instance.RoleManager.RoleHolder.Static.Copycat.KillerKnowsCopycat ? [actor, MyPlayer] : [MyPlayer];
+        PlayerControl[] viewers = KillerKnowsCat ? [actor, MyPlayer] : [MyPlayer];
         MyPlayer.NameModel().GetComponentHolder<RoleHolder>().Add(new RoleComponent(new LiveString(OverridenRoleName, RoleColor), Game.InGameStates, ViewMode.Replace, viewers: viewers));
         actor.NameModel().GCH<RoleHolder>().Last().AddViewer(MyPlayer);
         Game.GetWinDelegate().AddSubscriber(AddCatToWinners);
@@ -70,7 +75,7 @@ public class SchrodingersCat : CustomRole
         }
         bool winnerContainsKiller;
         if (turnedAttacker != null) winnerContainsKiller = winDelegate.GetWinners().Concat(winDelegate.GetAdditionalWinners()).Any(p => p.PlayerId == turnedAttacker.PlayerId);
-        else winnerContainsKiller = winDelegate.GetWinners().Concat(winDelegate.GetAdditionalWinners()).Any(p => p.PrimaryRole().GetType() == turnedType);
+        else winnerContainsKiller = winDelegate.GetWinners().Concat(winDelegate.GetAdditionalWinners()).SelectMany(p => p.GetSubroles().Concat([p.PrimaryRole()])).Any(r => r.GetType() == turnedType);
 
         if (winnerContainsKiller) winDelegate.AddAdditionalWinner(MyPlayer);
         else winDelegate.RemoveWinner(MyPlayer);
@@ -83,6 +88,10 @@ public class SchrodingersCat : CustomRole
             .SubOption(sub => sub.KeyName("Number of Lives", Translations.Options.NumberOfLives)
                 .AddIntRange(1, 20, 1, 8)
                 .BindInt(i => numberOfLives = i)
+                .Build())
+            .SubOption(sub => sub.KeyName("Killer Knows Cat", TranslationUtil.Colorize(Translations.Options.KillerKnowsCat, RoleColor, RoleColor))
+                .AddOnOffValues()
+                .BindBool(b => KillerKnowsCat = b)
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
@@ -102,8 +111,8 @@ public class SchrodingersCat : CustomRole
         [Localized(ModConstants.Options)]
         public static class Options
         {
-            [Localized(nameof(NumberOfLives))]
-            public static string NumberOfLives = "Number of Lives";
+            [Localized(nameof(KillerKnowsCat))] public static string KillerKnowsCat = "Killer Knows Schrodinger's::0 Cat::1";
+            [Localized(nameof(NumberOfLives))] public static string NumberOfLives = "Number of Lives";
         }
     }
 }

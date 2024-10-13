@@ -44,7 +44,7 @@ public class Copycat : CustomRole
     public static readonly Dictionary<Type, Func<CustomRole>> FallbackTypes = new();
     private PlayerControl? turnedAttacker;
 
-    public bool KillerKnowsCopycat;
+    private bool KillerKnowsCopycat;
     private bool copyRoleProgress;
     private bool turned;
 
@@ -149,9 +149,9 @@ public class Copycat : CustomRole
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub2 => sub2.KeyName("Copy Role's Progress", Translations.Options.CopyRoleProgress)
-                    .AddOnOffValues(false)
-                    .BindBool(b => copyRoleProgress = b)
-                    .Build())
+                .AddOnOffValues(false)
+                .BindBool(b => copyRoleProgress = b)
+                .Build())
             .SubOption(sub => sub.KeyName("Killer Knows Copycat", TranslationUtil.Colorize(Translations.Options.KillerKnowsCopycat, RoleColor))
                 .AddOnOffValues()
                 .BindBool(b => KillerKnowsCopycat = b)
