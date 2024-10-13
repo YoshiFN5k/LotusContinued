@@ -28,6 +28,7 @@ public class BugReportCommand : ICommandReceiver
     [Localized(nameof(FailedReport))] public static string FailedReport = "An error occured while sending the request. Please try again in a minute.\nError: {0}";
     [Localized(nameof(ReportingBug))] public static string ReportingBug = "Your request has went through and we are now reporting your bug. Thanks!";
     [Localized(nameof(ReportedBug))] public static string ReportedBug = "Your bug has been successfully reported. Again, thank you!";
+    [Localized(nameof(ReportSuggest))] public static string ReportSuggest = "{0} suggests you to report \"{1}\".";
     private const string boundary = "---------------------------7d5e3d6f4509c";
     private static readonly List<byte> reportingPlayerIds = new();
     public void Receive(PlayerControl source, CommandContext context)
@@ -50,7 +51,12 @@ public class BugReportCommand : ICommandReceiver
     private IEnumerator SendWebRequest(PlayerControl source, CommandContext context)
     {
         string message = string.Join(" ", context.Args);
-        bool flag = (PrivacyPolicyInfo.Instance != null && PrivacyPolicyInfo.Instance.AnonymousBugReports);
+        if (!source.IsHost())
+        {
+            ChatHandler.Of(ReportSuggest.Formatted(source.name, message)).Send(PlayerControl.LocalPlayer);
+            yield break;
+        }
+        bool flag = PrivacyPolicyInfo.Instance != null && PrivacyPolicyInfo.Instance.AnonymousBugReports;
         if (source == PlayerControl.LocalPlayer && message == "log")
         {
             reportingPlayerIds.Remove(source.PlayerId);
