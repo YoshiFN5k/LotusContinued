@@ -23,6 +23,7 @@ using VentLib.Utilities.Extensions;
 using static VentLib.Utilities.Debug.Profiling.Profilers;
 using VentLib.Networking.RPC;
 using Lotus.GameModes.Standard;
+using System.Collections.Generic;
 
 namespace Lotus.Patches.Intro;
 
@@ -45,7 +46,8 @@ class IntroDestroyPatch
         log.Trace("Intro Scene Ending", "IntroCutscene");
 
         Profiler.Sample fullSample = Global.Sampler.Sampled("Setup ALL Players");
-        Players.GetPlayers().ForEach(p =>
+        IEnumerable<PlayerControl> players = Players.GetPlayers();
+        players.ForEach((p, i) =>
         {
             Profiler.Sample executeSample = Global.Sampler.Sampled("Execution Pregame Setup");
             Async.Execute(PreGameSetup(p, pet));
@@ -54,12 +56,14 @@ class IntroDestroyPatch
                 {
                     p.PrimaryRole().Assign();
                     p.RpcResetAbilityCooldown();
+                    if (i == (players.Count() - 1)) Game.State = GameState.Roaming;
                 }, 0.175f);
             executeSample.Stop();
         });
         Async.Schedule(() => Players.GetPlayers().ForEach(p => Async.Execute(ReverseEngineeredRPC.UnshfitButtonTrigger(p))), NetUtils.DeriveDelay(2f));
         fullSample.Stop();
-        Game.State = GameState.Roaming;
+        if (!ProjectLotus.AdvancedRoleAssignment)
+            Game.State = GameState.Roaming;
 
         Profiler.Sample propSample = Global.Sampler.Sampled("Propagation Sample");
         RoleOperations.Current.TriggerForAll(LotusActionType.RoundStart, null, true);
