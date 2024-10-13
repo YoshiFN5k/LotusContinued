@@ -105,7 +105,7 @@ public class Investigator : Crewmate
 
     private void PopulateInvestigatorOptions()
     {
-        StandardGameMode.Instance.RoleManager.RoleHolder.AllRoles.OrderBy(r => r.EnglishRoleName).ForEach(r =>
+        StandardRoles.Instance.AllRoles.OrderBy(r => r.EnglishRoleName).ForEach(r =>
         {
             RoleTypeBuilders.FirstOrOptional(b => b.predicate(r)).Map(i => i.builder)
                 .IfPresent(builder =>
