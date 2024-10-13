@@ -31,28 +31,28 @@ namespace Lotus.Roles.RoleGroups.Crew;
 
 public class Investigator : Crewmate
 {
-
-    public static List<(Func<CustomRole, bool> predicate, GameOptionBuilder builder, bool allColored)> RoleTypeBuilders = new()
+    public static List<(Func<CustomRole, bool> predicate, GameOptionBuilder builder)> RoleTypeBuilders = new()
     {
         (r => r.SpecialType is SpecialType.NeutralKilling, new GameOptionBuilder()
             .KeyName("Neutral Killing Are Red", TranslationUtil.Colorize(NeutralKillingRed, Color.red, ModConstants.Palette.NeutralColor, ModConstants.Palette.KillingColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
-            .ShowSubOptionPredicate(i => (int)i == 2), false),
+            .ShowSubOptionPredicate(i => (int)i == 2)),
         (r => r.SpecialType is SpecialType.Neutral, new GameOptionBuilder()
             .KeyName("Neutral Passive Are Red", TranslationUtil.Colorize(NeutralPassiveRed, Color.red, ModConstants.Palette.NeutralColor, ModConstants.Palette.PassiveColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
-            .ShowSubOptionPredicate(i => (int)i == 2), false),
+            .ShowSubOptionPredicate(i => (int)i == 2)),
         (r => r.Faction is Factions.Impostors.Madmates, new GameOptionBuilder()
             .KeyName("Madmates Are Red", TranslationUtil.Colorize(MadmateRed, Color.red, ModConstants.Palette.MadmateColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
-            .ShowSubOptionPredicate(i => (int)i == 2), false)
+            .ShowSubOptionPredicate(i => (int)i == 2))
     };
+    public static List<int> RoleTypeSettings = new() { 0, 0, 0 };
 
     // 2 = Color red, 1 = Color green
     public static Dictionary<Type, int> RoleColoringDictionary = new();
@@ -80,12 +80,10 @@ public class Investigator : Crewmate
         investigated.Add(player.PlayerId);
         CustomRole role = player.PrimaryRole();
 
-        int setting = RoleTypeBuilders.FirstOrOptional(rtb => rtb.predicate(role)).Map(rtb => rtb.allColored ? 1 : 0).OrElse(0);
-        if (setting == 0)
-        {
-            setting = RoleColoringDictionary.GetValueOrDefault(role.GetType(), 0);
-            if (setting == 0) setting = role.Faction.GetType() == typeof(ImpostorFaction) ? 1 : 2;
-        }
+        int setting = -1;
+        RoleTypeBuilders.FirstOrOptional(b => b.predicate(role)).IfPresent(rtb => setting = RoleTypeSettings[RoleTypeBuilders.IndexOf(rtb)]);
+        if (setting == -1 || setting == 2) setting = RoleColoringDictionary.GetValueOrDefault(role.GetType(), -1);
+        if (setting == -1) setting = role.Faction.GetType() == typeof(ImpostorFaction) ? 1 : 2;
 
         Color color = setting == 2 ? Color.green : Color.red;
 
@@ -122,9 +120,9 @@ public class Investigator : Crewmate
                         .Build());
                 });
         });
-        RoleTypeBuilders.ForEach(rtb =>
+        RoleTypeBuilders.ForEach((rtb, index) =>
         {
-            rtb.builder.BindInt(i => rtb.allColored = i == 1);
+            rtb.builder.BindInt(i => RoleTypeSettings[index] = i);
             Option option = rtb.builder.Build();
             RoleOptions.AddChild(option);
             GlobalRoleManager.RoleOptionManager.Register(option, OptionLoadMode.LoadOrCreate);
