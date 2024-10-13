@@ -150,7 +150,7 @@ public class LastResultCommand : CommandTranslations
         else
         {
             messages.ForEach(m => ChatHandler.Of("\n", m).LeftAlign().Send(source));
-            ChatHandler.Of("\n", $"<size=1.7>{winResult}</size>").LeftAlign().Send(source);
+            ChatHandler.Of("\n", $"<size=1.7>{winResult.TrimStart('\n', '\r')}</size>").LeftAlign().Send(source);
         }
         messages.Clear();
         return;
