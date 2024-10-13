@@ -122,16 +122,12 @@ public class Sheriff : Crewmate
         CustomRole role = target.PrimaryRole();
         int setting = -1;
         RoleTypeBuilders.FirstOrOptional(b => b.predicate(role)).IfPresent(rtb => setting = RoleTypeSettings[RoleTypeBuilders.IndexOf(rtb)]);
-        log.Debug($"{role.EnglishRoleName} - {setting} (c1)");
-        log.Debug($"{role.SpecialType} - {role.Faction.Name()}");
 
         if (setting == 0) return Suicide(target);
         else if (setting == 1) return KillPlayer();
 
         setting = RoleKillerDictionary.GetValueOrDefault(role.GetType(), -1);
-        log.Debug($"{role.EnglishRoleName} - {setting} (c2)");
         if (setting == -1) setting = role.Faction.GetType() == typeof(ImpostorFaction) ? 1 : 2;
-        log.Debug($"{role.EnglishRoleName} - {setting} (c3)");
 
         return setting == 1 ? KillPlayer() : Suicide(target);
         bool KillPlayer() => MyPlayer.InteractWith(target, LotusInteraction.FatalInteraction.Create(this)) is InteractionResult.Proceed;
