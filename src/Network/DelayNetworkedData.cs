@@ -60,7 +60,7 @@ public class DelayNetworkedData
     {
         List<NetworkedPlayerInfo> players = GameData.Instance.AllPlayers.ToArray().ToList();
         //Logging Stuff
-        log.Debug("DelaySpawnPlayerInfo: " + players.Select(p => p.PlayerName).StrJoin());
+        log.Debug("DelaySpawnPlayerInfo: " + players.Select(p => p.name).StrJoin());
 
         // We send 5 players at a time to prevent too huge packet
         while (players.Count > 0)
