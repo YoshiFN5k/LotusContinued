@@ -58,6 +58,7 @@ class IntroDestroyPatch
                     p.RpcResetAbilityCooldown();
                     if (i == (players.Count() - 1)) Game.State = GameState.Roaming;
                 }, 0.175f);
+            else p.RpcResetAbilityCooldown();
             executeSample.Stop();
         });
         Async.Schedule(() => Players.GetPlayers().ForEach(p => Async.Execute(ReverseEngineeredRPC.UnshfitButtonTrigger(p))), NetUtils.DeriveDelay(2f));

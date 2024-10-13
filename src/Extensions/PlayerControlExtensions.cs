@@ -40,12 +40,11 @@ public static class PlayerControlExtensions
     {
         if (player == null)
         {
-            var caller = new System.Diagnostics.StackFrame(1, false);
-            var callerMethod = caller.GetMethod();
+            var callerMethod = Mirror.GetCaller();
             string callerMethodName = callerMethod?.Name ?? "(Null callerMethod Name)";
-            string? callerClassName = callerMethod?.DeclaringType?.FullName ?? "(Null callerMethod ClassName)";
+            string callerClassName = callerMethod?.DeclaringType?.FullName ?? "(Null callerMethod ClassName)";
             log.Warn(callerClassName + "." + callerMethodName + " Invalid Custom Role", "GetCustomRole");
-            return ProjectLotus.GameModeManager.CurrentGameMode.RoleManager.FallbackRole();
+            return IRoleManager.Current.FallbackRole();
         }
         CustomRole? role = Game.MatchData.Roles.MainRoles.GetValueOrDefault(player.PlayerId);
         return role ?? IRoleManager.Current.FallbackRole();
@@ -59,7 +58,7 @@ public static class PlayerControlExtensions
     public static CustomRole GetSubrole(this PlayerControl player)
     {
         List<CustomRole>? role = Game.MatchData.Roles.SubRoles.GetValueOrDefault(player.PlayerId);
-        if (role == null || role.Count == 0) return null;
+        if (role == null || role.Count == 0) return null!;
         return role[0];
     }
     public static List<CustomRole> GetSubroles(this PlayerControl player)
