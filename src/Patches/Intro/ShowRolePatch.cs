@@ -4,6 +4,7 @@ using Lotus.Utilities;
 using Lotus.Extensions;
 using Lotus.Roles.Builtins;
 using VentLib.Utilities;
+using Lotus.Roles.Managers.Interfaces;
 
 namespace Lotus.Patches.Intro;
 
@@ -15,7 +16,7 @@ class ShowRolePatch
         Async.Schedule(() =>
         {
             CustomRole role = PlayerControl.LocalPlayer.PrimaryRole();
-            if (role is EmptyRole) return;
+            if (role.GetType() == IRoleManager.Current.FallbackRole().GetType()) return;
             if (true)
             {
                 __instance.YouAreText.color = role.RoleColor;

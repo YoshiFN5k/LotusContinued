@@ -5,6 +5,7 @@ using HarmonyLib;
 using Lotus.API;
 using Lotus.API.Odyssey;
 using Lotus.Extensions;
+using Lotus.GameModes.Standard;
 using Lotus.Logging;
 using Lotus.Roles;
 using Lotus.Roles.Builtins;
@@ -22,7 +23,7 @@ class BeginCrewmatePatch
 
     public static void Postfix(IntroCutscene __instance, ref Il2CppSystem.Collections.Generic.List<PlayerControl> teamToDisplay)
     {
-        //チーム表示変更
+        //Team Display Change
         DevLogger.Log("Begin Crewmate");
         CustomRole role = PlayerControl.LocalPlayer.PrimaryRole();
         if (role.GetType() == IRoleManager.Current.FallbackRole().GetType()) return;
@@ -42,7 +43,7 @@ class BeginCrewmatePatch
                 __instance.BackgroundBar.material.color = role.RoleColor;
                 break;
             case SpecialType.Madmate:
-                __instance.TeamTitle.text = Localizer.Translate("Roles.Madmate.RoleName", assembly: Assembly.GetExecutingAssembly());
+                __instance.TeamTitle.text = StandardRoles.Instance.Static.Madmate.RoleName;
                 __instance.TeamTitle.color = ModConstants.Palette.MadmateColor;
                 __instance.ImpostorText.text = "";
                 StartFadeIntro(__instance, Palette.CrewmateBlue, Palette.ImpostorRed);

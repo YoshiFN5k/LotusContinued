@@ -34,6 +34,7 @@ using VentLib.Networking;
 using Lotus.Managers;
 using System.Text.RegularExpressions;
 using Lotus.Utilities;
+using Lotus.Roles.RoleGroups.Crew;
 
 namespace Lotus.Roles;
 
@@ -102,7 +103,7 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
         return cloned;
     }
 
-    public bool IsEnabled() => this.Chance > 0 && this.Count > 0;
+    public bool IsEnabled() => this.Chance > 0 && (this.Count > 0 | this.RoleFlags.HasFlag(RoleFlag.RemoveRoleMaximum));
 
     /// <summary>
     /// Adds a GameOverride that continuously modifies this instances game options until removed

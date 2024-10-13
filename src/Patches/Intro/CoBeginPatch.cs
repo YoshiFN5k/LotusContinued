@@ -20,18 +20,18 @@ class CoBeginPatch
     public static void Prefix()
     {
         Game.State = GameState.InIntro;
-        log.Info("------------名前表示------------", "Info");
+        log.Info("---------Player Info Display---------");
         foreach (var pc in PlayerControl.AllPlayerControls)
         {
             log.Info($"{(pc.AmOwner ? "[*]" : ""),-3}{pc.PlayerId,-2}:{pc.name.PadRightV2(20)}:{pc.cosmetics.nameText.text}({Palette.ColorNames[pc.Data.DefaultOutfit.ColorId].ToString().Replace("Color", "")})", "Info");
             pc.cosmetics.nameText.text = pc.name;
         }
-        log.Info("----------役職割り当て----------", "Info");
+        log.Info("----------Player Role Info----------");
         foreach (var pc in PlayerControl.AllPlayerControls)
         {
             log.Info($"{(pc.AmOwner ? "[*]" : ""),-3}{pc.PlayerId,-2}:{pc.name.PadRightV2(20)}:{pc.GetAllRoleName()}", "Info");
         }
-        log.Info("--------------環境--------------", "Info");
+        log.Info("--------------Platform--------------");
         foreach (var pc in PlayerControl.AllPlayerControls)
         {
             try
@@ -48,11 +48,11 @@ class CoBeginPatch
                 log.Exception("Platform", ex);
             }
         }
-        log.Info("------------基本設定------------", "Info");
+        log.Info("------------Settimgs------------");
         var tmp = GameOptionsManager.Instance.CurrentGameOptions.ToHudString(GameData.Instance ? GameData.Instance.PlayerCount : 10).Split("\r\n").Skip(1);
         foreach (var t in tmp) log.Info(t, "Info");
-        log.Info("------------詳細設定------------", "Info");
-        log.Info($"プレイヤー数: {PlayerControl.AllPlayerControls.Count}人", "Info");
+        log.Info("----------Adv. Setings----------");
+        log.Info($"Number of Players: {PlayerControl.AllPlayerControls.Count}人", "Info");
         //PlayerControl.AllPlayerControls.ToArray().Do(x => TOHPlugin.PlayerStates[x.PlayerId].InitTask(x));
     }
 }
