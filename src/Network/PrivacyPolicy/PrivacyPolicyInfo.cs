@@ -7,7 +7,6 @@ public class PrivacyPolicyInfo
     public static PrivacyPolicyInfo Instance = null!;
     public PrivacyPolicyInfo(ValueTuple<bool, bool, bool, long> arguments)
     {
-        Instance = null!;
         ConnectWithAPI = arguments.Item1;
         LobbyDiscovery = arguments.Item2;
         AnonymousBugReports = arguments.Item3;

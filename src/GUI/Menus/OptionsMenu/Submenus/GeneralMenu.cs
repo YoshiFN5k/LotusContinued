@@ -8,6 +8,8 @@ using UnityEngine;
 using VentLib.Utilities.Attributes;
 using VentLib.Utilities.Extensions;
 using Lotus.Logging;
+using Lotus.Network.PrivacyPolicy.Patches;
+using Lotus.Network.PrivacyPolicy;
 
 namespace Lotus.GUI.Menus.OptionsMenu.Submenus;
 
@@ -23,11 +25,14 @@ public class GeneralMenu : MonoBehaviour, IBaseOptionMenuComponent
     private MonoToggleButton friendInviteButton;
     private MonoToggleButton colorblindTextButton;
     private MonoToggleButton streamerModeButton;
-    private MonoToggleButton publicCompatabilityPatch;
 
     private MonoToggleButton mouseMovementButton;
     private MonoToggleButton changeKeyBindingButton;
     private MonoToggleButton languageButton;
+
+    private MonoToggleButton privacyPolicyLink;
+    private MonoToggleButton connectWithAPI;
+    private MonoToggleButton anonymousBugReports;
 
     private TiledToggleButton controlScheme;
     private LanguageSetter languageSetter;
@@ -42,7 +47,6 @@ public class GeneralMenu : MonoBehaviour, IBaseOptionMenuComponent
         anchorObject.transform.localPosition += new Vector3(2f, 2f);
         anchorObject.transform.localScale = new Vector3(1f, 1f, 1);
     }
-
 
     private void Start()
     {
@@ -125,6 +129,57 @@ public class GeneralMenu : MonoBehaviour, IBaseOptionMenuComponent
         controlScheme.SetRightButtonText("Mouse & Keyboard");
         controlScheme.SetState(DataManager.Settings.input.inputMode is ControlTypes.Keyboard);
 
+        // ==========================================
+        //     Privacy Policy
+        // ==========================================
+        bool openLink = false; // pl auto runs the action when it is made visible. so we keep track of the first visit to stop this.
+
+        GameObject privacyPolicyLinkObject = new("Privacy Policy Link");
+        privacyPolicyLinkObject.transform.SetParent(anchorObject.transform);
+        privacyPolicyLinkObject.transform.localScale = new Vector3(1f, 1f, 1f);
+        privacyPolicyLink = privacyPolicyLinkObject.AddComponent<MonoToggleButton>();
+        privacyPolicyLink.ConfigureAsPressButton("View Privacy Policy", () =>
+        {
+            if (!openLink)
+            {
+                openLink = true;
+                return;
+            }
+            Application.OpenURL(PrivacyPolicyPatch.PrivacyPolicyLink);
+        });
+        privacyPolicyLinkObject.transform.localPosition += new Vector3(3f, -0.25f);
+
+        GameObject anonReportObject = new("Anonymous Bug Reports");
+        anonReportObject.transform.SetParent(anchorObject.transform);
+        anonReportObject.transform.localScale = new Vector3(1f, 1f, 1f);
+        anonymousBugReports = anonReportObject.AddComponent<MonoToggleButton>();
+        anonymousBugReports.SetOnText("Anonymous Bug Reports: ON");
+        anonymousBugReports.SetOffText("Anonymous Bug Reports: OFF");
+        anonymousBugReports.SetToggleOnAction(() => PrivacyPolicyPatch.EditPrivacyPolicy(PrivacyPolicyEditType.AnonymousBugReports, true));
+        anonymousBugReports.SetToggleOffAction(() => PrivacyPolicyPatch.EditPrivacyPolicy(PrivacyPolicyEditType.AnonymousBugReports, false));
+        anonymousBugReports.SetState(PrivacyPolicyInfo.Instance.AnonymousBugReports);
+        anonReportObject.transform.localPosition += new Vector3(3f, -1.25f);
+
+        GameObject connectAPIObject = new("Connect With API");
+        connectAPIObject.transform.SetParent(anchorObject.transform);
+        connectAPIObject.transform.localScale = new Vector3(1f, 1f, 1f);
+        connectWithAPI = connectAPIObject.AddComponent<MonoToggleButton>();
+        connectWithAPI.SetOnText("Connect With API: ON");
+        connectWithAPI.SetOffText("Connect With API: Off");
+        connectWithAPI.SetToggleOnAction(() =>
+        {
+            PrivacyPolicyPatch.EditPrivacyPolicy(PrivacyPolicyEditType.ConnectWithAPI, true);
+            anonReportObject.SetActive(true);
+        });
+        connectWithAPI.SetToggleOffAction(() =>
+        {
+            PrivacyPolicyPatch.EditPrivacyPolicy(PrivacyPolicyEditType.ConnectWithAPI, false);
+            anonReportObject.SetActive(false);
+        });
+        connectWithAPI.SetState(PrivacyPolicyInfo.Instance.ConnectWithAPI);
+        connectAPIObject.transform.localPosition += new Vector3(3f, -0.75f);
+
+        /// Done
 
         PassiveButton joystickModeButton = optionsMenuBehaviour.gameObject.transform.Find("GeneralTab/ControlGroup/JoystickModeButton").GetComponent<PassiveButton>();
         PassiveButton touchModeButton = optionsMenuBehaviour.gameObject.transform.Find("GeneralTab/ControlGroup/TouchModeButton").GetComponent<PassiveButton>();
@@ -138,7 +193,7 @@ public class GeneralMenu : MonoBehaviour, IBaseOptionMenuComponent
 
         // ==========================================
         //     Mouse Movement Button
-        // =============================================
+        // ==========================================
         GameObject mouseMovementObject = new("Mouse Movement Button");
         mouseMovementObject.transform.SetParent(anchorObject.transform);
         mouseMovementObject.transform.localScale = new Vector3(1f, 1f, 1f);

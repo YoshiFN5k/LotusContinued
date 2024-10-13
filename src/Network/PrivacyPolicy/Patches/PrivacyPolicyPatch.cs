@@ -22,8 +22,10 @@ using System.Text;
 namespace Lotus.Network.PrivacyPolicy.Patches;
 public class PrivacyPolicyPatch
 {
+    public const string PrivacyPolicyLink = "https://beta.lotusau.top/privacy/";
+
     private static DateTimeOffset LatestPrivacyPolicy = DateTime.MinValue;
-    private static PrivacyPolicyInfo _privacyInfo = null!;
+    private static EditablePrivacyPolicyInfo _privacyInfo = null!;
     private static InfoTextBox customScreen = null!;
 
     private static IDeserializer deserializer = new DeserializerBuilder()
@@ -51,6 +53,28 @@ public class PrivacyPolicyPatch
     public static void EditLoginCoroutine(EOSManager __instance, ref Il2CppSystem.Collections.IEnumerator __result)
     {
         __result = PatchedCoroutine(__instance).WrapToIl2Cpp();
+    }
+
+    public static bool EditPrivacyPolicy(PrivacyPolicyEditType editType, object newValue)
+    {
+        switch (editType)
+        {
+            case PrivacyPolicyEditType.AnonymousBugReports:
+                _privacyInfo.AnonymousBugReports = (bool)newValue;
+                return Change();
+            case PrivacyPolicyEditType.ConnectWithAPI:
+                _privacyInfo.ConnectWithAPI = (bool)newValue;
+                return Change();
+            case PrivacyPolicyEditType.LobbyDiscovery:
+                _privacyInfo.LobbyDiscovery = (bool)newValue;
+                return Change();
+        }
+        return false;
+        bool Change()
+        {
+            _privacyInfo.ToRealInfo();
+            return true;
+        }
     }
 
     private static IEnumerator CustomCoroutine(EOSManager __instance)
@@ -142,6 +166,7 @@ public class PrivacyPolicyPatch
             if (!hasUpdatedPrivacyPolicy)
             {
                 customScreen.Destroy();
+
                 yield break;
             }
         }
@@ -189,8 +214,15 @@ public class PrivacyPolicyPatch
 
         if (choice == 2)
         {
-            // still working on
-            DevLogger.Log("show settings");
+            _privacyInfo = new() { LastAcceptedPrivacyPolicyVersion = LatestPrivacyPolicy.ToUnixTimeSeconds() };
+            _privacyInfo.ToRealInfo();
+            // create options menu behaviour
+            DestroyableSingleton<MainMenuManager>.Instance.settingsButton.OnClick.Invoke();
+            while (DestroyableSingleton<OptionsMenuBehaviour>.Instance.gameObject.activeSelf)
+            {
+                yield return null;
+            }
+            yield return new WaitForSeconds(1);
         }
 
         customScreen.SetOneButton();
@@ -241,7 +273,10 @@ public class PrivacyPolicyPatch
         }
         customScreen.Destroy();
 
-        EditablePrivacyPolicyInfo policyInfo = new()
+        EditablePrivacyPolicyInfo policyInfo;
+
+        if (choice == 2) policyInfo = _privacyInfo!;
+        else policyInfo = new()
         {
             LastAcceptedPrivacyPolicyVersion = LatestPrivacyPolicy.ToUnixTimeSeconds(),
             ConnectWithAPI = choice switch
@@ -252,7 +287,7 @@ public class PrivacyPolicyPatch
             AnonymousBugReports = choice switch
             {
                 2 => false,
-                _ => choice == 0
+                _ => choice == 1
             },
             LobbyDiscovery = choice switch
             {
@@ -261,12 +296,14 @@ public class PrivacyPolicyPatch
             }
         };
 
-        _privacyInfo = policyInfo.ToRealInfo();
+        _privacyInfo = policyInfo;
+        _privacyInfo.ToRealInfo();
         FileInfo privacyFile = PluginDataManager.HiddenDataDirectory.GetFile("privacyPolicyInfo.yaml");
 
-        string emptyFile = serializer.Serialize(_privacyInfo);
+        string emptyFile = serializer.Serialize(policyInfo);
         using FileStream stream = privacyFile.Open(FileMode.Create);
         stream.Write(Encoding.UTF8.GetBytes(emptyFile));
+        stream.Close();
 
         void Close() => customScreen.GetComponent<TransitionOpen>().Close();
         GameObject CreatePolicyChoice(string name, string description, string defaultText, Action<GameObject> onClick)
@@ -347,7 +384,8 @@ public class PrivacyPolicyPatch
         if (!privacyFile.Exists) yield break;
         string content;
         using (StreamReader reader = new(privacyFile.Open(FileMode.OpenOrCreate))) content = reader.ReadToEnd();
-        _privacyInfo = deserializer.Deserialize<EditablePrivacyPolicyInfo>(content).ToRealInfo();
+        _privacyInfo = deserializer.Deserialize<EditablePrivacyPolicyInfo>(content);
+        _privacyInfo.ToRealInfo();
         yield break;
     }
 
@@ -363,15 +401,23 @@ public class PrivacyPolicyPatch
         public bool AnonymousBugReports;
         public bool LobbyDiscovery;
         public long LastAcceptedPrivacyPolicyVersion;
-        public PrivacyPolicyInfo ToRealInfo() => new((ConnectWithAPI, AnonymousBugReports, LobbyDiscovery, LastAcceptedPrivacyPolicyVersion));
+        public PrivacyPolicyInfo ToRealInfo() => new((ConnectWithAPI, LobbyDiscovery, AnonymousBugReports, LastAcceptedPrivacyPolicyVersion));
 
-        public EditablePrivacyPolicyInfo FromRealInfo() => new()
+        public static EditablePrivacyPolicyInfo FromRealInfo() => new()
         {
             LastAcceptedPrivacyPolicyVersion = _privacyInfo.LastAcceptedPrivacyPolicyVersion,
             AnonymousBugReports = _privacyInfo.AnonymousBugReports,
+            ConnectWithAPI = _privacyInfo.ConnectWithAPI,
             LobbyDiscovery = _privacyInfo.LobbyDiscovery,
         };
     }
+}
+
+public enum PrivacyPolicyEditType
+{
+    ConnectWithAPI,
+    AnonymousBugReports,
+    LobbyDiscovery
 }
 
 [Localized("PrivacyPolicy")]

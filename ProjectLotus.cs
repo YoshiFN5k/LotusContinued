@@ -53,7 +53,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
     public const string MajorVersion = "1";
     public const string MinorVersion = "1"; // Update with each release
     public const string PatchVersion = "0";
-    public const string BuildNumber = "1545";
+    public const string BuildNumber = "1674";
 
     public static string PluginVersion = typeof(ProjectLotus).Assembly.GetName().Version!.ToString();
 
@@ -61,7 +61,8 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 
     public static readonly string ModName = "Project Lotus";
     public static readonly string ModColor = "#4FF918";
-    public static readonly string DevVersionStr = "Dev October 10 2024";
+    public static readonly string DevVersionStr = "Dev October 13 2024";
+
     public static bool DevVersion = false;
 
     private static Harmony _harmony = null!;

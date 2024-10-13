@@ -62,7 +62,7 @@ public class SoundMenu : MonoBehaviour, IBaseOptionMenuComponent
         }));
         sfxSlider.transform.localPosition += new Vector3(0.27f, -0.1f);
 
-        GameObject lobbyGameObject = new("Censor Button");
+        GameObject lobbyGameObject = new("Lobby Music");
         lobbyGameObject.transform.SetParent(anchorObject.transform);
         lobbyGameObject.transform.localScale = new Vector3(1f, 1f, 1f);
         lobbyMusicButton = lobbyGameObject.AddComponent<MonoToggleButton>();

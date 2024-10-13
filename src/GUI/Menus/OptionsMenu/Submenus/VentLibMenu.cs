@@ -7,6 +7,7 @@ using UnityEngine.Events;
 using VentLib.Networking;
 using VentLib.Utilities;
 using VentLib.Utilities.Attributes;
+using Lotus.Network.PrivacyPolicy.Patches;
 
 namespace Lotus.GUI.Menus.OptionsMenu.Submenus;
 
@@ -46,7 +47,7 @@ public class VentLibMenu : MonoBehaviour, IBaseOptionMenuComponent
         maxPacketSizeSlider.OnValueChange = new UnityEvent();
         maxPacketSizeSlider.OnValueChange.AddListener((Action)(() =>
         {
-            int packetSize = NetworkRules.MaxPacketSize = Mathf.FloorToInt((maxPacketSizeSlider.Value * (NetworkRules.AbsoluteMaxPacketSize - NetworkRules.AbsoluteMinPacketSize))) + NetworkRules.AbsoluteMinPacketSize;
+            int packetSize = NetworkRules.MaxPacketSize = Mathf.FloorToInt(maxPacketSizeSlider.Value * (NetworkRules.AbsoluteMaxPacketSize - NetworkRules.AbsoluteMinPacketSize)) + NetworkRules.AbsoluteMinPacketSize;
             maxPacketSizeValue.text = packetSize.ToString();
         }));
         maxPacketSizeSlider.transform.localPosition += new Vector3(0.27f, 0.9f);
@@ -59,8 +60,16 @@ public class VentLibMenu : MonoBehaviour, IBaseOptionMenuComponent
 
         allowLobbySending.SetOnText("ON");
         allowLobbySending.SetOffText("OFF");
-        allowLobbySending.SetToggleOnAction(() => NetworkRules.AllowRoomDiscovery = true);
-        allowLobbySending.SetToggleOffAction(() => NetworkRules.AllowRoomDiscovery = false);
+        allowLobbySending.SetToggleOnAction(() =>
+        {
+            PrivacyPolicyPatch.EditPrivacyPolicy(PrivacyPolicyEditType.LobbyDiscovery, true);
+            NetworkRules.AllowRoomDiscovery = true;
+        });
+        allowLobbySending.SetToggleOffAction(() =>
+        {
+            PrivacyPolicyPatch.EditPrivacyPolicy(PrivacyPolicyEditType.LobbyDiscovery, false);
+            NetworkRules.AllowRoomDiscovery = false;
+        });
         allowLobbySendingText.transform.localPosition -= new Vector3(3.5f, 0.5f);
         allowLobbySending.SetState(NetworkRules.AllowRoomDiscovery);
         lobbyObject.transform.localPosition += new Vector3(2.3f, 1.25f);
