@@ -25,7 +25,7 @@ public class PrivacyPolicyPatch
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(PrivacyPolicyPatch));
     public const string PrivacyPolicyLink = "https://beta.lotusau.top/privacy/";
 
-    private static DateTimeOffset LatestPrivacyPolicy = DateTime.MinValue;
+    private static DateTimeOffset LatestPrivacyPolicy = DateTimeOffset.MinValue;
     private static EditablePrivacyPolicyInfo _privacyInfo = null!;
     private static InfoTextBox customScreen = null!;
 
