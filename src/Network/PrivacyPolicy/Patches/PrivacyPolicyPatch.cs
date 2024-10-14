@@ -373,7 +373,7 @@ public class PrivacyPolicyPatch
                     }
                     catch (Exception e)
                     {
-                        dateTime = DateTime.MinValue;
+                        dateTime = DateTimeOffset.MinValue;
                         log.Exception($"Error occured while parsing server response. Resposnse: {webRequest.downloadHandler.text}", e);
                         log.Exception(e);
                     }
@@ -382,7 +382,7 @@ public class PrivacyPolicyPatch
                 else
                 {
                     log.Exception($"Failed to parse the server response as Unix timestamp. Response: {webRequest.downloadHandler.text}");
-                    LatestPrivacyPolicy = DateTime.MinValue;
+                    LatestPrivacyPolicy = DateTimeOffset.MinValue;
                 }
                 break;
             default:
