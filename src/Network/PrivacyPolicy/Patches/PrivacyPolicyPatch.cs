@@ -22,6 +22,7 @@ using System.Text;
 namespace Lotus.Network.PrivacyPolicy.Patches;
 public class PrivacyPolicyPatch
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(PrivacyPolicyPatch));
     public const string PrivacyPolicyLink = "https://beta.lotusau.top/privacy/";
 
     private static DateTimeOffset LatestPrivacyPolicy = DateTime.MinValue;
@@ -79,7 +80,7 @@ public class PrivacyPolicyPatch
 
     private static IEnumerator CustomCoroutine(EOSManager __instance)
     {
-        DevLogger.Log("running patched couroutine");
+        log.Info("running patched couroutine");
         __instance.announcementsVisible = false;
         if (DataManager.Player.Account.LoginStatus == EOSManager.AccountLoginStatus.Offline)
         {
@@ -120,7 +121,7 @@ public class PrivacyPolicyPatch
     // private static IEnumerator CustomPrivacyPolicy()
     // {
     //     // Update text
-    //     DevLogger.Log("CustomPrivacyPolicy");
+    //     log.Info("CustomPrivacyPolicy");
     //     customScreen.HyperLinkText.Text = PrivacyPolicyText;
     //     // customScreen.OnTextUpdated();
     //     customScreen.FindChild<TextMeshPro>("TitleText_TMP", true).text = "Project: Lotus Privacy Policy";
@@ -128,7 +129,7 @@ public class PrivacyPolicyPatch
     //     // modify buttons
     //     if (customScreen.AcceptButton.TryCast(out PassiveButton acceptButton))
     //     {
-    //         DevLogger.Log("is PassiveButton!");
+    //         log.Info("is PassiveButton!");
     //         acceptButton.Modify(() =>
     //         {
     //             customScreen.GetComponent<TransitionOpen>().Close();
@@ -136,7 +137,7 @@ public class PrivacyPolicyPatch
     //     }
     //     if (customScreen.ManageDataButton.TryCast(out PassiveButton manageButton))
     //     {
-    //         DevLogger.Log("is PassiveButton!");
+    //         log.Info("is PassiveButton!");
     //         manageButton.Modify(() =>
     //         {
     //             customScreen.GetComponent<TransitionOpen>().Close();
@@ -153,7 +154,7 @@ public class PrivacyPolicyPatch
     private static IEnumerator CustomPrivacyPolicy()
     {
         // Update text
-        DevLogger.Log("CustomPrivacyPolicy");
+        log.Info("CustomPrivacyPolicy");
 
         yield return TryLoadPrivacyInfo();
 
@@ -364,14 +365,28 @@ public class PrivacyPolicyPatch
                 if (long.TryParse(webRequest.downloadHandler.text, out unixTimestamp))
                 {
                     // Convert Unix timestamp to DateTime
-                    DateTimeOffset dateTime = DateTimeOffset.FromUnixTimeSeconds(unixTimestamp);
-                    DevLogger.Log("Server returned Unix timestamp converted to DateTime: " + dateTime.DateTime);
+                    DateTimeOffset dateTime;
+                    try
+                    {
+                        dateTime = DateTimeOffset.FromUnixTimeSeconds(unixTimestamp);
+                        log.Info("Server returned Unix timestamp converted to DateTime: " + dateTime.DateTime);
+                    }
+                    catch (Exception e)
+                    {
+                        dateTime = DateTime.MinValue;
+                        log.Exception($"Error occured while parsing server response. Resposnse: {webRequest.downloadHandler.text}", e);
+                        log.Exception(e);
+                    }
                     LatestPrivacyPolicy = dateTime;
                 }
-                else DevLogger.Log("Failed to parse the server response as Unix timestamp.");
+                else
+                {
+                    log.Exception($"Failed to parse the server response as Unix timestamp. Response: {webRequest.downloadHandler.text}");
+                    LatestPrivacyPolicy = DateTime.MinValue;
+                }
                 break;
             default:
-                DevLogger.Log("Result: {0} - Error: {1} - ResponseCode: {2} - Server Response: {3}".Formatted(webRequest.result.ToString(),
+                log.Info("Result: {0} - Error: {1} - ResponseCode: {2} - Server Response: {3}".Formatted(webRequest.result.ToString(),
                     webRequest.error, webRequest.responseCode, webRequest.downloadHandler.text));
                 break;
         }
