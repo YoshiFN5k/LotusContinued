@@ -85,7 +85,7 @@ public abstract class AbstractBaseRole
     public int Chance { get; private set; }
     public int Count { get; private set; }
     public int AdditionalChance { get; private set; }
-    public bool BaseCanVent = true;
+    public bool BaseCanVent = false;
     public int DisplayOrder = 500;
 
     public RoleAbilityFlag RoleAbilityFlags;

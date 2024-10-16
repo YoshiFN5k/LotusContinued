@@ -2,6 +2,7 @@
 using System.Linq;
 using HarmonyLib;
 using Lotus.API;
+using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.Extensions;
 using Lotus.Managers;
@@ -55,10 +56,10 @@ public class RoleCommand
         }
     }
 
-    [Command(CommandFlag.InGameOnly, "o", "option", "options")]
+    [Command("o", "option", "options")]
     public static void Options(PlayerControl source, CommandContext context)
     {
-        if (context.Args.Length == 0)
+        if (context.Args.Length == 0 && Game.State is not GameState.InLobby)
         {
             ShowRoleOptions(source, source.PrimaryRole(), true);
             return;
@@ -73,7 +74,7 @@ public class RoleCommand
     {
         string output = $"{role.RoleColor.Colorize(role.RoleName)} ({role.Faction.Color.Colorize(role.Faction.Name())}):\n";
 
-        output += OptionUtils.OptionText(role.RoleOptions);
+        output += GetRoleText(role);
 
         if (addSubRoles)
         {

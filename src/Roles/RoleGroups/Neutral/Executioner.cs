@@ -61,7 +61,7 @@ public class Executioner : CustomRole
         win.Activate();
     }
 
-    [RoleAction(LotusActionType.Disconnect)]
+    [RoleAction(LotusActionType.Disconnect, ActionFlag.GlobalDetector)]
     [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
     private void CheckChangeRole(PlayerControl dead)
     {

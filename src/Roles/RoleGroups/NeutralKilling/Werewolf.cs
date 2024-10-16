@@ -27,6 +27,9 @@ public class Werewolf : NeutralKillingBase
     [UIComponent(UI.Cooldown)]
     private Cooldown rampageCooldown;
 
+    [RoleAction(LotusActionType.RoundStart)]
+    private void OnRoundStart(bool gameStart) => rampageCooldown.Start(gameStart ? 10 : float.MinValue);
+
     protected override void PostSetup()
     {
         base.PostSetup();

@@ -122,7 +122,8 @@ public class CheckForEndVotingPatch
         RoleOperations.Current.Trigger(LotusActionType.MeetingEnd, null,
             Optional<NetworkedPlayerInfo>.Of(playerInfo), meetingDelegate.IsTie,
             new Dictionary<byte, int>(meetingDelegate.CurrentVoteCount()),
-            new Dictionary<byte, List<Optional<byte>>>(meetingDelegate.CurrentVotes()));
+            new Dictionary<byte, List<Optional<byte>>>(meetingDelegate.CurrentVotes()),
+            meetingDelegate.IsForceEnd());
         DevLogger.GameInfo();
     }
 }

@@ -12,6 +12,7 @@ using UnityEngine;
 using Lotus.Utilities;
 // using Lotus.RPC.CustomObjects;
 using Lotus.Patches.Systems;
+using Lotus.Patches.Actions;
 
 namespace Lotus.Patches;
 
@@ -22,6 +23,7 @@ class CoStartGamePatch
 
     public static void Prefix(AmongUsClient __instance)
     {
+        ShapeshiftFixPatch._shapeshifted = new();
         SetRolePatch.RoleAssigned = new();
         Players.GetPlayers().ForEach(player =>
         {

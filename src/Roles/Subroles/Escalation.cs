@@ -57,13 +57,12 @@ public class Escalation : Subrole
             .RoleColor(new Color(0.78f, 0.62f, 0.04f));
 
     [Localized(nameof(Escalation))]
-    private static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options
         {
-            [Localized(nameof(SpeedGainPerKill))]
-            public static string SpeedGainPerKill = "Additional Speed per Kill";
+            [Localized(nameof(SpeedGainPerKill))] public static string SpeedGainPerKill = "Additional Speed per Kill";
         }
     }
 }

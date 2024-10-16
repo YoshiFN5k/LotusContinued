@@ -30,7 +30,11 @@ public class Medium : Crewmate
 
     [NewOnSetup] private Dictionary<byte, Optional<CustomRole>> killerDictionary = new();
     private bool hasArrowsToBodies;
+    private bool isClairvoyant;
+    private int totalMeditates;
+    private bool visibleToEveryone;
 
+    private int mediatesLeft;
     private bool connectionEstablished;
     private byte reportedPlayer;
 
@@ -61,7 +65,7 @@ public class Medium : Crewmate
         killerDictionary.GetOptional(targetId).FlatMap(o => o)
             .IfPresent(killerRole => Async.Schedule(() => MediumSendMessage(killerRole), 2f));
         reportedPlayer = targetId;
-        EstablishMediumConnection(); // this wasnt here in 1.0.0 so.
+        EstablishMediumConnection();
     }
 
 
@@ -71,16 +75,23 @@ public class Medium : Crewmate
         if (!connectionEstablished || chatter.PlayerId != reportedPlayer) return;
         message = message.ToLower().Trim();
         if (string.Equals(message, YesAnswer) || string.Equals(message, NoAnswer))
-            ChatHandler.Of(message, chatter.name).Send(MyPlayer);
+        {
+            mediatesLeft--;
+            if (visibleToEveryone) Players.GetAlivePlayers().ForEach(ap => ChatHandler.Of(message, chatter.name).Send(ap));
+            else ChatHandler.Of(message, chatter.name).Send(MyPlayer);
+
+            if (mediatesLeft == 0) BreakMediumConnection(chatter);
+        }
     }
 
     private void EstablishMediumConnection()
     {
         PlayerControl? deadPlayer = Players.FindPlayerById(reportedPlayer);
-        if (deadPlayer == null) return;
-        MediumSendMessage(MediumConnection.Formatted(deadPlayer.name)).Send(MyPlayer);
+        if (deadPlayer == null || !isClairvoyant) return;
+        MediumSendMessage(MediumConnection.Formatted(deadPlayer.name, totalMeditates == -1 ? ModConstants.Infinity : totalMeditates)).Send(MyPlayer);
         MediumSendMessage(MediumConnectionGhost.Formatted(MyPlayer.name)).Send(deadPlayer);
         connectionEstablished = true;
+        mediatesLeft = totalMeditates;
     }
 
     private void MediumSendMessage(CustomRole killerRole)
@@ -96,11 +107,36 @@ public class Medium : Crewmate
             .Title(t => t.Prefix(".°").Suffix("°.").Color(RoleColor).Text(MediumTitle).Build());
     }
 
+    private void BreakMediumConnection(PlayerControl deadPlayer)
+    {
+        if (!connectionEstablished) return;
+        MediumSendMessage(OutOfMeditates).Send(MyPlayer);
+        MediumSendMessage(OutOfMeditatesGhost).Send(deadPlayer);
+        connectionEstablished = false;
+    }
+
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.KeyName("Has Arrows to Bodies", Translations.Options.HasArrowsToBody)
-                .AddOnOffValues(false)
+            .SubOption(sub => sub
+                .KeyName("Has Arrows to Bodies", Translations.Options.HasArrowsToBody)
+                .AddBoolean(false)
                 .BindBool(b => hasArrowsToBodies = b)
+                .Build())
+            .SubOption(sub => sub
+                .KeyName("Can Speak To Dead", Translations.Options.IsClairvoyant)
+                .AddBoolean()
+                .BindBool(b => isClairvoyant = b)
+                .SubOption(sub2 => sub2
+                    .KeyName("Amount of Meditates", Translations.Options.AmountOfMeditates)
+                    .Value(v => v.Value(-1).Text(ModConstants.Infinity).Color(ModConstants.Palette.InfinityColor).Build())
+                    .AddIntRange(1, ModConstants.MaxPlayers, 1)
+                    .BindInt(i => totalMeditates = i)
+                    .Build())
+                .SubOption(sub2 => sub2
+                    .KeyName("Visible to Everyone", Translations.Options.ShownToEveryone)
+                    .AddBoolean(false)
+                    .BindBool(b => visibleToEveryone = b)
+                    .Build())
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
@@ -109,32 +145,23 @@ public class Medium : Crewmate
     [Localized(nameof(Medium))]
     public static class Translations
     {
-        [Localized(nameof(MediumTitle))]
-        public static string MediumTitle = "Meditation";
-
-        [Localized(nameof(MediumMessage))]
-        public static string MediumMessage = "You've reported a body, and after great discussion with its spirits. You've determined the killer's role was {0}.";
-
-        [Localized(nameof(MediumConnection))]
-        public static string MediumConnection = "You're now able to speak with the ghost of {0}. They can answer with \"yes\" or \"no\" to your questions.";
-
-        [Localized(nameof(MediumConnectionGhost))]
-        public static string MediumConnectionGhost = "The Medium {0} has connected with you. You may talk to them by answering ONLY \"yes\" or \"no\".";
-
-        [Localized(nameof(YesAnswer))]
-        public static string YesAnswer = "yes";
-
-        [Localized(nameof(NoAnswer))]
-        public static string NoAnswer = "no";
+        [Localized(nameof(MediumTitle))] public static string MediumTitle = "Meditation";
+        [Localized(nameof(MediumMessage))] public static string MediumMessage = "You've reported a body, and after great discussion with its spirits. You've determined the killer's role was {0}.";
+        [Localized(nameof(MediumConnection))] public static string MediumConnection = "You're now able to speak with the ghost of {0}. They can answer with \"yes\" or \"no\" to your questions. You have {1} meditates left.";
+        [Localized(nameof(MediumConnectionGhost))] public static string MediumConnectionGhost = "The Medium {0} has connected with you. You may talk to them by answering ONLY \"yes\" or \"no\".";
+        [Localized(nameof(YesAnswer))] public static string YesAnswer = "yes";
+        [Localized(nameof(NoAnswer))] public static string NoAnswer = "no";
+        [Localized(nameof(OutOfMeditates))] public static string OutOfMeditates = "You are out of meditates. Your connection to the ghost has closed.";
+        [Localized(nameof(OutOfMeditatesGhost))] public static string OutOfMeditatesGhost = "Your connection to the Medium has closed. Your answers are no longer heard.";
 
         [Localized(ModConstants.Options)]
         public static class Options
         {
-            [Localized(nameof(HasArrowsToBody))]
-            public static string HasArrowsToBody = "Has Arrows to Bodies";
-
-            [Localized(nameof(CanSeeChatOfReportedPlayer))]
-            public static string CanSeeChatOfReportedPlayer = "Can Speak with Ghost of Reported";
+            [Localized(nameof(HasArrowsToBody))] public static string HasArrowsToBody = "Has Arrows to Bodies";
+            [Localized(nameof(CanSeeChatOfReportedPlayer))] public static string CanSeeChatOfReportedPlayer = "Can Speak with Ghost of Reported";
+            [Localized(nameof(IsClairvoyant))] public static string IsClairvoyant = "Can Speak To Dead";
+            [Localized(nameof(ShownToEveryone))] public static string ShownToEveryone = "Responses are Shown to Everyone";
+            [Localized(nameof(AmountOfMeditates))] public static string AmountOfMeditates = "Amount of Meditates";
         }
     }
 }

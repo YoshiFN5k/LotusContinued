@@ -42,7 +42,7 @@ public class LastResultCommand : CommandTranslations
         {
             if (!GeneralOptions.MiscellaneousOptions.AutoDisplayLastResults) return;
             if (gameJoinEvent.IsNewLobby) return;
-            Async.WaitUntil(() => PlayerControl.LocalPlayer, p => p != null, p => GeneralResults(p), 0.1f, 30);
+            Async.WaitUntil(() => PlayerControl.LocalPlayer, p => p != null, GeneralResults, 0.1f, 30);
         });
     }
 
@@ -50,7 +50,7 @@ public class LastResultCommand : CommandTranslations
     public static void LastGame(PlayerControl source, CommandContext context)
     {
         if (PlayerHistories == null) ErrorHandler(source).Message(NoPreviousGameText).Send();
-        else if (context.Args.Length == 0 || (context.Args.Length > 0 && context.Args[0] == "s")) GeneralResults(source, context.Args.Length > 0 && context.Args[0] == "s");
+        else if (context.Args.Length == 0) GeneralResults(source);
         else PlayerResults(source, context.Join().ToLower());
     }
 
@@ -77,49 +77,38 @@ public class LastResultCommand : CommandTranslations
         ChatHandler.Of("\n", titleText).LeftAlign().Send(source);
     }
 
-    public static void GeneralResults(PlayerControl source, bool SeparateResults = false)
+    public static void GeneralResults(PlayerControl source)
     {
         if (PlayerHistories == null) return;
 
         HashSet<byte> winners = Game.MatchData.GameHistory.LastWinners.Select(p => p.MyPlayer.PlayerId).ToHashSet();
+
         List<string> messages = new();
-
-        string text = "";
-
-        if (SeparateResults)
-        {
-            int _maxMessagePacketSize = NetworkRules.MaxPacketSize + 200;
-            List<string> playerResults = PlayerHistories
-                .Where(ph => ph.MainRole is not GameMaster)
-                .OrderBy(StatusOrder)
-                .Select(p => CreateSmallPlayerResult(p, winners.Contains(p.PlayerId)))
-                .ToList();
-
-            int i = 1;
-            int lastI = 0;
-
-            while (i <= playerResults.Count)
-            {
-                IEnumerable<string> curText = playerResults.Skip(lastI).Take(i - lastI);
-                string fusedText = curText.Fuse("<line-height=4>\n</line-height>");
-
-                if (fusedText.Length >= _maxMessagePacketSize)
-                {
-                    int difference = i - lastI;
-                    messages.Add(playerResults.GetRange(lastI, difference - 1).Fuse("<line-height=4>\n</line-height>"));
-                    lastI = i - 1;
-                }
-                else i++;
-            }
-
-            if (lastI < playerResults.Count) messages.Add(playerResults.Skip(lastI).Fuse("<line-height=4>\n</line-height>"));
-        }
-        else text = PlayerHistories
+        int _maxMessagePacketSize = NetworkRules.MaxPacketSize + 200;
+        List<string> playerResults = PlayerHistories
             .Where(ph => ph.MainRole is not GameMaster)
             .OrderBy(StatusOrder)
             .Select(p => CreateSmallPlayerResult(p, winners.Contains(p.PlayerId)))
-            .Fuse("<line-height=4>\n</line-height>");
+            .ToList();
 
+        int i = 1;
+        int lastI = 0;
+
+        while (i <= playerResults.Count)
+        {
+            IEnumerable<string> curText = playerResults.Skip(lastI).Take(i - lastI);
+            string fusedText = curText.Fuse("<line-height=4>\n</line-height>");
+
+            if (fusedText.Length >= _maxMessagePacketSize)
+            {
+                int difference = i - lastI;
+                messages.Add(playerResults.GetRange(lastI, difference - 1).Fuse("<line-height=4>\n</line-height>"));
+                lastI = i - 1;
+            }
+            else i++;
+        }
+
+        if (lastI < playerResults.Count) messages.Add(playerResults.Skip(lastI).Fuse("<line-height=4>\n</line-height>"));
         WinDelegate winDelegate = Game.GetWinDelegate();
         string winResult = new Optional<IWinCondition>(winDelegate.WinCondition()).Map(wc =>
         {
@@ -139,19 +128,10 @@ public class LastResultCommand : CommandTranslations
             string? wcText = wc.GetWinReason().ReasonText;
             string reasonText = wcText == null ? "" : $"\n<size=1.45>{LRTranslations.WinReasonText.Formatted(wcText)}</size>";
             return $"\n\n<size=1.6>{LRTranslations.WinResultText.Formatted(t)}{reasonText}</size>";
-        }).OrElse("");
+        }).OrElse("").TrimStart('\n', '\r');
 
-
-        if (!SeparateResults)
-        {
-            string content = $"<size=1.7>{text + winResult}</size>";
-            ChatHandler.Of("\n", content).LeftAlign().Send(source);
-        }
-        else
-        {
-            messages.ForEach(m => ChatHandler.Of("\n", m).LeftAlign().Send(source));
-            ChatHandler.Of("\n", $"<size=1.7>{winResult.TrimStart('\n', '\r')}</size>").LeftAlign().Send(source);
-        }
+        messages.ForEach(m => ChatHandler.Of("\n", m).LeftAlign().Send(source));
+        if (winResult != "") ChatHandler.Of("\n", $"<size=1.7>{winResult}</size>").LeftAlign().Send(source);
         messages.Clear();
         return;
 

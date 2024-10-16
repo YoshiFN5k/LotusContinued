@@ -131,6 +131,7 @@ public enum LotusActionType
     /// <param name="isTie"><see cref="bool"/> a boolean representing if the meeting tied</param>
     /// <param name="player vote counts"><see cref="Dictionary{TKey,TValue}"/> a dictionary containing (byte, int) representing the amount of votes a player got</param>
     /// <param name="playerVoteStatus"><see cref="Dictionary{TKey,TValue}"/> a dictionary containing (byte, List[Optional[byte]] containing the voting statuses of all players)</param>
+    /// <param name="isForceEnd"><see cref="bool"/> a boolean representing whether or not the meeting forceEnded </param>
     MeetingEnd,
     /// <summary>
     /// Triggers when the player tries to Vanish as Phantom.
