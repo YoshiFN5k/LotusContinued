@@ -41,6 +41,7 @@ using Lotus.Roles.RoleGroups.NeutralKilling;
 using Lotus.Patches.Intro;
 using Object = UnityEngine.Object;
 using Lotus.Roles.Outfit;
+using Lotus.Options.Patches;
 
 namespace Lotus.Roles;
 
@@ -381,12 +382,12 @@ public abstract class AbstractBaseRole
         {
             if (!resourceDirectory.EndsWith(".png")) resourceDirectory += ".png";
             PersistentAssetLoader.RegisterSprite(EnglishRoleName + "RoleImage", resourceDirectory, 500, DeclaringAssembly);
-            return (roleOption) => roleOption.RoleImage.sprite = PersistentAssetLoader.GetSprite(EnglishRoleName + "RoleImage");
+            return CompletedAction((roleOption) => roleOption.RoleImage.sprite = PersistentAssetLoader.GetSprite(EnglishRoleName + "RoleImage"));
         }
         else if (AssetLoader.ResourceExists(resourceDirectory.EndsWith(".yaml") ? resourceDirectory : resourceDirectory + ".yaml", DeclaringAssembly))
         {
             if (!resourceDirectory.EndsWith(".yaml")) resourceDirectory += ".yaml";
-            return (roleOption) =>
+            return CompletedAction((roleOption) =>
             {
                 roleOption.RoleImage.enabled = false;
                 PoolablePlayer fakePlayer = Object.Instantiate<PoolablePlayer>(DestroyableSingleton<HudManager>.Instance.IntroPrefab.PlayerPrefab, roleOption.RoleImage.transform);
@@ -398,13 +399,13 @@ public abstract class AbstractBaseRole
                 fakePlayer.cosmetics.EnsureInitialized(PlayerBodyTypes.Normal);
                 fakePlayer.UpdateFromPlayerOutfit(OutfitFile.FromManifestFile(resourceDirectory, DeclaringAssembly).ToPlayerOutfit(), PlayerMaterial.MaskType.SimpleUI, false, false);
                 fakePlayer.FindChild<Transform>("Names", true).gameObject.SetActive(false);
-            };
+            });
         }
         else
         {
             // log we can't find it and default to an empty image
             string? debugMessage = $"Could not find RoleImage for {EnglishRoleName}. Defaulting to no image. Path (.png/.yaml): {resourceDirectory}";
-            return (roleOption) =>
+            return CompletedAction((roleOption) =>
             {
                 if (debugMessage != null)
                 {
@@ -412,8 +413,14 @@ public abstract class AbstractBaseRole
                     debugMessage = null;
                 }
                 roleOption.RoleImage.enabled = false;
-            };
+            });
         }
+
+        Action<RoleOptionIntializer.RoleOptionIntialized> CompletedAction(Action<RoleOptionIntializer.RoleOptionIntialized> internalAction) => (roleOption) =>
+        {
+            GearIconPatch.AddGearToSettings(roleOption.RoleSetting, this);
+            internalAction(roleOption);
+        };
     }
 
     public GameOptionBuilder GetGameOptionBuilder()
