@@ -46,9 +46,8 @@ public class Hacker : Engineer
     }
 
     [RoleAction(LotusActionType.SabotageFixed)]
-    private void HackerAcquirePoints(ISabotage sabotage, PlayerControl fixer)
+    private void HackerAcquirePoints(ISabotage sabotage)
     {
-        if (fixer.PlayerId != MyPlayer.PlayerId) return;
         if (fixingDoorsGivesPoint || sabotage.SabotageType() is not SabotageType.Door) sabotageCount++;
         CheckHackerWin();
     }

@@ -50,7 +50,7 @@ public class GearIconPatch
             int roleOptionCount = optionList.Where(o => o.OptionType == VentLib.Options.Enum.OptionType.Role).Count();
             int totalCount = optionList.Count;
 
-            float newHeight = (2.7f * roleOptionCount) + (0.45f * (totalCount - roleOptionCount)) - .1f;
+            float newHeight = (2.7f * roleOptionCount) + (0.45f * (totalCount - roleOptionCount)) - .1f; // math isn't perfect. it does get desynced after a bunch of options
 
             var scrollBar = DestroyableSingleton<RolesSettingsMenu>.Instance.scrollBar;
             Vector3 vector = new(scrollBar.Inner.transform.localPosition.x, newHeight, scrollBar.Inner.transform.localPosition.z);
