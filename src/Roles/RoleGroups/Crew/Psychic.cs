@@ -31,17 +31,17 @@ public class Psychic : Crewmate
     private List<Remote<NameComponent>> remotes;
 
 
-    [RoleAction(LotusActionType.ReportBody)]
+    [RoleAction(LotusActionType.RoundEnd)]
     private void MarkMeetingPlayers()
     {
         List<PlayerControl> eligiblePlayers = Players.GetAlivePlayers().Where(IsEvil).ToList();
         if (eligiblePlayers.Count == 0) return;
 
-        log.Trace($"Psychic Eligible Evil Players: {eligiblePlayers.Select(p => p.name).Fuse()}", "Psychic Ability");
+        log.Debug($"Psychic Eligible Evil Players: {eligiblePlayers.Select(p => p.name).Fuse()}", "Psychic Ability");
         PlayerControl evilPlayer = eligiblePlayers.GetRandom();
         List<PlayerControl> targetPlayers = new() { evilPlayer };
         List<PlayerControl> remainingPlayers = Players.GetAlivePlayers().Where(p => p.PlayerId != MyPlayer.PlayerId && p.PlayerId != evilPlayer.PlayerId).ToList();
-        log.Trace($"Psychic Remaining Players: {remainingPlayers.Select(p => p.name).Fuse()}", "Psychic Ability");
+        log.Debug($"Psychic Remaining Players: {remainingPlayers.Select(p => p.name).Fuse()}", "Psychic Ability");
 
         while (targetPlayers.Count < numberOfPlayers && remainingPlayers.Count != 0) targetPlayers.Add(remainingPlayers.PopRandom());
 
