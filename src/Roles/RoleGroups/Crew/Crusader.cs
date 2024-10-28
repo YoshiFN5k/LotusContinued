@@ -85,7 +85,7 @@ public class Crusader : Crewmate
             .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod() / 5, () => SabotagePatch.CurrentSabotage != null && SabotagePatch.CurrentSabotage.SabotageType() is SabotageType.Lights);
 
     [Localized(nameof(Crusader))]
-    internal static class CrusaderTranslations
+    public static class CrusaderTranslations
     {
         [Localized(ModConstants.Options)]
         public static class CrusaderOptions

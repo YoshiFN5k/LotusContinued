@@ -119,7 +119,7 @@ public class GameplayOptions
         AllOptions.Add(new GameOptionBuilder()
             .Builder("Disable Task Win", _optionColor)
             .Name(GameplayOptionTranslations.DisableTaskWinText)
-            .AddBoolean()
+            .AddBoolean(false)
             .BindBool(b => DisableTaskWin = b)
             .Build());
 

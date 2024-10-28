@@ -55,13 +55,9 @@ public class GameModeManager
     public IGameMode GetGameMode(int id) => GameModes[id];
     public IGameMode? GetGameMode(Type type) => GameModes.FirstOrDefault(t => t.GetType() == type);
 
-    public void AddGamemodes()
-    {
-        new List<IGameMode>()
-        {
+    public void AddGamemodes() => GameModes.AddRange([
             new StandardGameMode()
-        }.ForEach(gm => GameModes.Add(gm));
-    }
+        ]);
 
     public void Setup()
     {
@@ -75,7 +71,8 @@ public class GameModeManager
         }
 
         gamemodeOption = builder.KeyName("GameMode", GamemodeTranslations.GamemodeText).IsHeader(true).BindInt(SetGameMode).Build();
-        gamemodeOption.Register(GeneralOptions.MainOptionManager, OptionLoadMode.LoadOrCreate);
+        GeneralOptions.MainOptionManager.Register(gamemodeOption, OptionLoadMode.LoadOrCreate);
+        if (currentGameMode == null) SetGameMode(0);
         GameModes.ForEach(gm => AddGamemodeSettingToOptions(gm.MainTab().GetOptions()));
     }
 
