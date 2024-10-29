@@ -101,11 +101,11 @@ class SplashPatch
 
         PassiveButton inventoryButton = MakeIconButton(__instance.inventoryButton, new Vector3(0.26f, 1.2f, 1f), AssetLoader.LoadLotusSprite("main_menu.InventoryIconInactive.png", 100),
             activeSprite: AssetLoader.LoadLotusSprite("main_menu.InventoryIconHighlighted.png", 100));
-        inventoryButton.transform.localPosition = new Vector3(5.55f, -1.96f, 0f);
+        inventoryButton.transform.localPosition = new Vector3(5.25f, -1.96f, 0f);
 
         PassiveButton discordButton = Object.Instantiate(inventoryButton, __instance.transform);
-        discordButton.transform.localPosition = new Vector3(0.34f, -2.4f, 0f);
-        discordButton.transform.localScale = new Vector3(0.329f, 0.56f, 1f);
+        discordButton.transform.localPosition = new Vector3(0.08f, -2.403f, 0f);
+        discordButton.transform.localScale = new Vector3(0.329f, 0.558f, 1f);
         discordButton.Modify(() => Application.OpenURL(ModConstants.DiscordInvite));
         {
             var ogRender = discordButton.inactiveSprites.GetComponent<SpriteRenderer>();
@@ -130,14 +130,44 @@ class SplashPatch
             discordRenderer.enabled = true;
             Async.Schedule(() => discordRenderer.sprite = inactiveSprite, 0.001f);
         }
+        discordButton.name = "DiscordButton";
 
-        PassiveButton shopButton = MakeIconButton(__instance.shopButton, new Vector3(0.265f, 1.223f, 1f), AssetLoader.LoadLotusSprite("main_menu.ShopIconInactive.png", 100),
+        PassiveButton websiteButton = Object.Instantiate(inventoryButton, __instance.transform);
+        websiteButton.transform.localPosition = new Vector3(-0.9f, -2.4f, 0f);
+        websiteButton.transform.localScale = new Vector3(0.28f, 0.278f, 1f);
+        websiteButton.Modify(() => Application.OpenURL(ModConstants.WebsiteLink));
+        {
+            var ogRender = websiteButton.inactiveSprites.GetComponent<SpriteRenderer>();
+            ogRender.enabled = false;
+            SpriteRenderer websiteRenderer;
+            {
+                var websiteIcon = new GameObject("WebsiteIcon");
+                websiteIcon.transform.SetParent(websiteButton.gameObject.transform);
+                websiteIcon.transform.localPosition = Vector3.zero;
+                websiteRenderer = websiteIcon.AddComponent<SpriteRenderer>();
+                websiteIcon.transform.localScale = new Vector3(1f, 1f, 1f);
+            }
+            Sprite activeSprite = AssetLoader.LoadLotusSprite("main_menu.WebsiteHighlighted.png", 100);
+            Sprite inactiveSprite = AssetLoader.LoadLotusSprite("main_menu.WebsiteInactive.png", 100);
+            ogRender.sprite = activeSprite;
+            websiteButton.activeSprites = null;
+            websiteButton.OnMouseOver = new UnityEngine.Events.UnityEvent();
+            websiteButton.OnMouseOut = new UnityEngine.Events.UnityEvent();
+            websiteButton.OnMouseOver.AddListener((Action)(() => websiteRenderer.sprite = ogRender.sprite));
+            websiteButton.OnMouseOut.AddListener((Action)(() => websiteRenderer.sprite = inactiveSprite));
+            websiteRenderer.sprite = inactiveSprite;
+            websiteRenderer.enabled = true;
+            Async.Schedule(() => websiteRenderer.sprite = inactiveSprite, 0.001f);
+        }
+        websiteButton.name = "WebsiteButton";
+
+        PassiveButton shopButton = MakeIconButton(__instance.shopButton, new Vector3(0.26f, 1.2f, 1f), AssetLoader.LoadLotusSprite("main_menu.ShopIconInactive.png", 100),
             activeSprite: AssetLoader.LoadLotusSprite("main_menu.ShopIconHighlighted.png", 100));
-        shopButton.transform.localPosition = new Vector3(6.6909f, -1.9571f, 0f);
+        shopButton.transform.localPosition = new Vector3(6.355f, -1.9571f, 0f);
 
-        PassiveButton newsButton = MakeIconButton(__instance.newsButton, new Vector3(0.223f, 1.527f, 0f), AssetLoader.LoadLotusSprite("main_menu.AnnouncementIconInactive.png", 100),
+        PassiveButton newsButton = MakeIconButton(__instance.newsButton, new Vector3(0.22f, 1.5f, 0f), AssetLoader.LoadLotusSprite("main_menu.AnnouncementIconInactive.png", 100),
             activeSprite: AssetLoader.LoadLotusSprite("main_menu.AnnouncementIconHighlighted.png", 100));
-        newsButton.transform.localPosition = new Vector3(7.7629f, -1.8329f, 0f);
+        newsButton.transform.localPosition = new Vector3(7.4629f, -1.8329f, 0f);
 
         __instance.playButton.transform.localPosition -= new Vector3(0f, 1.4f);
         // __instance.playButton.transform.localPosition += new Vector3(.02f, 0f, 0f);
@@ -182,29 +212,30 @@ class SplashPatch
                 case "BottomButtonBounds/ExitGameButton":
                     buttonObject.transform.localPosition = new Vector3(0.8854f, 0, buttonObject.transform.localPosition.z);
                     buttonObject.transform.localScale = new Vector3(0.86f, 1.1f, buttonObject.transform.localScale.z);
-                    Transform fontPlacerExitGame = buttonObject.transform.FindChild("FontPlacer");
+                    Transform fontPlacerExitGame = buttonObject.FindChild<Transform>("FontPlacer", true);
                     fontPlacerExitGame.localPosition = new Vector3(-0.1753f, 0.0217f, fontPlacerExitGame.localPosition.z);
                     fontPlacerExitGame.localScale = new Vector3(1f, 0.8f, fontPlacerExitGame.localScale.z);
                     break;
                 case "BottomButtonBounds/CreditsButton":
                     buttonObject.transform.localPosition = new Vector3(-0.9067f, 0f, buttonObject.transform.localPosition.z);
                     buttonObject.transform.localScale = new Vector3(0.86f, 1.1f, buttonObject.transform.localScale.z);
-                    Transform fontPlacerCredits = buttonObject.transform.FindChild("FontPlacer");
+                    Transform fontPlacerCredits = buttonObject.FindChild<Transform>("FontPlacer", true);
                     fontPlacerCredits.localPosition = new Vector3(-0.1753f, 0.0217f, fontPlacerCredits.localPosition.z);
                     fontPlacerCredits.localScale = new Vector3(1f, 0.8f, fontPlacerCredits.localScale.z);
+                    Async.Schedule(() => fontPlacerCredits.gameObject.FindChild<TextMeshPro>("Text_TMP", true).text = "Pl Credits", 0.001f);
                     // GameObject.Find("CreditsButton/FontPlacer/Text_TMP").GetComponent<TextMeshPro>().text = "PL Credits";
                     break;
                 case "SettingsButton":
                     buttonObject.transform.localPosition = new Vector3(0.0004f, -1.2905f, buttonObject.transform.localPosition.z);
                     buttonObject.transform.localScale = new Vector3(0.842f, 0.962f, buttonObject.transform.localScale.z);
-                    Transform fontPlacerSettings = buttonObject.transform.FindChild("FontPlacer");
+                    Transform fontPlacerSettings = buttonObject.FindChild<Transform>("FontPlacer", true);
                     fontPlacerSettings.localPosition = new Vector3(0f, -0.099f, fontPlacerSettings.localPosition.z);
                     fontPlacerSettings.localScale = new Vector3(1, 1, fontPlacerSettings.localScale.z);
                     break;
                 case "AcountButton":
                     buttonObject.transform.localPosition = new Vector3(0.0004f, -0.6476f, buttonObject.transform.localPosition.z);
                     buttonObject.transform.localScale = new Vector3(0.842f, 0.962f, buttonObject.transform.localScale.z);
-                    Transform fontPlacerAccount = buttonObject.transform.FindChild("FontPlacer");
+                    Transform fontPlacerAccount = buttonObject.FindChild<Transform>("FontPlacer", true);
                     fontPlacerAccount.localPosition = new Vector3(0.0283f, -0.099f, fontPlacerAccount.localPosition.z);
                     fontPlacerAccount.localScale = new Vector3(1, 1, fontPlacerAccount.localScale.z);
                     break;
@@ -244,7 +275,7 @@ class SplashPatch
         __instance.settingsButton.activeTextColor = Color.white;
         __instance.settingsButton.inactiveTextColor = Color.white;
 
-        var tohLogo = new GameObject("titleLogo_TOH");
+        var tohLogo = new GameObject("titleLogo_PL");
         tohLogo.transform.position = new Vector3(4.5f, -2.1f);
         tohLogo.transform.localScale = new Vector3(1f, 1f, 1f);
         var renderer = tohLogo.AddComponent<SpriteRenderer>();

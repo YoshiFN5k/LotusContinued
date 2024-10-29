@@ -18,11 +18,12 @@ public static class CreditsControllerPatch
     {
         string creditsText = "";
 
-        System.IO.Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Lotus.assets.Credits.plcredits.txt")!;
+        using System.IO.Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Lotus.assets.Credits.plcredits.txt")!;
         byte[] buffer = new byte[stream.Length];
         stream.Read(buffer, 0, buffer.Length);
 
         creditsText = Encoding.UTF8.GetString(buffer);
+        stream.Dispose();
         return creditsText;
     }
     private static void PassCreditsController(GameObject mainObject)
