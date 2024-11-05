@@ -74,8 +74,19 @@ public class PrivacyPolicyPatch
         bool Change()
         {
             _privacyInfo.ToRealInfo();
+            SavePrivacyPolicy();
             return true;
         }
+    }
+
+    private static void SavePrivacyPolicy()
+    {
+        FileInfo privacyFile = PluginDataManager.HiddenDataDirectory.GetFile("privacyPolicyInfo.yaml");
+
+        string emptyFile = serializer.Serialize(PrivacyPolicyInfo.Instance);
+        using FileStream stream = privacyFile.Open(FileMode.Create);
+        stream.Write(Encoding.UTF8.GetBytes(emptyFile));
+        stream.Close();
     }
 
     private static IEnumerator CustomCoroutine(EOSManager __instance)
@@ -299,12 +310,7 @@ public class PrivacyPolicyPatch
 
         _privacyInfo = policyInfo;
         _privacyInfo.ToRealInfo();
-        FileInfo privacyFile = PluginDataManager.HiddenDataDirectory.GetFile("privacyPolicyInfo.yaml");
-
-        string emptyFile = serializer.Serialize(policyInfo);
-        using FileStream stream = privacyFile.Open(FileMode.Create);
-        stream.Write(Encoding.UTF8.GetBytes(emptyFile));
-        stream.Close();
+        SavePrivacyPolicy();
 
         void Close() => customScreen.GetComponent<TransitionOpen>().Close();
         GameObject CreatePolicyChoice(string name, string description, string defaultText, Action<GameObject> onClick)
