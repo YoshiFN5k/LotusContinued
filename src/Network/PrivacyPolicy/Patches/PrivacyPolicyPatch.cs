@@ -357,7 +357,7 @@ public class PrivacyPolicyPatch
         {
             if (!_privacyInfo.ConnectWithAPI) yield break;
         }
-        UnityWebRequest webRequest = new(NetConstants.Host + "privacypolicy", UnityWebRequest.kHttpVerbGET)
+        UnityWebRequest webRequest = new(ModConstants.WebsiteLink + "api/privacypolicy", UnityWebRequest.kHttpVerbGET)
         {
             downloadHandler = new DownloadHandlerBuffer()
         };
