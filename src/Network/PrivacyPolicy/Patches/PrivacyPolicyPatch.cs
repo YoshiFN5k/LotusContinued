@@ -392,6 +392,7 @@ public class PrivacyPolicyPatch
                 }
                 break;
             default:
+                LatestPrivacyPolicy = DateTimeOffset.MinValue;
                 log.Info("Result: {0} - Error: {1} - ResponseCode: {2} - Server Response: {3}".Formatted(webRequest.result.ToString(),
                     webRequest.error, webRequest.responseCode, webRequest.downloadHandler.text));
                 break;
