@@ -114,7 +114,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 
     public void SetBlackscreenResolver(Func<MeetingDelegate, IBlackscreenResolver> newResolver)
     {
-        log.Debug($"{Assembly.GetCallingAssembly().GetName().Name} overrided the default blackscreen resolver.");
+        log.Debug($"{Assembly.GetCallingAssembly().GetName().Name} overrided the current blackscreen resolver.");
         GetNewBlackscreenResolver = newResolver;
     }
 
