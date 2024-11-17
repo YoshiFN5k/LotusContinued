@@ -33,6 +33,8 @@ using System;
 using Lotus.Managers.Blackscreen.Interfaces;
 using Lotus.Managers.Blackscreen;
 using Lotus.API.Vanilla.Meetings;
+using VentLib.Lobbies;
+using Lotus.Network;
 #if !DEBUG
 using VentLib.Utilities.Debug.Profiling;
 #endif
@@ -148,6 +150,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
             () => AssetLoader.LoadLotusSprite("searchicon.png", 100, true),
             greenOnHover: false
         ));
+        LobbyChecker.AddEndpoint(new LotusLobbyEndpoints(), false); // do not replace all, so default endpoint is still sent.
 
         FinishedLoading = true;
         log.High("Finished Initializing Project Lotus. Sending Post-Initialization Event");
