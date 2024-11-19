@@ -142,7 +142,7 @@ public class DelayNetworkedData
     }
 
     [QuickPostfix(typeof(InnerNetClient), nameof(InnerNetClient.Spawn))]
-    public static void Spawn_Postfix(InnerNetClient __instance, InnerNetObject netObjParent, int ownerId = -2, SpawnFlags flags = SpawnFlags.None)
+    public static void SpawnPostfix(InnerNetClient __instance, InnerNetObject netObjParent, int ownerId = -2, SpawnFlags flags = SpawnFlags.None)
     {
         if (!Constants.IsVersionModded() || __instance.NetworkMode != NetworkModes.OnlineGame) return;
 
@@ -159,7 +159,7 @@ public class DelayNetworkedData
                         {
                             if (playerinfo.IsIncomplete)
                             {
-                                log.Info($"Disconnecting Client [{client.Id}]{client.PlayerName} {client.FriendCode} for playerinfo timeout", "DelayedNetworkedData");
+                                log.Info($"Disconnecting Client [{client.Id}]{client.PlayerName} {client.FriendCode} for playerinfo timeout");
                                 AmongUsClient.Instance.SendLateRejection(client.Id, DisconnectReasons.ClientTimeout);
                                 __instance.OnPlayerLeft(client, DisconnectReasons.ClientTimeout);
                             }
@@ -179,7 +179,7 @@ public class DelayNetworkedData
                         {
                             if (player.Data == null || player.Data.IsIncomplete)
                             {
-                                log.Info($"Disconnecting Client [{client.Id}]{client.PlayerName} {client.FriendCode} for playercontrol timeout", "DelayedNetworkedData");
+                                log.Info($"Disconnecting Client [{client.Id}]{client.PlayerName} {client.FriendCode} for playercontrol timeout");
                                 AmongUsClient.Instance.SendLateRejection(client.Id, DisconnectReasons.ClientTimeout);
                                 __instance.OnPlayerLeft(client, DisconnectReasons.ClientTimeout);
                             }
@@ -266,13 +266,13 @@ public class DelayNetworkedData
             ClientData clientData = __instance.allClients[i];
             if (clientData.Id == client.Id)
             {
-                return true;
+                return false;
             }
         }
-        return false;
-        //When a client disconnects, it is removed from allClients in method amongusclient.removeplayer
+        return true;
     }
 }
+
 [HarmonyPatch(typeof(GameData), nameof(GameData.DirtyAllData))]
 internal class DirtyAllDataPatch
 {

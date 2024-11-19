@@ -25,7 +25,6 @@ internal class BlackscreenResolver : IBlackscreenResolver
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(BlackscreenResolver));
 
-    private Dictionary<byte, Dictionary<byte, (bool isDead, bool isDisconnected)>> specificPlayerStates = null!;
     private Dictionary<byte, (bool isDead, bool isDisconnected)> playerStates = null!;
     private MeetingDelegate meetingDelegate;
     private HashSet<byte> unpatchable;
@@ -47,8 +46,8 @@ internal class BlackscreenResolver : IBlackscreenResolver
         if (!AmongUsClient.Instance.AmHost) return;
         _patching = true;
 
-        specificPlayerStates = new();
         playerStates = new();
+        unpatchable = new();
 
         // Store and save the data of each player.
         byte exiledPlayer = meetingDelegate.ExiledPlayer?.PlayerId ?? byte.MaxValue;
@@ -56,15 +55,27 @@ internal class BlackscreenResolver : IBlackscreenResolver
         playerInfos.FirstOrOptional(p => p.PlayerId == exiledPlayer).IfPresent(info => info.IsDead = true);
 
         playerStates = playerInfos.ToDict(i => i.PlayerId, i => (i.IsDead, i.Disconnected));
-        specificPlayerStates = playerInfos.ToDict(i => i.PlayerId, i => AntiBlackoutLogic.PatchedData(i.Object, exiledPlayer));
 
         // Update and send new data for each player.
         foreach (PlayerControl player in Players.GetPlayers())
         {
-            if (!specificPlayerStates.TryGetValue(player.PlayerId, out var myStates)) return;
+            if (player == null) continue;
             if (playerStates[player.PlayerId].isDisconnected) continue;
+            if (player.IsHost() || player.IsModded()) continue;
             int clientId = player.GetClientId();
             if (clientId == -1) continue;
+            Dictionary<byte, (bool isDead, bool isDisconnected)> myStates;
+            try
+            {
+                myStates = AntiBlackoutLogic.PatchedData(player, exiledPlayer);
+            }
+            catch (Exception ex)
+            {
+                myStates = null!;
+                if (ex.Message == "unpatchable.") unpatchable.Add(player.PlayerId);
+                else log.Exception(ex);
+            }
+            if (myStates == null) continue;
 
             GameData.Instance.AllPlayers.ToArray().Where(i => i != null).ForEach(info =>
             {
@@ -79,6 +90,10 @@ internal class BlackscreenResolver : IBlackscreenResolver
             });
             GeneralRPC.SendGameData(clientId);
         }
+        if (unpatchable.Count == 0) return;
+
+        log.Debug($"Unpatchable Players: {unpatchable.Filter(Utils.PlayerById).Select(p => p.name).Fuse()}");
+        log.Debug($"These players WILL blackscreen unfortunately. Currently nothing is done to prevent this.");
     }
 
     public virtual void FixBlackscreens(Action runOnFinish)

@@ -28,17 +28,17 @@ public static class AntiBlackoutLogic
         foreach (PlayerControl player in players)
         {
             if (player.IsHost() || player.IsModded()) continue;
-            log.Trace($"Patching For: {player.name} ({player.PrimaryRole().RoleName})");
+            log.Debug($"Patching For: {player.name} ({player.PrimaryRole().RoleName})");
             ReviveEveryone(exiledPlayer);
 
             bool wasImpostor = roleTracker.GetAllImpostorIds(player.PlayerId).Contains(0);
             HashSet<byte> impostorIds = roleTracker.GetAllImpostorIds(player.PlayerId).Where(id => exiledPlayer != id && id != 0).ToHashSet();
             NetworkedPlayerInfo[] impostorInfo = allPlayers.Where(info => impostorIds.Contains(info.PlayerId)).ToArray();
-            log.Trace($"Impostors: {impostorInfo.Select(i => i.Object).Where(o => o != null).Select(o => o.name).Fuse()}");
+            log.Debug($"Impostors: {impostorInfo.Select(i => i.Object).Where(o => o != null).Select(o => o.name).Fuse()}");
 
             HashSet<byte> crewIds = roleTracker.GetAllCrewmateIds(player.PlayerId).Where(id => exiledPlayer != id).ToHashSet();
             NetworkedPlayerInfo[] crewInfo = allPlayers.Where(info => crewIds.Contains(info.PlayerId)).ToArray();
-            log.Trace($"Crew: {crewInfo.Select(i => i.Object).Where(o => o != null).Select(o => o.name).Fuse()}");
+            log.Debug($"Crew: {crewInfo.Select(i => i.Object).Where(o => o != null).Select(o => o.name).Fuse()}");
 
             int aliveImpostorCount = impostorInfo.Length;
             int aliveCrewCount = crewInfo.Length;
@@ -48,7 +48,7 @@ public static class AntiBlackoutLogic
             else if (player.IsAlive()) aliveCrewCount++;
             if (wasImpostor && PlayerControl.LocalPlayer.GetVanillaRole().IsImpostor() && PlayerControl.LocalPlayer.PlayerId != exiledPlayer) aliveImpostorCount++;
 
-            log.Trace($"Alive Crew: {aliveCrewCount} | Alive Impostors: {aliveImpostorCount}");
+            log.Debug($"Alive Crew: {aliveCrewCount} | Alive Impostors: {aliveImpostorCount}");
 
             bool IsFailure()
             {
@@ -65,7 +65,7 @@ public static class AntiBlackoutLogic
             {
                 if (aliveCrewCount > aliveImpostorCount) break;
                 NetworkedPlayerInfo info = impostorInfo[index++];
-                if (info.Object != null) log.Trace($"Set {info.Object.name} => Disconnect = true | Impostors: {aliveImpostorCount - 1} | Crew: {aliveCrewCount}");
+                if (info.Object != null) log.Debug($"Set {info.Object.name} => Disconnect = true | Impostors: {aliveImpostorCount - 1} | Crew: {aliveCrewCount}");
                 info.Disconnected = true;
                 aliveImpostorCount--;
             }
@@ -88,28 +88,35 @@ public static class AntiBlackoutLogic
         if (curPlayer.IsHost() || curPlayer.IsModded()) return replacedPlayers;
 
         VanillaRoleTracker.TeamInfo myTeamInfo = curPlayer.GetTeamInfo();
-        IEnumerable<PlayerControl> allPlayers = Players.GetAllPlayers();
+        NetworkedPlayerInfo[] allPlayers = Instance.AllPlayers.ToArray();
         HashSet<byte> impostorIds = myTeamInfo.Impostors.Where(id => exiledPlayer != id && id != 0).ToHashSet();
         HashSet<byte> crewIds = myTeamInfo.Crewmates.Where(id => exiledPlayer != id).ToHashSet();
 
-        List<PlayerControl> aliveImpostors = allPlayers.Where(p => impostorIds.Contains(p.PlayerId) && p.IsAlive()).ToList();
-        List<PlayerControl> aliveCrewmates = allPlayers.Where(p => crewIds.Contains(p.PlayerId) && p.IsAlive()).ToList();
+        List<NetworkedPlayerInfo> aliveImpostors = allPlayers.Where(p => impostorIds.Contains(p.PlayerId) && !p.IsDead).ToList();
+        List<NetworkedPlayerInfo> aliveCrewmates = allPlayers.Where(p => crewIds.Contains(p.PlayerId) && !p.IsDead).ToList();
 
         bool isCurPlayerImpostor = curPlayer.GetVanillaRole().IsImpostor();
         if (curPlayer.PlayerId != exiledPlayer && curPlayer.IsAlive())
         {
-            if (isCurPlayerImpostor) aliveImpostors.Add(curPlayer);
-            else aliveCrewmates.Add(curPlayer);
+            if (isCurPlayerImpostor) aliveImpostors.Add(curPlayer.Data);
+            else aliveCrewmates.Add(curPlayer.Data);
         }
+        log.Debug($"Impostors: {aliveImpostors.Where(o => o != null).Select(o => o.name).Fuse()}");
+        log.Debug($"Crew: {aliveCrewmates.Where(o => o != null).Select(o => o.name).Fuse()}");
+        log.Debug($"Alive Crew: {aliveCrewmates.Count} | Alive Impostors: {aliveImpostors.Count}");
 
         bool isBlackScreenLikely = aliveImpostors.Count >= aliveCrewmates.Count || aliveImpostors.Count == 0;
         if (!isBlackScreenLikely) return replacedPlayers;
 
         if (aliveImpostors.Count == 0 && impostorIds.Count > 0)
         {
-            PlayerControl firstImpostor = allPlayers.First(p => impostorIds.Contains(p.PlayerId));
-            aliveImpostors.Add(firstImpostor);
-            replacedPlayers[firstImpostor.PlayerId] = (false, false);
+            NetworkedPlayerInfo? firstImpostor = allPlayers.FirstOrDefault(p => impostorIds.Contains(p.PlayerId));
+            if (firstImpostor != null)
+            {
+                aliveImpostors.Add(firstImpostor);
+                replacedPlayers[firstImpostor.PlayerId] = (false, false);
+            }
+            else throw new System.Exception("unpatchable.");
         }
 
         while (aliveImpostors.Count >= aliveCrewmates.Count)
@@ -117,7 +124,7 @@ public static class AntiBlackoutLogic
             var leftoverCrewmates = allPlayers.Where(p => crewIds.Contains(p.PlayerId) && !aliveCrewmates.Contains(p));
             if (!leftoverCrewmates.Any()) break;
 
-            PlayerControl randomCrewmate = leftoverCrewmates.First();
+            NetworkedPlayerInfo randomCrewmate = leftoverCrewmates.First();
             aliveCrewmates.Add(randomCrewmate);
             replacedPlayers[randomCrewmate.PlayerId] = (false, false);
         }

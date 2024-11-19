@@ -13,6 +13,6 @@ public class LotusLobbyEndpoints : ILobbyServerInfo
 
     public string CreateEndpoint() => IsDebug ? "https://testing-lotus.eps.lol/lobbies" : "https://lobbies.lotusau.top/lobbies";
     public string UpdatePlayerStatusEndpoint() => IsDebug ? "https://testing-lotus.eps.lol/update-lobby" : "https://lobbies.lotusau.top/update-lobby";
-    public string UpdateMapEndpoint() => IsDebug ? "https://testing-lotus.eps.lol/update-lobby" : "https://lobbies.lotusau.top/update-lobby";
+    public string UpdateMapEndpoint() => UpdatePlayerStatusEndpoint();
     public Dictionary<string, string> AddCustomHeaders(LobbyUpdateType _) => Empty;
 }

@@ -39,10 +39,10 @@ public class RpcSetTasksPatch
 
         TasksOverride? tasksOverride = TaskQueue.Count == 0 ? null : TaskQueue.Dequeue();
 
+        bool hasCommonTasks = false;
+        bool overrideTasks = false;
         int shortTaskCount = -1;
         int longTaskCount = -1;
-        bool overrideTasks = false;
-        bool hasCommonTasks = false;
 
         bool hasTasks = tasksOverride != null;
 
@@ -61,7 +61,7 @@ public class RpcSetTasksPatch
         }
 
         if (!hasTasks) return true;
-        log.Debug($"Setting tasks for player {__instance.Object?.name ?? __instance.PlayerName}");
+        log.Debug($"Setting tasks for player {__instance.Object?.name ?? __instance.PlayerName}.");
 
         if (shortTaskCount == -1 || !overrideTasks) shortTaskCount = AUSettings.NumShortTasks();
         if (longTaskCount == -1 || !overrideTasks) longTaskCount = AUSettings.NumLongTasks();
@@ -82,6 +82,7 @@ public class RpcSetTasksPatch
             }
         }
         else if (!overrideTasks) return true;
+        log.Debug($"Overriding tasks for player {__instance.Object?.name ?? __instance.PlayerName}.");
 
         Il2CppSystem.Collections.Generic.List<byte> tasksList = new();
         foreach (byte num in taskTypeIds) tasksList.Add(num);

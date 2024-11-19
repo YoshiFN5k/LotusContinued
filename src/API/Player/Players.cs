@@ -24,7 +24,7 @@ public static class Players
     public static IEnumerable<PlayerControl> GetPlayers(PlayerFilter filter = PlayerFilter.None)
     {
         IEnumerable<PlayerControl> players = GetAllPlayers();
-        if (filter.HasFlag(PlayerFilter.NonPhantom)) players = players.Where(p => p.PrimaryRole() is IPhantomRole phantomRole && phantomRole.IsCountedAsPlayer());
+        if (filter.HasFlag(PlayerFilter.NonPhantom)) players = players.Where(p => !(p.PrimaryRole() is IPhantomRole phantomRole) || phantomRole.IsCountedAsPlayer());
         if (filter.HasFlag(PlayerFilter.Alive)) players = players.Where(p => p.IsAlive());
         if (filter.HasFlag(PlayerFilter.Dead)) players = players.Where(p => !p.IsAlive());
         if (filter.HasFlag(PlayerFilter.Impostor)) players = players.Where(p => p.PrimaryRole().Faction.GetType() == typeof(ImpostorFaction));
@@ -82,7 +82,7 @@ public static class Players
     public static IEnumerable<PlayerControl> GetAllPlayers() => PlayerControl.AllPlayerControls.ToArray();
     public static IEnumerable<PlayerControl> GetAlivePlayers() => GetPlayers(PlayerFilter.Alive);
 
-    public static IEnumerable<CustomRole> GetAliveRoles(bool includePhantomRoles = false) => GetPlayers(includePhantomRoles ? (PlayerFilter.NonPhantom | PlayerFilter.Alive) : PlayerFilter.Alive).Select(p => p.PrimaryRole());
+    public static IEnumerable<CustomRole> GetAliveRoles(bool includePhantomRoles = false) => GetPlayers(!includePhantomRoles ? (PlayerFilter.NonPhantom | PlayerFilter.Alive) : PlayerFilter.Alive).Select(p => p.PrimaryRole());
     public static IEnumerable<CustomRole> GetAllRoles(bool includeEmptyRoles = false) => GetPlayers().Select(p => p.PrimaryRole()).Where(r => includeEmptyRoles | r.GetType() != IRoleManager.Current.FallbackRole().GetType());
 
     public static IEnumerable<PlayerControl> GetDeadPlayers(bool disconnected = false) => GetAllPlayers().Where(p => p.Data.IsDead || (disconnected && p.Data.Disconnected));

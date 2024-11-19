@@ -34,8 +34,6 @@ public class PlagueBearer : NeutralKillingBase
 
     [NewOnSetup] private List<Remote<IndicatorComponent>> indicatorRemotes = new();
     [NewOnSetup] private HashSet<byte> infectedPlayers = null!;
-    private int cooldownSetting;
-    private float customCooldown;
     private int alivePlayers;
 
     public override bool CanSabotage() => false;
@@ -92,7 +90,8 @@ public class PlagueBearer : NeutralKillingBase
         if (allCountedPlayers.Any(p => !infectedPlayers.Contains(p.PlayerId))) return;
 
         indicatorRemotes.ForEach(remote => remote.Delete());
-        MyPlayer.NameModel().GetComponentHolder<CounterHolder>().RemoveAt(0);
+        var counterHolder = MyPlayer.NameModel().GetComponentHolder<CounterHolder>();
+        if (counterHolder.Count > 0) counterHolder.RemoveAt(0);
         Game.AssignRole(MyPlayer, Pestilence);
 
         Game.MatchData.GameHistory.AddEvent(new RoleChangeEvent(MyPlayer, Pestilence));
