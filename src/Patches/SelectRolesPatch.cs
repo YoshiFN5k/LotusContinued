@@ -60,10 +60,11 @@ class SelectRolesPatch
             var primaryRole = p.PrimaryRole();
             primaryRole.SyncOptions();
             textTable.AddEntry((object)p.PlayerId, ModConstants.ColorNames[p.cosmetics.ColorId], p.name, primaryRole.RoleName, p.SecondaryRoles().Fuse());
-            desyncedIntroText.Add(p.PlayerId, p.NameModel().GetComponentHolder<TextHolder>().Add(new TextComponent(new LiveString(primaryRole.GetRoleIntroString()), GameState.InIntro, ViewMode.Replace, p)));
+            desyncedIntroText.Add(p.PlayerId, p.NameModel().GetComponentHolder<TextHolder>().Add(new TextComponent(new LiveString(primaryRole.GetRoleIntroString()), [
+                GameState.InIntro, GameState.InLobby], ViewMode.Additive, p)));
         });
         log.Debug($"RoleManager::SelectRoles~Postfix - Role Assignments\n{textTable}");
         if (!AmongUsClient.Instance.AmHost || encounteredError) return;
-        Game.RenderAllForAll(state: GameState.InIntro);
+        Players.GetPlayers().ForEach(p => p.NameModel().RenderFor(p, GameState.InIntro, force: true));
     }
 }

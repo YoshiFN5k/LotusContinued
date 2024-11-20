@@ -103,7 +103,7 @@ public static class AntiBlackoutLogic
         }
         log.Debug($"Impostors: {aliveImpostors.Where(o => o != null).Select(o => o.name).Fuse()}");
         log.Debug($"Crew: {aliveCrewmates.Where(o => o != null).Select(o => o.name).Fuse()}");
-        log.Debug($"Alive Crew: {aliveCrewmates.Count} | Alive Impostors: {aliveImpostors.Count}");
+        log.Debug($"Alive Crew: {aliveCrewmates.Count} | Alive Impostors: {aliveImpostors.Count} | Is Impostor: {isCurPlayerImpostor}");
 
         bool isBlackScreenLikely = aliveImpostors.Count >= aliveCrewmates.Count || aliveImpostors.Count == 0;
         if (!isBlackScreenLikely) return replacedPlayers;
@@ -128,6 +128,8 @@ public static class AntiBlackoutLogic
             aliveCrewmates.Add(randomCrewmate);
             replacedPlayers[randomCrewmate.PlayerId] = (false, false);
         }
+
+        if (aliveImpostors.Count >= aliveCrewmates.Count || aliveImpostors.Count == 0) throw new System.Exception("unpatchable.");
 
         return replacedPlayers;
     }

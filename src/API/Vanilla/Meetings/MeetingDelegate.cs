@@ -164,7 +164,6 @@ public class MeetingDelegate
         string textFormatting = "<size=0><size=2.5>" + RoleRevealText.Formatted(player.name, roleDefinition.RoleColor.Colorize(roleDefinition.RoleName));
         textFormatting += "\n" + (impostors == 0 ? NoImpostorsText : RemainingImpostorsText.Formatted(impostors)) + "</size>";
 
-        Api.Local.SetName(player, textFormatting);
         player.RpcSetName(textFormatting);
     }
 }

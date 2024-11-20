@@ -48,7 +48,7 @@ public class LogManager
     public static void SendInGame(string message, params object[] args)
     {
         log.Debug($"Sending In Game: {message}", args);
-        if (DestroyableSingleton<HudManager>.Instance)
+        if (DestroyableSingleton<HudManager>.InstanceExists)
         {
             DestroyableSingleton<HudManager>.Instance.Chat.AddChat(PlayerControl.LocalPlayer, message, false);
             NotificationPopper notifier = DestroyableSingleton<HudManager>.Instance.Notifier;
