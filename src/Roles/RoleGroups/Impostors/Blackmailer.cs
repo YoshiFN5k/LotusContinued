@@ -58,7 +58,7 @@ public class Blackmailer : Shapeshifter
         blackmailingText?.Delete();
     }
 
-    [RoleAction(LotusActionType.ReportBody, ActionFlag.WorksAfterDeath | ActionFlag.GlobalDetector, priority: Priority.Low)]
+    [RoleAction(LotusActionType.RoundEnd, ActionFlag.WorksAfterDeath)]
     public void NotifyBlackmailed()
     {
         List<PlayerControl> allPlayers = showBlackmailedToAll

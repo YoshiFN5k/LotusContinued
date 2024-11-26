@@ -51,7 +51,7 @@ public abstract class AbstractBaseRole
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(AbstractBaseRole));
     public PlayerControl MyPlayer { get; protected set; } = null!;
-    public string Description => Localizer.Translate($"Roles.{EnglishRoleName.RemoveHtmlTags()}.Description", assembly: DeclaringAssembly);
+    // public string Description => Localizer.Translate($"Roles.{EnglishRoleName.RemoveHtmlTags()}.Description", assembly: DeclaringAssembly);
     public string Blurb => Localizer.Translate($"Roles.{EnglishRoleName.RemoveHtmlTags()}.Blurb", assembly: DeclaringAssembly);
 
     public string RoleName
@@ -70,6 +70,25 @@ public abstract class AbstractBaseRole
             if (RoleFlags.HasFlag(RoleFlag.DoNotTranslate)) return Array.Empty<string>();
             string aliases = Localizer.Translate($"Roles.{EnglishRoleName.RemoveHtmlTags()}.Aliases", "", true, DeclaringAssembly, TranslationCreationOption.NothingIfNull);
             return aliases == "" ? Array.Empty<string>() : aliases.Split(",", StringSplitOptions.TrimEntries).Select(a => a.ToLowerInvariant());
+        }
+    }
+    public string Description
+    {
+        get
+        {
+            if (RoleFlags.HasFlag(RoleFlag.DoNotTranslate)) return "";
+            if (RoleOptions == null) return Localizer.Translate($"Roles.{EnglishRoleName.RemoveHtmlTags()}.Description", assembly: DeclaringAssembly);
+            string OptionText(Option opt)
+            {
+                object value = opt.GetValue();
+                if (value is bool booleanValue && !booleanValue) return "";
+                return "\n"
+                    + Localizer.Translate($"Roles.{EnglishRoleName.RemoveHtmlTags()}.Mutable.{opt.Key().Replace(" ", "")}", "", true, DeclaringAssembly, TranslationCreationOption.NothingIfNull)
+                        .Formatted(opt.GetValueText())
+                    + opt.Children.GetConditionally(opt.GetValue()).Select(o => OptionText(o))
+                        .Fuse("");
+            }
+            return Localizer.Translate($"Roles.{EnglishRoleName.RemoveHtmlTags()}.Description", assembly: DeclaringAssembly) + "\n" + OptionText(RoleOptions).Trim();
         }
     }
     public string? OverridenRoleName;
