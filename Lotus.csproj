@@ -35,7 +35,6 @@
 		</PackageReference>
 		<PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.697" Private="false" ExcludeAssets="runtime;native" />
 		<PackageReference Condition="$(Debug) == 'false'" Include="VentFrameworkContinued" Version="1.1.0" />
-		<PackageReference Include="WebSocket4Net" Version="0.15.2" />
     <Reference Condition="$(Debug) == 'true'" Include="../VentFramework-Continued/bin/Debug/net6.0/VentFrameworkContinued.dll">
       <IncludeAssets>runtime; compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

@@ -61,6 +61,7 @@ public class Blackmailer : Shapeshifter
     [RoleAction(LotusActionType.RoundEnd, ActionFlag.WorksAfterDeath)]
     public void NotifyBlackmailed()
     {
+        if (!blackmailedPlayer.Exists()) return;
         List<PlayerControl> allPlayers = showBlackmailedToAll
             ? Players.GetAllPlayers().ToList()
             : blackmailedPlayer.Transform(p => new List<PlayerControl> { p, MyPlayer }, () => new List<PlayerControl> { MyPlayer });
@@ -94,6 +95,13 @@ public class Blackmailer : Shapeshifter
 
         log.Trace($"Blackmailer Killing Player: {speaker.name}");
         MyPlayer.InteractWith(speaker, new UnblockedInteraction(new FatalIntent(), this));
+    }
+
+    [RoleAction(LotusActionType.Disconnect, ActionFlag.GlobalDetector)]
+    private void CheckForDisconnect(PlayerControl disconnecter)
+    {
+        if (!blackmailedPlayer.Exists() || disconnecter.PlayerId != blackmailedPlayer.Get().PlayerId) return;
+        ClearBlackmail();
     }
 
     public override void HandleDisconnect() => ClearBlackmail();
