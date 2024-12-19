@@ -41,6 +41,15 @@ class GameJoinPatch
             GeneralOptions.AdminOptions.AutoCooldown.Start();
         }
 
-        Async.Schedule(PlayerJoinPatch.CheckAutostart, 1f);
+        Async.Schedule(() =>
+        {
+            if (GameStartManager.Instance.countDownTimer <= 0)
+            {
+                GameStartManager.Instance.BeginGame();
+                float timeRemaining = GeneralOptions.AdminOptions.AutoCooldown.TimeRemaining();
+                GameStartManager.Instance.countDownTimer = timeRemaining;
+            }
+            PlayerJoinPatch.CheckAutostart();
+        }, 1f);
     }
 }
