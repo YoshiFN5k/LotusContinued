@@ -52,6 +52,8 @@ public abstract class GameMode : IGameMode
 
     public virtual void FixedUpdate() { }
 
+    public virtual BlockableGameActions BlockedActions() => BlockableGameActions.Nothing;
+
     public abstract void Setup();
 
     public abstract void Assign(PlayerControl player, CustomRole role, bool addAsMainRole = true, bool sendToClient = false);
@@ -111,11 +113,6 @@ public abstract class GameMode : IGameMode
             GeneralRPC.SendGameData();
             log.Trace("Cleaned up and sent old disconnect info.");
         }, NetUtils.DeriveDelay(1.5f));
-    }
-
-    public virtual void OnShowRole()
-    {
-        // Players.GetAllPlayers().Sorted(p => p.IsHost() ? 0 : 1).ForEach(p => p.PrimaryRole().Assign(true));
     }
 
     public abstract void SetupWinConditions(WinDelegate winDelegate);

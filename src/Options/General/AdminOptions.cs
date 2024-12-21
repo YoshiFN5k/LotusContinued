@@ -145,7 +145,7 @@ public class AdminOptions
             .Build());
 
         AllOptions.AddRange(additionalOptions);
-        AllOptions.ForEach(o => GeneralOptions.MainOptionManager.Register(o, VentLib.Options.OptionLoadMode.LoadOrCreate));
+        AllOptions.ForEach(o => GeneralOptions.StandardOptionManager.Register(o, VentLib.Options.OptionLoadMode.LoadOrCreate));
     }
 
     /// <summary>

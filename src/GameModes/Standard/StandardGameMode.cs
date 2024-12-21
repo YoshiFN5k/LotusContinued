@@ -26,9 +26,9 @@ public class StandardGameMode : GameMode
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(StandardGameMode));
     private const string StandardGamemodeHookKey = nameof(StandardGamemodeHookKey);
-    public static StandardGameMode Instance;
+    public static StandardGameMode Instance = null!;
 
-    public override string Name { get; set; } = "Standard";
+    public override string Name { get; set; } = GamemodeTranslations.Standard.Name;
     public override StandardRoleOperations RoleOperations { get; }
     public override StandardRoleManager RoleManager { get; }
     public override MatchData MatchData { get; set; }
@@ -44,7 +44,7 @@ public class StandardGameMode : GameMode
         RoleOperations = new(this);
         RoleManager = new();
 
-        GeneralOptions.AllOptions.ForEach(DefaultTabs.GeneralTab.AddOption);
+        GeneralOptions.StandardOptions.ForEach(DefaultTabs.StandardTab.AddOption);
     }
 
     public override void Activate()
@@ -65,7 +65,7 @@ public class StandardGameMode : GameMode
     }
 
     public override IEnumerable<GameOptionTab> EnabledTabs() => DefaultTabs.StandardTabs;
-    public override MainSettingTab MainTab() => DefaultTabs.GeneralTab;
+    public override MainSettingTab MainTab() => DefaultTabs.StandardTab;
 
     public override void Setup()
     {

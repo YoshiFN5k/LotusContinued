@@ -13,6 +13,7 @@ using VentLib.Utilities.Extensions;
 using Lotus.Options;
 using Lotus.Addons;
 using Lotus.Extensions;
+using VentLib.Options.UI.Controllers;
 
 namespace Lotus.GameModes;
 
@@ -55,7 +56,7 @@ public class GameModeManager
     public IGameMode GetGameMode(int id) => GameModes[id];
     public IGameMode? GetGameMode(Type type) => GameModes.FirstOrDefault(t => t.GetType() == type);
 
-    public void AddGamemodes() => GameModes.AddRange([
+    internal void AddGamemodes() => GameModes.AddRange([
             new StandardGameMode()
         ]);
 
@@ -71,7 +72,7 @@ public class GameModeManager
         }
 
         gamemodeOption = builder.KeyName("GameMode", GamemodeTranslations.GamemodeText).IsHeader(true).BindInt(SetGameMode).Build();
-        GeneralOptions.MainOptionManager.Register(gamemodeOption, OptionLoadMode.LoadOrCreate);
+        GeneralOptions.StandardOptionManager.Register(gamemodeOption, OptionLoadMode.LoadOrCreate);
         if (currentGameMode == null) SetGameMode(0);
         GameModes.ForEach(gm => AddGamemodeSettingToOptions(gm.MainTab().GetOptions()));
     }
