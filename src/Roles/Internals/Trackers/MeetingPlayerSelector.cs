@@ -11,7 +11,7 @@ namespace Lotus.Roles.Internals.Trackers;
 
 [NewOnSetup]
 [Localized("Roles.Miscellaneous.PlayerSelector")]
-public class MeetingPlayerSelector: IPlayerSelector, ICloneOnSetup<MeetingPlayerSelector>
+public class MeetingPlayerSelector : IPlayerSelector, ICloneOnSetup<MeetingPlayerSelector>
 {
     [Localized(nameof(SelectPlayerString))] private static string SelectPlayerString = "You have selected: <b>{0}</b>";
     [Localized(nameof(UnselectPlayerString))] private static string UnselectPlayerString = "You have unselected: <b>{0}</b>";
