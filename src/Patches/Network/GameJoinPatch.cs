@@ -43,7 +43,7 @@ class GameJoinPatch
 
         Async.Schedule(() =>
         {
-            if (GameStartManager.Instance.countDownTimer <= 0)
+            if (GeneralOptions.AdminOptions.AutoStartMaxTime != -1 && GeneralOptions.AdminOptions.AutoStartEnabled && GameStartManager.Instance.countDownTimer <= 0)
             {
                 GameStartManager.Instance.BeginGame();
                 float timeRemaining = GeneralOptions.AdminOptions.AutoCooldown.TimeRemaining();

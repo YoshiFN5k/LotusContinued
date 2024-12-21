@@ -7,7 +7,7 @@ using Lotus.API.Reactive.HookEvents;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Operations;
-// using Lotus.RPC.CustomObjects;
+using Lotus.RPC.CustomObjects;
 
 namespace Lotus.Patches.Network;
 
