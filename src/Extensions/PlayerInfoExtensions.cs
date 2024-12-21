@@ -18,11 +18,6 @@ public static class PlayerOutfitExtensions
         PetId = outfit.PetId,
         SkinId = outfit.SkinId,
         VisorId = outfit.VisorId,
-        NamePlateId = outfit.NamePlateId,
-        HatSequenceId = outfit.HatSequenceId,
-        PetSequenceId = outfit.PetSequenceId,
-        SkinSequenceId = outfit.SkinSequenceId,
-        VisorSequenceId = outfit.VisorSequenceId,
-        NamePlateSequenceId = outfit.NamePlateSequenceId
+        NamePlateId = outfit.NamePlateId
     };
 }

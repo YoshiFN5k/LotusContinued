@@ -8,7 +8,7 @@ using Lotus.Options;
 using VentLib.Utilities;
 using VentLib.Utilities.Debug.Profiling;
 using VentLib.Utilities.Extensions;
-// using Lotus.RPC.CustomObjects;
+using Lotus.RPC.CustomObjects;
 using System.Linq;
 
 namespace Lotus.Patches.Actions;
@@ -20,7 +20,7 @@ static class FixedUpdatePatch
     private static readonly ActionHandle FixedUpdateHandle = ActionHandle.NoInit();
     private static void Postfix(PlayerControl __instance)
     {
-        // if (CustomNetObject.AllObjects.Any(obj => obj.playerControl == __instance)) return;
+        if (CustomNetObject.AllObjects.Any(obj => obj.playerControl == __instance)) return;
         Game.RecursiveCallCheck = 0;
         // DisplayModVersion(__instance);
 
@@ -38,7 +38,7 @@ static class FixedUpdatePatch
             try
             {
                 RoleOperations.Current.Trigger(LotusActionType.FixedUpdate, null, FixedUpdateHandle);
-                // CustomNetObject.FixedUpdate();
+                CustomNetObject.FixedUpdate();
             }
             catch (System.Exception ex)
             {

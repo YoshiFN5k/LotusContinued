@@ -1,5 +1,6 @@
 using Lotus.Extensions;
 using Lotus.Patches.Actions;
+using Lotus.RPC.CustomObjects;
 using VentLib.Networking.RPC;
 using VentLib.Utilities;
 
@@ -19,6 +20,16 @@ public class ProtectedRpc
         {
             log.Trace("Kill was canceled because target's data is null.");
             return;
+        }
+
+        if (target.PlayerId == 255 && !target.notRealPlayer)
+        {
+            CustomNetObject netObject = CustomNetObject.ObjectFromPlayer(target);
+            if (netObject != null)
+            {
+                log.Trace($"Kill was cancled because they are trying to kill a CustomNetObject.");
+                return;
+            }
         }
 
         if (MeetingHud.Instance != null)

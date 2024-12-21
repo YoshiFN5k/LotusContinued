@@ -17,6 +17,7 @@ using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Harmony.Attributes;
 using VentLib.Utilities.Optionals;
 using Lotus.Roles.Managers.Interfaces;
+using Lotus.RPC.CustomObjects;
 
 namespace Lotus.Patches.Actions;
 
@@ -60,6 +61,18 @@ public static class MurderPatches
         {
             log.Trace($"Unable to kill {target.name}. There is currently a meeting.", "CheckMurder");
             return false;
+        }
+        if (target.PlayerId == 255 && !target.notRealPlayer)
+        {
+            CustomNetObject netObject = CustomNetObject.ObjectFromPlayer(target);
+            if (netObject != null)
+            {
+                if (!netObject.CanTarget())
+                {
+                    log.Trace($"Unable to kill a NetObject.");
+                    return false;
+                }
+            }
         }
 
         if (__instance.PlayerId == target.PlayerId) return false;
