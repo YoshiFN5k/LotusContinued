@@ -34,7 +34,11 @@ public class LastResort : Subrole
         typeof(Mayor),
         typeof(Vigilante),
         typeof(Pirate),
-        typeof(Assassin)
+        typeof(Assassin),
+        typeof(Genie),
+        typeof(Bodyguard),
+        typeof(Medic),
+        typeof(Oracle)
     };
     public override string Identifier() => "»";
 
