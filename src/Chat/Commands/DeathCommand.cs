@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.Extensions;
@@ -32,12 +33,18 @@ public class DeathCommand : CommandTranslations, ICommandReceiver
         else
         {
             if (int.TryParse(context.Join(), out int id)) ShowDeathById(source, id);
+            else if (context.Join("").ToLower().Contains(Translations.ListExtension)) ShowAllDeadPlayers(source);
             else ShowOtherPlayerDeath(source, context.Join());
         }
     }
 
     public static void ShowMyDeath(PlayerControl source, FrozenPlayer frozenPlayer)
     {
+        if (frozenPlayer.Status == Managers.History.PlayerStatus.Alive)
+        {
+            CHandler(Translations.PlayerIsAliveText.Formatted(frozenPlayer.Name)).Send(UnityOptional<PlayerControl>.Of(source));
+            return;
+        }
         IDeathEvent? deathEvent = frozenPlayer.CauseOfDeath;
         if (deathEvent == null)
         {
@@ -61,6 +68,39 @@ public class DeathCommand : CommandTranslations, ICommandReceiver
     {
         Game.MatchData.FrozenPlayers.Values.FirstOrOptional(fp => fp.PlayerId == id)
             .Handle(fp => ShowMyDeath(source, fp), () => CHandler(PlayerNotFoundText.Formatted(id)).Send(source));
+    }
+
+    private static void ShowAllDeadPlayers(PlayerControl source)
+    {
+        string outputText = Translations.ListMessageStart;
+
+        Players.GetPlayers().ForEach(p =>
+        {
+            string inputName = $"{p.name} ({p.PlayerId})";
+            if (p.IsAlive())
+            {
+                outputText += Translations.PlayerIsAliveText.Formatted(inputName);
+                goto Finish;
+            }
+
+            Optional<IDeathEvent> optionalEvent = Game.MatchData.GameHistory.GetCauseOfDeath(p.PlayerId);
+            if (!optionalEvent.Exists())
+            {
+                outputText += Translations.CouldNotDetermineDeathText.Formatted(inputName);
+                goto Finish;
+            }
+            IDeathEvent deathEvent = optionalEvent.Get();
+
+            string death = deathEvent.InstigatorRole()
+                .Transform(r => Translations.DirectDeathString.Formatted(inputName, $"{deathEvent.Instigator().Map(inst => inst.Name).OrElse("Unknown")} ({r.RoleName})", deathEvent.SimpleName()),
+                    () => Translations.IndirectDeathString.Formatted(inputName, deathEvent.SimpleName()));
+            outputText += death.Replace("\n", ". ");
+
+        Finish:
+            outputText += "\n";
+        });
+
+        CHandler(outputText.Trim()).Send(source);
     }
 
     private static ChatHandler CHandler(string message)
@@ -88,5 +128,11 @@ public class DeathCommand : CommandTranslations, ICommandReceiver
 
         [Localized(nameof(DeathInfoTitle))]
         public static string DeathInfoTitle = "Death Info";
+
+        [Localized(nameof(ListExtension))]
+        public static string ListExtension = "list";
+
+        [Localized(nameof(ListMessageStart))]
+        public static string ListMessageStart = "Below is a list of everyone and their death reasons:";
     }
 }

@@ -116,6 +116,7 @@ public class TemplateUnit
         { "Modifiers", ShowModifiers },
         { "Mods", ShowModifiers },
         { "ModsDescriptive", ModifierText },
+        { "ModsShort", ModifierBlurb },
         { "MyRole", player => MyRoleCommand.GenerateMyRoleText(((PlayerControl)player).PrimaryRole()) },
         { "TasksComplete", QW(p => (GetTaskHolderRole(p)?.CompleteTasks ?? 0).ToString() )},
         { "TotalTasks", QW(p => (GetTaskHolderRole(p)?.TotalTasks ?? 0).ToString() )},
@@ -127,6 +128,7 @@ public class TemplateUnit
         { "Role_Options", role => OptionUtils.OptionText(((CustomRole) role).RoleOptions) },
         { "Role_Faction", role => ((CustomRole) role).Faction.Name() },
         { "Role_Basis", role => ((CustomRole) role).RealRole.ToString() },
+        { "Role_Color", role => ((CustomRole) role).RoleColor.ToHex() },
 
         {"ActionMeta", _ => TAction.MetaVariable},
         {"TriggerMeta", _ => MetaVariable ?? "" },
@@ -180,8 +182,21 @@ public class TemplateUnit
 
         return subroles.Select(sr =>
         {
-            string symbol = sr.Metadata.GetOrEmpty(LotusKeys.ModifierSymbol).Map(s => sr.RoleColor.Colorize(s) + " ").OrElse("");
+            string symbol = sr is ISubrole subrole ? sr.RoleColor.Colorize(subrole.Identifier() ?? "") : "";
             return $"{symbol}{sr.RoleColor.Colorize(sr.RoleName)}\n{sr.Description}";
+        }).Fuse("\n\n");
+    }
+
+    private static string ModifierBlurb(object obj)
+    {
+        PlayerControl player = (PlayerControl)obj;
+        IEnumerable<CustomRole> subroles = player.SecondaryRoles().OrderBy(r => r.RoleName);
+        if (PluginDataManager.TemplateManager.HasTemplate("modifier-blurb"))
+            return subroles.Select(sr => !PluginDataManager.TemplateManager.TryFormat(sr, "modifier-blurb", out string text) ? "" : text).Fuse("\n\n");
+        return subroles.Select(sr =>
+        {
+            string symbol = sr is ISubrole subrole ? sr.RoleColor.Colorize(subrole.Identifier() ?? "") : "";
+            return $"{symbol}{sr.RoleColor.Colorize(sr.RoleName)}\n{sr.Blurb}";
         }).Fuse("\n\n");
     }
 

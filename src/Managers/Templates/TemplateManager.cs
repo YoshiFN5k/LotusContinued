@@ -43,7 +43,8 @@ public class TemplateManager
 
     private Dictionary<string, string> registeredTags = new()
     {
-        {"modifier-info", "The template is used by the @ModsDescriptive tag when displaying modifiers. This template uses ^Role_XXX variables to display its information."}
+        {"modifier-info", "The template is used by the @ModsDescriptive tag when displaying modifiers. This template uses ^Role_XXX variables to display its information."},
+        {"modifier-blurb", "The template is used by the @ModsShort tag when displaying modifiers. This template uses ^Role_XXX variables to display its information."},
     };
 
     internal TemplateManager(FileInfo templateFileInfo)

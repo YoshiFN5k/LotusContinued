@@ -25,6 +25,7 @@ public struct LotusRoleType
     public static LotusRoleType NeutralKillers = new("NeutralKillers", NeutralKillersTypeID);
     public static LotusRoleType NeutralPassives = new("NeutralPassives", NeutralPassivesTypeID);
     public static LotusRoleType Modifiers = new("Modifiers", ModifiersTypeID);
+
     internal static LotusRoleType Internals = new("Internals", InternalTypeID);
     internal static LotusRoleType Unknown = new("Unknown", UnknownTypeID);
 

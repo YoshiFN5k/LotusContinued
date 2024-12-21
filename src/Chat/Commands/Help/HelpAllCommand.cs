@@ -20,6 +20,9 @@ public class HelpAllCommand : CommandTranslations
                 new($"/say [{MessageParameter}]", SayCommandDescription),
                 new($"/kick [{NameParameter} | ID]", KickCommandDescription),
                 new($"/ban [{NameParameter} | ID]", BanCommandDescription),
+                new($"/mod [{NameParameter} | ID]", ModCommandDescription),
+                new($"/admin [{NameParameter} | ID]", AdminCommandDescription),
+                new("/start", StartCommandDescription),
                 new("/dump", DumpCommandDescription),
                 new("/t help", TemplateHelpCommandDescription)
             } },
@@ -168,6 +171,15 @@ public class HelpAllCommand : CommandTranslations
 
         [Localized(nameof(StatsOtherCommandDescription))]
         public static string StatsOtherCommandDescription = "Displays another player's stats for the lobby.";
+
+        [Localized(nameof(ModCommandDescription))]
+        public static string ModCommandDescription = "Mod a player and give them the ability to kick or ban players!";
+
+        [Localized(nameof(AdminCommandDescription))]
+        public static string AdminCommandDescription = "Admin another player and give them the abilities of a Mod. However, admins can mod and unmod other players.";
+
+        [Localized(nameof(StartCommandDescription))]
+        public static string StartCommandDescription = "Forcefully starts the game immediately. Added for admins to start the game without host.";
     }
 
 }

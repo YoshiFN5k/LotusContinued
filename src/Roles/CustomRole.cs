@@ -43,7 +43,7 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(CustomRole));
 
-    public string GlobalRoleID => $"${(Metadata.GetOrDefault(LotusKeys.GloballyManagedRole, false) ? "G" : "")}{Addon?.UUID ?? 0}~{RoleID}";
+    public string GlobalRoleID => $"${Addon?.UUID ?? 0}~{RoleID}";
     protected HashSet<Type> RelatedRoles = new();
 
     static CustomRole()

@@ -10,6 +10,7 @@ using Lotus.Managers.Hotkeys;
 using Lotus.Managers.Templates.Models.Backing;
 using Lotus.Options;
 using Lotus.Roles;
+using Lotus.Roles.Interfaces;
 using Lotus.Roles.Managers.Interfaces;
 using Lotus.Roles.Properties;
 using Lotus.Roles.Subroles;
@@ -34,7 +35,7 @@ public class RoleCommand
     {
         string message = IRoleManager.Current.AllCustomRoles().Where(RoleProperties.IsModifier).OrderBy(r => r.RoleName).DistinctBy(r => r.RoleName).Select(m =>
         {
-            string symbol = m.Metadata.GetOrEmpty(LotusKeys.ModifierSymbol).Map(s => m.RoleColor.Colorize(s) + " ").OrElse("");
+            string symbol = m is ISubrole subrole ? m.RoleColor.Colorize(subrole.Identifier() ?? "") : "";
             return $"{symbol}{m.RoleColor.Colorize(m.RoleName)}\n{m.Description}";
         }).Fuse("\n\n");
 
