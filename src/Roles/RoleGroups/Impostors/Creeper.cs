@@ -12,7 +12,7 @@ using VentLib.Localization.Attributes;
 using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
-using static Lotus.Roles.RoleGroups.Impostors.Creeper.CreeperTranslations.CreeperOptionTranslations;
+using static Lotus.Roles.RoleGroups.Impostors.Creeper.CreeperTranslations.Options;
 using Lotus.Roles.Internals;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
@@ -78,13 +78,13 @@ public class Creeper : Shapeshifter
             .RoleAbilityFlags(RoleAbilityFlag.UsesPet | RoleAbilityFlag.UsesUnshiftTrigger);
 
     [Localized(nameof(Creeper))]
-    internal static class CreeperTranslations
+    public static class CreeperTranslations
     {
         [Localized(nameof(ExplosionGracePeriod))]
         public static string ExplosionGracePeriod = "Explosion Grace Period: {0}";
 
         [Localized(ModConstants.Options)]
-        internal static class CreeperOptionTranslations
+        public static class Options
         {
             public static string SmallDistance = "Small";
 
