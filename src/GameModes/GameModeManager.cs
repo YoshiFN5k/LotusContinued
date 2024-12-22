@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using Lotus.API.Odyssey;
 using Lotus.API.Reactive;
-using Lotus.GameModes.Standard;
 using Lotus.Victory;
 using VentLib.Options;
 using VentLib.Options.UI;
-using VentLib.Options.Events;
-using VentLib.Options.UI.Tabs;
-using VentLib.Utilities.Extensions;
 using Lotus.Options;
-using Lotus.Addons;
 using Lotus.Extensions;
-using VentLib.Options.UI.Controllers;
+
+using Lotus.GameModes.Standard;
+using Lotus.GameModes.Colorwars;
+using Lotus.GameModes.CTF;
 
 namespace Lotus.GameModes;
 
@@ -57,7 +55,9 @@ public class GameModeManager
     public IGameMode? GetGameMode(Type type) => GameModes.FirstOrDefault(t => t.GetType() == type);
 
     internal void AddGamemodes() => GameModes.AddRange([
-            new StandardGameMode()
+            new StandardGameMode(),
+            new ColorwarsGamemode(),
+            new CTFGamemode()
         ]);
 
     public void Setup()
