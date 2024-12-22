@@ -52,7 +52,7 @@ public abstract class GameMode : IGameMode
 
     public virtual void FixedUpdate() { }
 
-    public virtual BlockableGameActions BlockedActions() => BlockableGameActions.Nothing;
+    public virtual BlockableGameAction BlockedActions() => BlockableGameAction.Nothing;
 
     public abstract void Setup();
 
@@ -60,7 +60,10 @@ public abstract class GameMode : IGameMode
 
     public virtual void AssignRoles(List<PlayerControl> players)
     {
+        if (ProjectLotus.AdvancedRoleAssignment) Players.GetAllPlayers().ForEach(p => p.RpcSetRole(RoleTypes.Crewmate, true));
+        else Players.GetAllPlayers().Sorted(p => p.IsHost() ? 0 : 1).ForEach(p => p.PrimaryRole().Assign());
         if (!ProjectLotus.AdvancedRoleAssignment) return;
+        players = Players.GetPlayers().ToList();
         Async.Schedule(() =>
         {
             Dictionary<byte, bool> Disconnected = new();
