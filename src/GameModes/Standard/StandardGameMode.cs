@@ -96,6 +96,7 @@ public class StandardGameMode : GameMode
     public static void ShowInformationToGhost(PlayerControl player)
     {
         if (player == null) return;
+        if (!GeneralOptions.GameplayOptions.GhostsSeeInfo) return;
 
         if (Players.GetAlivePlayers().Any(p => p.PrimaryRole() is Altruist))
         {

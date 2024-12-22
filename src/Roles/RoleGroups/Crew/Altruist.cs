@@ -109,7 +109,7 @@ public class Altruist : Scientist, IRoleCandidate
         // show stuff to all dead players
         deadPlayers.RemoveWhere(deadPlayer =>
         {
-            if (deadPlayer.IsAlive()) return true;
+            if (deadPlayer.IsAlive() || !GeneralOptions.GameplayOptions.GhostsSeeInfo) return true;
             Players.GetAllPlayers().Where(p => p.PlayerId != deadPlayer.PlayerId)
                 .SelectMany(p => p.NameModel().ComponentHolders())
                 .ForEach(holders =>
