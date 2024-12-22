@@ -41,4 +41,11 @@ public static class FactionTranslations
         [Localized(nameof(Name))] public static string Name = "Modifiers";
         [Localized(nameof(Description))] public static string Description = "These roles add extra functionality to your base role.";
     }
+
+    [Localized(nameof(ColorTeam))]
+    public static class ColorTeam
+    {
+        [Localized(nameof(Name))] public static string Name = "Color Team";
+        [Localized(nameof(Description))] public static string Description = "A team that is allies of everyone with the same color.";
+    }
 }
