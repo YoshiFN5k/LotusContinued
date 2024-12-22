@@ -38,7 +38,7 @@ public class Duplicator : Crewmate
     private RandomSpawn randomSpawn = null!;
     private float killRadius;
 
-    private FixedUpdateLock fixedUpdateLock = new(0.25f);
+    private FixedUpdateLock fixedUpdateLock = new();
 
     private bool spawnsRandomly;
 
