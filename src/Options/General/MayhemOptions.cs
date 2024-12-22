@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Lotus.API.Odyssey;
 using Lotus.Extensions;
+using Lotus.GameModes.Standard;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Options.UI;
@@ -14,9 +16,11 @@ public class MayhemOptions
     private static List<GameOption> additionalOptions = new();
 
     public AuMap RandomMaps;
-    public bool RandomSpawn;
     public bool AllRolesCanVent;
     public bool CamoComms;
+
+    public bool UseRandomSpawn => randomSpawnOn && Game.CurrentGameMode is StandardGameMode;
+    private bool randomSpawnOn;
 
     public bool UseRandomMap => randomMapOn && RandomMaps != 0;
     private bool randomMapOn;
@@ -59,7 +63,7 @@ public class MayhemOptions
 
         AllOptions.Add(Builder("Random Spawn")
             .Name(MayhemOptionTranslations.RandomSpawnText)
-            .BindBool(b => RandomSpawn = b)
+            .BindBool(b => randomSpawnOn = b)
             .Build());
 
         AllOptions.Add(Builder("Camo Comms")

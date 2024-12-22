@@ -15,7 +15,7 @@ public class Jackal : NeutralKillingBase
     private bool impostorVision;
 
     [RoleAction(LotusActionType.Attack)]
-    public new bool TryKill(PlayerControl target) => base.TryKill(target);
+    public override bool TryKill(PlayerControl target) => base.TryKill(target);
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddKillCooldownOptions(base.RegisterOptions(optionStream))

@@ -25,7 +25,7 @@ public class Creeper : Shapeshifter
     private Cooldown gracePeriod;
 
     [UIComponent(UI.Text)]
-    public string GracePeriodText() => gracePeriod.IsReady() ? "" : Color.red.Colorize(CreeperTranslations.ExplosionGracePeriod).Formatted(gracePeriod + "s");
+    public string GracePeriodText() => gracePeriod.IsReady() ? "" : Color.red.Colorize(CreeperTranslations.ExplosionGracePeriod).Formatted(gracePeriod + GeneralOptionTranslations.SecondsSuffix);
 
     [RoleAction(LotusActionType.RoundStart)]
     private void BeginGracePeriod()

@@ -52,9 +52,10 @@ public enum LotusActionType
     Shapeshift,
     Unshapeshift,
     /// <summary>
-    /// Triggered when my player attacks another player<br/>
-    /// Parameters: (PlayerControl target)
+    /// Triggered when a player uses the kill button on another player.<br/>
     /// </summary>
+    /// <param name="attacker"><b>(GLOBAL ONLY)</b> <see cref="PlayerControl"/> the player who is attacking</param>
+    /// <param name="target"><see cref="PlayerControl"/> the player who is being attacked</param>
     Attack,
     /// <summary>
     /// Triggers when a player dies. This cannot be canceled

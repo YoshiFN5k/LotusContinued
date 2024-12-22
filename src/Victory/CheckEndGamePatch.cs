@@ -24,7 +24,7 @@ public class CheckEndGamePatch
     public static bool BeginWin;
     public static bool Deferred;
     private static DateTime slowDown = DateTime.Now;
-    private static FixedUpdateLock _fixedUpdateLock = new FixedUpdateLock(0.1f);
+    private static FixedUpdateLock _fixedUpdateLock = new(0.1f);
 
     static CheckEndGamePatch()
     {

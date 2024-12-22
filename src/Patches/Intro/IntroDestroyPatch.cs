@@ -24,6 +24,7 @@ using static VentLib.Utilities.Debug.Profiling.Profilers;
 using VentLib.Networking.RPC;
 using Lotus.GameModes.Standard;
 using System.Collections.Generic;
+using System;
 
 namespace Lotus.Patches.Intro;
 
@@ -65,6 +66,7 @@ class IntroDestroyPatch
         fullSample.Stop();
         if (!ProjectLotus.AdvancedRoleAssignment)
             Game.State = GameState.Roaming;
+        Game.MatchData.StartTime = DateTime.Now;
 
         Profiler.Sample propSample = Global.Sampler.Sampled("Propagation Sample");
         RoleOperations.Current.TriggerForAll(LotusActionType.RoundStart, null, true);
@@ -87,7 +89,7 @@ class IntroDestroyPatch
             player.SetKillCooldown(cooldown);
         }
 
-        if (GeneralOptions.MayhemOptions.RandomSpawn) Game.RandomSpawn.Spawn(player);
+        if (GeneralOptions.MayhemOptions.UseRandomSpawn) Game.RandomSpawn.Spawn(player);
 
         // if (!ProjectLotus.AdvancedRoleAssignment) player.RpcSetRoleDesync(RoleTypes.Shapeshifter, -3);
         yield return new WaitForSeconds(0.15f);
