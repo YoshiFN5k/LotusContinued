@@ -23,7 +23,7 @@ internal class PostMeetingHandlers
     {
         public void PostMeetingSetup()
         {
-            bool randomSpawn = GeneralOptions.MayhemOptions.RandomSpawn;
+            bool randomSpawn = GeneralOptions.MayhemOptions.UseRandomSpawn;
 
             Players.GetPlayers().ForEach(p =>
             {

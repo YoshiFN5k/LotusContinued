@@ -39,6 +39,8 @@ public static class MurderPatches
         if (!AmongUsClient.Instance.AmHost) return false;
         if (__instance == null || target == null) return false;
 
+        if (Game.CurrentGameMode.BlockedActions().HasFlag(GameModes.BlockableGameAction.KillPlayers)) return false;
+
         log.Debug($"(CheckMurder) {__instance.GetNameWithRole()} => {target.GetNameWithRole()}");
 
         if (__instance.Data.Disconnected || !target)

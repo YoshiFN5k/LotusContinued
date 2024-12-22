@@ -20,14 +20,16 @@ class EnterVentPatch
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(EnterVentPatch));
 
-    internal static Dictionary<byte, Vector2?> LastVentLocation = new();
-
     public static void Postfix(Vent __instance, [HarmonyArgument(0)] PlayerControl pc)
     {
         if (!AmongUsClient.Instance.AmHost) return;
         log.Trace($"{pc.GetNameWithRole()} Entered Vent (ID: {__instance.Id})", "CoEnterVent");
         CustomRole role = pc.PrimaryRole();
-        ActionHandle vented = ActionHandle.NoInit();
+
+        if (Game.CurrentGameMode.BlockedActions().HasFlag(GameModes.BlockableGameAction.EnterVent))
+        {
+            return;
+        }
 
         if (!UseVentPatch.CanUseVent(pc, role, __instance))
         {
@@ -36,14 +38,7 @@ class EnterVentPatch
             return;
         }
 
-        if (vented.IsCanceled)
-        {
-            log.Trace($"{pc.GetNameWithRole()} vent action got canceled. Booting.");
-            Async.Schedule(() => pc.MyPhysics.RpcBootFromVent(__instance.Id), 0.4f);
-            return;
-        }
-
-        vented = ActionHandle.NoInit();
+        ActionHandle vented = ActionHandle.NoInit();
         RoleOperations.Current.Trigger(LotusActionType.VentEntered, pc, vented, __instance);
         if (vented.IsCanceled) Async.Schedule(() => pc.MyPhysics.RpcBootFromVent(__instance.Id), 0.4f);
         else VanillaStatistics.TimesVented.Update(pc.PlayerId, i => i + 1);
@@ -59,6 +54,5 @@ class ExitVentPatch
         ActionHandle exitVent = ActionHandle.NoInit();
         RoleOperations.Current.Trigger(LotusActionType.VentExit, pc, exitVent, __instance);
         if (exitVent.IsCanceled) Async.Schedule(() => RpcV3.Immediate(pc.MyPhysics.NetId, RpcCalls.EnterVent, SendOption.None).WritePacked(__instance.Id).Send(), 0.5f);
-        else EnterVentPatch.LastVentLocation.Remove(pc.PlayerId);
     }
 }

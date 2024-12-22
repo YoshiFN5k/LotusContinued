@@ -2,7 +2,8 @@ using System;
 
 namespace Lotus.GameModes;
 
-public enum BlockableGameActions
+[Flags]
+public enum BlockableGameAction
 {
     Nothing = 0,
     ReportBody = 1,

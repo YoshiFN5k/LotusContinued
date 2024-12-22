@@ -42,6 +42,8 @@ public interface IGameMode
 
     protected internal void SetupWinConditions(WinDelegate winDelegate);
 
+    BlockableGameAction BlockedActions();
+
     Remote<GameOptionOverride> AddOverride(byte playerId, GameOptionOverride optionOverride) => MatchData.Roles.AddOverride(playerId, optionOverride);
 
     internal void InternalActivate()

@@ -39,6 +39,8 @@ public static class SabotagePatch
         [HarmonyArgument(1)] PlayerControl player,
         [HarmonyArgument(2)] byte amount)
     {
+        if (!AmongUsClient.Instance.AmHost) return true;
+        if (Game.CurrentGameMode.BlockedActions().HasFlag(GameModes.BlockableGameAction.CallSabotage)) return false;
         ActionHandle handle = ActionHandle.NoInit();
         ISystemType systemInstance;
         log.Trace($"Update System: {systemType} | Player: {player.name} | Amount: {amount}");
@@ -189,6 +191,8 @@ class WriterSabotagePatch
         [HarmonyArgument(1)] PlayerControl player,
         [HarmonyArgument(2)] MessageReader reader)
     {
+        if (!AmongUsClient.Instance.AmHost) return true;
+        if (Game.CurrentGameMode.BlockedActions().HasFlag(GameModes.BlockableGameAction.CallSabotage)) return false;
         if (!WatchedSystems.Contains(systemType))
         {
             SabotagePatch.LogItem($"Skipped Update System: {systemType} | Player: {player.name}");

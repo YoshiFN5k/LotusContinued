@@ -50,7 +50,7 @@ class MeetingHudOnDestroyPatch
 
     private static void PostMeetingSetups()
     {
-        bool randomSpawn = GeneralOptions.MayhemOptions.RandomSpawn;
+        bool randomSpawn = GeneralOptions.MayhemOptions.UseRandomSpawn;
 
         Players.GetPlayers().ForEach(p =>
         {
