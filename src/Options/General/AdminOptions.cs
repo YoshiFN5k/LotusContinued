@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Lotus;
 using Lotus.Extensions;
 using Lotus.GUI;
@@ -9,6 +10,7 @@ using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Options.IO;
 using VentLib.Options.UI;
+using VentLib.Utilities.Extensions;
 
 namespace Lotus.Options.General;
 
@@ -145,7 +147,7 @@ public class AdminOptions
             .Build());
 
         AllOptions.AddRange(additionalOptions);
-        AllOptions.ForEach(o => GeneralOptions.StandardOptionManager.Register(o, VentLib.Options.OptionLoadMode.LoadOrCreate));
+        AllOptions.Where(o => !o.Attributes.ContainsKey("Title")).ForEach(o => GeneralOptions.StandardOptionManager.Register(o, VentLib.Options.OptionLoadMode.LoadOrCreate));
     }
 
     /// <summary>

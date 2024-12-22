@@ -8,6 +8,8 @@ using VentLib.Options.UI;
 using VentLib.Options.IO;
 using System;
 using Lotus.Managers.Blackscreen;
+using System.Linq;
+using VentLib.Utilities.Extensions;
 
 namespace Lotus.Options.General;
 
@@ -118,7 +120,7 @@ public class MiscellaneousOptions
             .Build());
 
         AllOptions.AddRange(additionalOptions);
-        AllOptions.ForEach(o => GeneralOptions.StandardOptionManager.Register(o, VentLib.Options.OptionLoadMode.LoadOrCreate));
+        AllOptions.Where(o => !o.Attributes.ContainsKey("Title")).ForEach(o => GeneralOptions.StandardOptionManager.Register(o, VentLib.Options.OptionLoadMode.LoadOrCreate));
     }
 
     /// <summary>

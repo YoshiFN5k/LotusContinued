@@ -106,7 +106,6 @@ public class MatchData
         log.Debug($"{roleDefinition.EnglishRoleName} was assigned to {player.name}.");
         if (Game.State is GameState.InLobby or GameState.InIntro) player.GetTeamInfo().MyRole = roleDefinition.RealRole;
         if (sendToClient) assigned.Assign();
-
     }
 
     public void AssignSubRole(PlayerControl player, CustomRole role, bool sendToClient = false)

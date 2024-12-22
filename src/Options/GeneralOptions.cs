@@ -4,6 +4,8 @@ using VentLib.Localization.Attributes;
 using VentLib.Options.UI;
 using VentLib.Utilities.Attributes;
 using VentLib.Options;
+using System.Linq;
+using VentLib.Utilities.Extensions;
 
 namespace Lotus.Options;
 
@@ -52,6 +54,6 @@ public static class GeneralOptions
         StandardOptions.AddRange(RoleOptions.LoadNeutralOptions().AllOptions);
         StandardOptions.AddRange(RoleOptions.LoadSubroleOptions().AllOptions);
 
-        StandardOptions.ForEach(o => StandardOptionManager.Register(o, OptionLoadMode.LoadOrCreate));
+        StandardOptions.Where(o => !o.Attributes.ContainsKey("Title")).ForEach(o => StandardOptionManager.Register(o, OptionLoadMode.LoadOrCreate));
     }
 }
