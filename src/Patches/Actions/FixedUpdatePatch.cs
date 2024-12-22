@@ -20,7 +20,7 @@ static class FixedUpdatePatch
     private static readonly ActionHandle FixedUpdateHandle = ActionHandle.NoInit();
     private static void Postfix(PlayerControl __instance)
     {
-        if (CustomNetObject.AllObjects.Any(obj => obj.playerControl == __instance)) return;
+        if (__instance.PlayerId == 255 && __instance.notRealPlayer) return;
         Game.RecursiveCallCheck = 0;
         // DisplayModVersion(__instance);
 
