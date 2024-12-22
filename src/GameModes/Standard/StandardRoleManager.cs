@@ -21,13 +21,13 @@ public class StandardRoleManager : Roles.Managers.RoleManager
 
     protected OrderedDictionary<string, CustomRole> OrderedCustomRoles { get; } = new();
     public override CustomRole FallbackRole() => EmptyRole.Instance;
-    public StandardRoles RoleHolder { get; }
+    public override StandardRoles RoleHolder { get; }
     internal virtual bool IsGlobal => false;
     public override IEnumerable<CustomRole> AllCustomRoles() => OrderedCustomRoles.GetValues();
 
     public StandardRoleManager()
     {
-        RoleHolder = new(this);
+        RoleHolder = new();
         RoleHolder.AllRoles.ForEach(RegisterRole);
         Async.Schedule(() =>
         {

@@ -13,12 +13,7 @@ namespace Lotus.Roles.Managers;
 public abstract class RoleManager : IRoleManager
 {
     public abstract CustomRole FallbackRole();
-    public RoleHolder RoleHolder { get; }
-
-    public RoleManager()
-    {
-
-    }
+    public abstract RoleHolder RoleHolder { get; }
 
     public abstract IEnumerable<CustomRole> AllCustomRoles();
 

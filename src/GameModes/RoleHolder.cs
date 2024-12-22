@@ -16,10 +16,6 @@ public abstract class RoleHolder : IRoleHolder
 
     public List<CustomRole> AllRoles { get; set; }
 
-    public RoleHolder(Roles.Managers.RoleManager manager)
-    {
-
-    }
     public bool Intialized
     {
         get { return _initialized; }

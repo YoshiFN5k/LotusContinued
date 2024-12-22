@@ -30,13 +30,11 @@ public class StandardRoles : RoleHolder
     public Modifiers Mods;
     public ExtraRoles Special;
 
-    private static StandardRoleManager roleManager = null!;
     public static StandardRoles Instance = null!;
 
-    public StandardRoles(Roles.Managers.RoleManager manager) : base(manager)
+    public StandardRoles()
     {
         Instance = this;
-        roleManager = (manager as StandardRoleManager)!;
         AllRoles = new List<CustomRole>();
         Static = new StaticRoles();
         Mods = new Modifiers();
