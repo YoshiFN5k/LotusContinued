@@ -41,6 +41,7 @@ public class Rogue : Subrole
         typeof(Copycat),
         typeof(Taskrunner),
         typeof(Postman),
+        typeof(Terrorist)
     };
 
     private bool restrictedToCompatibleRoles;
