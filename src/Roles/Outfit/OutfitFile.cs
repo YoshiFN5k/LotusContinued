@@ -16,6 +16,8 @@ public class OutfitFile
     public string Visor { get; set; } = "";
     public string Hat { get; set; } = "";
     public string Pet { get; set; } = "";
+    public bool ShowDead { get; set; } = false;
+
     public NetworkedPlayerInfo.PlayerOutfit ToPlayerOutfit()
     {
         return new NetworkedPlayerInfo.PlayerOutfit()

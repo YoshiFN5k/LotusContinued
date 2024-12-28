@@ -416,7 +416,13 @@ public abstract class AbstractBaseRole
                 fakePlayer.enabled = true;
                 fakePlayer.cosmetics.initialized = false;
                 fakePlayer.cosmetics.EnsureInitialized(PlayerBodyTypes.Normal);
-                fakePlayer.UpdateFromPlayerOutfit(OutfitFile.FromManifestFile(resourceDirectory, DeclaringAssembly).ToPlayerOutfit(), PlayerMaterial.MaskType.SimpleUI, false, false);
+                OutfitFile outfit = OutfitFile.FromManifestFile(resourceDirectory, DeclaringAssembly);
+                fakePlayer.UpdateFromPlayerOutfit(outfit.ToPlayerOutfit(), PlayerMaterial.MaskType.SimpleUI, outfit.ShowDead, false);
+                if (outfit.ShowDead)
+                {
+                    fakePlayer.cosmetics.SetBodyAsGhost();
+                    // Async.Schedule(() => fakePlayer.FindChild<Transform>("Cosmetics", true).position = new Vector3(.245f, .2f, 0), 0.1f);
+                }
                 fakePlayer.FindChild<Transform>("Names", true).gameObject.SetActive(false);
             });
         }
