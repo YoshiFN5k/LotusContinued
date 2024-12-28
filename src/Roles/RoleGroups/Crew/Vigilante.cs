@@ -11,6 +11,7 @@ namespace Lotus.Roles.RoleGroups.Crew;
 public class Vigilante : GuesserRole
 {
     protected override bool CanGuessRole(CustomRole role) => role.Faction.GetType() != typeof(Crewmates);
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .Faction(FactionInstances.Crewmates)

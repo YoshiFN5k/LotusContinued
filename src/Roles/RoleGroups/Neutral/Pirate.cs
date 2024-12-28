@@ -69,9 +69,6 @@ public class Pirate : GuesserRole
         [Localized(ModConstants.Options)]
         public static class Options
         {
-            [Localized(nameof(GuessesPerMeeting))]
-            public static string GuessesPerMeeting = "Guesses Per Meeting";
-
             [Localized(nameof(GuessWinAmount))]
             public static string GuessWinAmount = "Pirate Guess Win Amount";
 
