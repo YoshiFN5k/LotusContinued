@@ -150,7 +150,7 @@ public class GuesserRole : CustomRole
         }
 
         string roleName = split[1..].Fuse(" ").Trim();
-        var allRoles = IRoleManager.Current.AllCustomRoles().Where(r => (r.Count > 0 | r.RoleFlags.HasFlag(RoleFlag.RemoveRoleMaximum)) && r.Chance > 0 || r.RoleFlags.HasFlag(RoleFlag.VariationRole)
+        var allRoles = StandardRoles.Instance.AllRoles.Where(r => (r.Count > 0 | r.RoleFlags.HasFlag(RoleFlag.RemoveRoleMaximum)) && r.Chance > 0 || r.RoleFlags.HasFlag(RoleFlag.VariationRole)
             || r.RoleFlags.HasFlag(RoleFlag.TransformationRole));
         Optional<CustomRole> role = allRoles.FirstOrOptional(r => r.RoleName.ToLower().Contains(roleName.ToLower()))
             .CoalesceEmpty(() => allRoles.FirstOrOptional(r => r.Aliases.Contains(roleName)));
@@ -176,7 +176,8 @@ public class GuesserRole : CustomRole
         }
         int setting = -1;
         Guesser.RoleTypeBuilders.FirstOrOptional(b => b.predicate(guessedRole)).IfPresent(rtb => setting = Guesser.RoleTypeSettings[Guesser.RoleTypeBuilders.IndexOf(rtb)]);
-        if (setting == -1 || setting == 2) setting = Guesser.CanGuessDictionary.GetValueOrDefault(role.GetType(), -1);
+        if (setting == -1 || setting == 2) setting = Guesser.CanGuessDictionary.GetValueOrDefault(guessedRole.GetType(), -1);
+
         if (setting == 1) GuesserHandler(Guesser.Translations.PickedRoleText.Formatted(Players.FindPlayerById(guessingPlayer)?.name, guessedRole.RoleName)).Send(MyPlayer);
         else
         {

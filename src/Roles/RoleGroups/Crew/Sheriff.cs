@@ -197,7 +197,7 @@ public class Sheriff : Crewmate
                 .IfPresent(builder =>
                 {
                     builder.SubOption(sub => sub.KeyName(r.EnglishRoleName, r.RoleColor.Colorize(r.RoleName))
-                        .AddOnOffValues(r.SpecialType is not SpecialType.Neutral)
+                        .AddBoolean(r.SpecialType is not SpecialType.Neutral)
                         .BindBool(b =>
                         {
                             if (b) RoleKillerDictionary[r.GetType()] = 1;

@@ -4,11 +4,12 @@ using TMPro;
 using Lotus.Extensions;
 using UnityEngine;
 using VentLib.Utilities.Attributes;
+using VentLib.Utilities;
 
 namespace Lotus.Managers.Date;
 
 [LoadStatic]
-public class SpecialDate: ISpecialDate
+public class SpecialDate : ISpecialDate
 {
     public static SpecialDate Christmas = new((12, 24), (12, 25));
     public static SpecialDate ShiftyBirthday = new((1, 24), (1, 26));
@@ -16,12 +17,12 @@ public class SpecialDate: ISpecialDate
     static SpecialDate()
     {
         ((ISpecialDate)Christmas).Create();
-        Christmas.text = "Merry Christmas!";
+        Christmas.text = new ColorGradient(Color.green, Color.red).Apply("Merry Christmas! I hope everyone has a happy holiday!\n-Discussions");
         Christmas.color = ProjectLotus.ModColor.ToColor()!.Value;
 
-        ((ISpecialDate)ShiftyBirthday).Create();
-        ShiftyBirthday.text = "Happy Birthday\nShifty!";
-        ShiftyBirthday.color = new Color(1f, 0.64f, 0.79f);
+        // ((ISpecialDate)ShiftyBirthday).Create();
+        // ShiftyBirthday.text = "Happy Birthday\nShifty!";
+        // ShiftyBirthday.color = new Color(1f, 0.64f, 0.79f);
     }
 
     private (int, int) dayRange;

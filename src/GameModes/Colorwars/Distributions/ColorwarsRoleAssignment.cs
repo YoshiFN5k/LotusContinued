@@ -41,7 +41,7 @@ public class ColorwarsRoleAssignment
     private static List<List<PlayerControl>> CreateRandomTeams(List<PlayerControl> allPlayers)
     {
         List<List<PlayerControl>> teams = new();
-        List<byte> colorCodes = new IntRangeGen(0, ModConstants.ColorNames.Length).AsEnumerable().Select(i => (byte)i).ToList();
+        List<byte> colorCodes = new IntRangeGen(0, ModConstants.ColorNames.Length - 1).AsEnumerable().Select(i => (byte)i).ToList();
 
         int teamSize = ExtraGamemodeOptions.ColorwarsOptions.TeamSize;
 
@@ -94,7 +94,7 @@ public class ColorwarsRoleAssignment
     {
         // Start with random teams in case a player doesn't have a team set.
         List<List<PlayerControl>> teams = new();
-        List<byte> colorCodes = new IntRangeGen(0, ModConstants.ColorNames.Length).AsEnumerable().Select(i => (byte)i).ToList();
+        List<byte> colorCodes = new IntRangeGen(0, ModConstants.ColorNames.Length - 1).AsEnumerable().Select(i => (byte)i).ToList();
 
         Dictionary<int, byte> teamToColor = new();
 

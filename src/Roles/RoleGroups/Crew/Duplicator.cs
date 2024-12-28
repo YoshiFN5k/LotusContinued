@@ -74,7 +74,7 @@ public class Duplicator : Crewmate
         if (duplicateCooldown.NotReady() || duplicateDuration.NotReady()) return;
 
         Vector2 endPosition = spawnsRandomly ? randomSpawn.GetRandomLocation() : MyPlayer.GetTruePosition();
-        if (RoleUtils.GetPlayersWithinDistance(endPosition, killRadius).Count() > 0)
+        if (RoleUtils.GetPlayersWithinDistance(endPosition, killRadius).Where(p => p.PlayerId != MyPlayer.PlayerId).Count() > 0)
         {
             log.Debug("Can't spawn clone while near people!");
             return;
