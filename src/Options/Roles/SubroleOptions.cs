@@ -34,7 +34,7 @@ public class SubroleOptions
             .IsHeader(true)
             .BindInt(i => ModifierLimits = i)
             // .Tab(DefaultTabs.MiscTab)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .AddOnOffValues()
@@ -42,7 +42,7 @@ public class SubroleOptions
             .Name(TranslationUtil.Colorize(SubroleOptionTranslations.EvenlyDistributeModifierText, ModifierColor))
             .BindBool(b => EvenlyDistributeModifiers = b)
             // .Tab(DefaultTabs.MiscTab)
-            .BuildAndRegister());
+            .Build());
 
     }
 

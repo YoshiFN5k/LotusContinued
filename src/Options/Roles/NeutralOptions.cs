@@ -50,7 +50,7 @@ public class NeutralOptions
                 .KeyName("Team Knows Each Other's Roles", NeutralOptionTranslations.AlliedKnowRoles)
                 .BindBool(b => knowAlliedRoles = b)
                 .Build())
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .AddIntRange(0, ModConstants.MaxPlayers)
@@ -59,7 +59,7 @@ public class NeutralOptions
             .Name(GColor(NeutralOptionTranslations.MinimumNeutralPassiveRoles))
             .BindInt(i => MinimumNeutralPassiveRoles = i)
             // .Tab(DefaultTabs.NeutralTab)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .AddIntRange(0, ModConstants.MaxPlayers)
@@ -67,7 +67,7 @@ public class NeutralOptions
             .Name(GColor(NeutralOptionTranslations.MaximumNeutralPassiveRoles))
             // .Tab(DefaultTabs.NeutralTab)
             .BindInt(i => MaximumNeutralPassiveRoles = i)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .AddIntRange(0, ModConstants.MaxPlayers)
@@ -75,7 +75,7 @@ public class NeutralOptions
             .BindInt(i => MinimumNeutralKillingRoles = i)
             .Builder("Minimum Neutral Killing Roles")
             .Name(GColor(NeutralOptionTranslations.MinimumNeutralKillingRoles))
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .AddIntRange(0, ModConstants.MaxPlayers)
@@ -83,7 +83,7 @@ public class NeutralOptions
             .BindInt(i => MaximumNeutralKillingRoles = i)
             .Builder("Maximum Neutral Killing Roles")
             .Name(GColor(NeutralOptionTranslations.MaximumNeutralKillingRoles))
-            .BuildAndRegister());
+            .Build());
     }
 
     [Localized("RolesNeutral")]

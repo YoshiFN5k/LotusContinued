@@ -37,7 +37,7 @@ public class MadmateOptions
                 .AddIntRange(0, ModConstants.MaxPlayers, 1)
                 .BindInt(i => MinimumMadmates = i)
                 .Build())
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(new GameOptionBuilder()
             .AddIntRange(0, ModConstants.MaxPlayers, 1)
@@ -45,7 +45,7 @@ public class MadmateOptions
             .Name(GColor(Translations.MaximumMadmates))
             .Tab(DefaultTabs.ImpostorsTab)
             .BindInt(i => MaximumMadmates = i)
-            .BuildAndRegister());
+            .Build());
     }
 
     private static GameOptionBuilder Builder(string key) => new GameOptionBuilder().Key(key).Tab(DefaultTabs.ImpostorsTab);
