@@ -6,6 +6,7 @@ using Lotus.GameModes.Standard;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Options.UI;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 
 namespace Lotus.Options.General;
 
@@ -22,7 +23,7 @@ public class MayhemOptions
     public bool UseRandomSpawn => randomSpawnOn && Game.CurrentGameMode is StandardGameMode;
     private bool randomSpawnOn;
 
-    public bool UseRandomMap => randomMapOn && RandomMaps != 0;
+    public bool UseRandomMap => randomMapOn && RandomMaps != 0 && Game.CurrentGameMode is StandardGameMode;
     private bool randomMapOn;
 
     public List<GameOption> AllOptions = new();
@@ -30,44 +31,44 @@ public class MayhemOptions
     public MayhemOptions()
     {
         AllOptions.Add(new GameOptionTitleBuilder()
-            .Title(MayhemOptionTranslations.MayhemOptionTitle)
+            .Title(Translations.MayhemOptionTitle)
             .Color(_optionColor)
             .Build());
 
         AllOptions.Add(Builder("Enable Random Maps")
-            .Name(MayhemOptionTranslations.RandomMapModeText)
+            .Name(Translations.RandomMapModeText)
             .BindBool(b => randomMapOn = b)
             .ShowSubOptionPredicate(b => (bool)b)
             .SubOption(sub => sub
-                .AddOnOffValues()
-                .Name(AuMap.Skeld.ToString())
+                .KeyName("Skeld", Translations.MapNameSkeld)
+                .AddBoolean()
                 .BindBool(FlagSetter(AuMap.Skeld))
                 .Build())
             .SubOption(sub => sub
-                .AddOnOffValues()
-                .Name(AuMap.Mira.ToString())
+                .KeyName("Mira", Translations.MapNameMira)
+                .AddBoolean()
                 .BindBool(FlagSetter(AuMap.Mira))
                 .Build())
             .SubOption(sub => sub
-                .AddOnOffValues()
-                .Name(AuMap.Polus.ToString())
+                .KeyName("Polus", Translations.MapNamePolus)
+                .AddBoolean()
                 .BindBool(FlagSetter(AuMap.Polus))
                 .Build())
             .SubOption(sub => sub
-                .AddOnOffValues()
-                .Name(AuMap.Airship.ToString())
+                .KeyName("Airship", Translations.MapNameAirship)
+                .AddBoolean()
                 .BindBool(FlagSetter(AuMap.Airship))
                 .Build())
             .IsHeader(true)
             .Build());
 
         AllOptions.Add(Builder("Random Spawn")
-            .Name(MayhemOptionTranslations.RandomSpawnText)
+            .Name(Translations.RandomSpawnText)
             .BindBool(b => randomSpawnOn = b)
             .Build());
 
         AllOptions.Add(Builder("Camo Comms")
-            .Name(MayhemOptionTranslations.CamoCommText)
+            .Name(Translations.CamoCommText)
             .BindBool(b => CamoComms = b)
             .Build());
 
@@ -96,7 +97,7 @@ public class MayhemOptions
     private GameOptionBuilder Builder(string key) => new GameOptionBuilder().AddBoolean(false).Builder(key, _optionColor);
 
     [Localized("Mayhem")]
-    private static class MayhemOptionTranslations
+    public static class Translations
     {
         [Localized("SectionTitle")]
         public static string MayhemOptionTitle = "Mayhem Options";
@@ -112,6 +113,11 @@ public class MayhemOptions
 
         [Localized("AllRolesCanVent")]
         public static string AllRolesVentText = "All Roles Can Vent";
+
+        [Localized("Skeld")] public static string MapNameSkeld = "Skeld";
+        [Localized("Mira")] public static string MapNameMira = "Mira";
+        [Localized("Polus")] public static string MapNamePolus = "Polus";
+        [Localized("Airship")] public static string MapNameAirship = "Airship";
     }
 }
 
