@@ -13,7 +13,7 @@ namespace Lotus.Options;
 [LoadStatic]
 public static class GeneralOptions
 {
-    public static OptionManager StandardOptionManager = OptionManager.GetManager(file: "options.txt");
+    public static OptionManager StandardOptionManager = OptionManager.GetManager(file: "standard.txt");
     public static OptionManager CaptureOptionManager = OptionManager.GetManager(file: "ctf.txt");
     public static OptionManager ColorwarsOptionManager = OptionManager.GetManager(file: "colorwars.txt");
 

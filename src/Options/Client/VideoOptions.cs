@@ -43,7 +43,7 @@ public class VideoOptions
 
     public VideoOptions()
     {
-        OptionManager optionManager = OptionManager.GetManager();
+        OptionManager optionManager = OptionManager.GetManager(file: "display.txt");
         fpsOption = new GameOptionBuilder()
             .Values(2, FpsLimits)
             .KeyName("Max Framerate", "Max Framerate")
@@ -55,18 +55,18 @@ public class VideoOptions
                 Application.targetFrameRate = _targetFps = i;
                 Async.Schedule(() => Application.targetFrameRate = _targetFps, 1f);
             })
-            .BuildAndRegister();
+            .BuildAndRegister(optionManager);
 
-        object[] themeValues = { false, true };
         darkOption = new GameOptionBuilder()
-            .Values(0, themeValues)
+            .AddBoolean(false)
             .KeyName("Dark Mode", "Dark Mode")
-            .Description("Maximum Framerate for the Application")
-            .IOSettings(s => s.UnknownValueAction = ADEAnswer.Allow)
+            .Description("Whether or not Chat will be dark")
+            .IOSettings(s => s.UnknownValueAction = ADEAnswer.UseDefault)
             .BindBool(b =>
             {
+                _darkMode = b;
                 optionManager.DelaySave(0);
             })
-            .BuildAndRegister();
+            .BuildAndRegister(optionManager);
     }
 }

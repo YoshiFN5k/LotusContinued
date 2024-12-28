@@ -72,7 +72,7 @@ public class GameModeManager
         }
 
         gamemodeOption = builder.KeyName("GameMode", GamemodeTranslations.GamemodeText).IsHeader(true).BindInt(SetGameMode).Build();
-        GeneralOptions.StandardOptionManager.Register(gamemodeOption, OptionLoadMode.LoadOrCreate);
+        OptionManager.GetManager(file: "other.txt").Register(gamemodeOption, OptionLoadMode.LoadOrCreate);
         if (currentGameMode == null) SetGameMode(0);
         GameModes.ForEach(gm => AddGamemodeSettingToOptions(gm.MainTab().GetOptions()));
     }
