@@ -103,7 +103,7 @@ public class TemplateUnit
         { "Role", player =>((PlayerControl)player).PrimaryRole().ColoredRoleName() },
         { "Blurb", player => ((PlayerControl) player).PrimaryRole().Blurb },
         { "Description", player => ((PlayerControl) player).PrimaryRole().Description },
-        { "Status", player => Optional<FrozenPlayer>.Of(Game.MatchData.GetFrozenPlayer((PlayerControl)player)).Map(StatusCommand.GetPlayerStatus).OrElse("")},
+        { "Status", player => Optional<FrozenPlayer>.Of(Game.MatchData.GetFrozenPlayer((PlayerControl)player)).Map(fp => StatusCommand.GetPlayerStatus((PlayerControl)player, fp)).OrElse("")},
         { "Death", player => Game.MatchData.GameHistory.GetCauseOfDeath(((PlayerControl)player).PlayerId).Map(c => c.SimpleName()).OrElse("Unknown") },
         { "Killer", player => Game.MatchData.GameHistory.GetCauseOfDeath(((PlayerControl)player).PlayerId).FlatMap(c => c.Instigator()).Map(p => p.Name).OrElse("Unknown") },
         { "Options", player => OptionUtils.OptionText(((PlayerControl) player).PrimaryRole().RoleOptions) },

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AmongUs.GameOptions;
+using Hazel;
 using Lotus.API;
 using Lotus.API.Player;
 using Lotus.Extensions;
@@ -13,18 +15,54 @@ using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Harmony.Attributes;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
+using Lotus.Roles.Operations;
+using Lotus.Roles.Overrides;
 
 namespace Lotus.Patches.Actions;
 
 // phantom is very broken right now...
-// its not very clear how to reject an invisble attempt
-// and the og code doesnt even check for modded host.
-// so phantom is pretty much useless unfortunately
-// pls fix innersloth
+// but there are some uses.
+// we shouldn't have to fix your code
+// pls do a proper fix innersloth
+
+// code sampled from Endless Host Roles (Gurge44) (PhantomRolePatch)
 
 public static class PhantomActionsPatch
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(PhantomActionsPatch));
+
+    [QuickPrefix(typeof(PlayerControl), nameof(PlayerControl.CmdCheckVanish))]
+    public static bool CmdCheckVanishPrefix(PlayerControl __instance, float maxDuration)
+    {
+        if (AmongUsClient.Instance.AmHost)
+        {
+            __instance.CheckVanish();
+            return false;
+        }
+
+        __instance.SetRoleInvisibility(true);
+        MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(__instance.NetId, (byte)RpcCalls.CheckVanish, SendOption.Reliable, AmongUsClient.Instance.HostId);
+        messageWriter.Write(maxDuration);
+        AmongUsClient.Instance.FinishRpcImmediately(messageWriter);
+        return false;
+    }
+
+    [QuickPrefix(typeof(PlayerControl), nameof(PlayerControl.CmdCheckAppear))]
+    public static bool CmdCheckAppearPrefix(PlayerControl __instance, bool shouldAnimate)
+    {
+        if (AmongUsClient.Instance.AmHost)
+        {
+            __instance.CheckAppear(shouldAnimate);
+            return false;
+        }
+
+        MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(__instance.NetId, (byte)RpcCalls.CheckAppear, SendOption.Reliable, AmongUsClient.Instance.HostId);
+        messageWriter.Write(shouldAnimate);
+        AmongUsClient.Instance.FinishRpcImmediately(messageWriter);
+        return false;
+    }
 
     [QuickPrefix(typeof(PhantomRole), nameof(PhantomRole.UseAbility))]
     public static bool UseAbility(PhantomRole __instance)
@@ -57,7 +95,7 @@ public static class PhantomActionsPatch
         {
             if (__instance == p) return; // skip player going invis
             CustomRole role = p.PrimaryRole();
-            if (role.RealRole.IsCrewmate() && isImpFaction) return; // they are crewmate and we are imp so we are phantom for them
+            if (role.RealRole.IsCrewmate() && isImpFaction) return; // they are crewmate, and we are imp so we are phantom for them
             if (alliedPlayerIds.Contains(p.PlayerId)) return; // if we are allied than continue
             if (isActive)
             {
@@ -89,5 +127,44 @@ public static class PhantomActionsPatch
                 }
             }
         });
+    }
+
+    [QuickPrefix(typeof(PlayerControl), nameof(PlayerControl.CheckVanish))]
+    public static bool InterceptVanish(PlayerControl __instance)
+    {
+        if (!AmongUsClient.Instance.AmHost) return true;
+
+        PlayerControl phantom = __instance;
+        log.Info($"CheckVanish - {phantom.GetNameWithRole()}");
+
+        ActionHandle handle = ActionHandle.NoInit();
+        RoleOperations.Current.Trigger(LotusActionType.Vanish, phantom, handle);
+        if (handle.IsCanceled)
+        {
+            if (phantom.AmOwner)
+            {
+                DestroyableSingleton<HudManager>.Instance.AbilityButton.SetFromSettings(phantom.Data.Role.Ability);
+                phantom.Data.Role.SetCooldown();
+                return false;
+            }
+
+            RpcV3.Immediate(phantom.NetId, RpcCalls.SetRole).Write((ushort)RoleTypes.Phantom).Write(true).Send(phantom.GetClientId());
+            phantom.RpcResetAbilityCooldown();
+
+            Async.Schedule(() => phantom.SetKillCooldown(phantom.PrimaryRole().GetOverride(Override.KillCooldown)?.GetValue() as float? ?? AUSettings.KillCooldown()), 0.2f);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    [QuickPrefix(typeof(PlayerControl), nameof(PlayerControl.CheckAppear))]
+    public static void InterceptAppear(PlayerControl __instance)
+    {
+        if (!AmongUsClient.Instance.AmHost) return;
+
+        PlayerControl phantom = __instance;
+        log.Info($"CheckAppear - {phantom.GetNameWithRole()}");
     }
 }

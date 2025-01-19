@@ -36,7 +36,7 @@ public abstract class LotusAddon
     /// <summary>
     /// Returns the name of this addon.
     /// </summary>
-    /// <param name="fullName">Whether or not to return te name with the Assembly and version.</param>
+    /// <param name="fullName">Whether to return te name with the Assembly and version.</param>
     /// <returns>Name of Addon (string)</returns>
     internal string GetName(bool fullName = false) => !fullName
         ? Name

@@ -30,7 +30,7 @@ namespace Lotus.Roles.Builtins;
 public class GuesserRole : CustomRole
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Guesser));
-    private MeetingPlayerSelector voteSelector = new();
+    [NewOnSetup] private MeetingPlayerSelector voteSelector = null!;
 
     private int guessesPerMeeting;
     private bool followGuesserSettings;

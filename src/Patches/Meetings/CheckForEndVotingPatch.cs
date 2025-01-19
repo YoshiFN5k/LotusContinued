@@ -12,6 +12,7 @@ using Lotus.Roles.Internals;
 using Lotus.Utilities;
 using Lotus.Extensions;
 using Lotus.Logging;
+using Lotus.Managers.History.Events;
 using Lotus.Options.General;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Operations;

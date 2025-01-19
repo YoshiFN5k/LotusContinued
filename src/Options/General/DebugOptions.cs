@@ -37,10 +37,10 @@ public class DebugOptions
             .BindBool(b => NameBasedRoleAssignment = b)
             .Build());
 
-        AllOptions.Add(Builder("Advanced Role Assignment")
-            .Name(DebugOptionTranslations.AdvancedRoleAssignment)
-            .BindBool(b => ProjectLotus.AdvancedRoleAssignment = b)
-            .Build());
+        // AllOptions.Add(Builder("Advanced Role Assignment")
+        //     .Name(DebugOptionTranslations.AdvancedRoleAssignment)
+        //     .BindBool(b => ProjectLotus.AdvancedRoleAssignment = b)
+        //     .Build());
 
         AllOptions.AddRange(additionalOptions);
         AllOptions.Where(o => !o.Attributes.ContainsKey("Title")).ForEach(o => GeneralOptions.StandardOptionManager.Register(o, VentLib.Options.OptionLoadMode.LoadOrCreate));
@@ -56,7 +56,7 @@ public class DebugOptions
         additionalOptions.Add(option);
     }
 
-    private GameOptionBuilder Builder(string key) => new GameOptionBuilder().AddOnOffValues(false).Builder(key, _optionColor);
+    private GameOptionBuilder Builder(string key) => new GameOptionBuilder().AddBoolean(false).Builder(key, _optionColor);
 
     [Localized("Debug")]
     private static class DebugOptionTranslations

@@ -107,7 +107,7 @@ public static class ShapeshiftFixPatch
     {
         if (target.PlayerId == __instance.PlayerId) _shapeshifted.Remove(__instance.PlayerId);
         else _shapeshifted[__instance.PlayerId] = target.PlayerId;
-        if (!shouldAnimate) // dont need to wait because no ss anim
+        if (!shouldAnimate) // don't need to wait because no ss anim
         {
             var nameModel = __instance.NameModel();
             if (Game.State is not GameState.InMeeting) Players.GetAllPlayers().ForEach(p => nameModel.RenderFor(p));

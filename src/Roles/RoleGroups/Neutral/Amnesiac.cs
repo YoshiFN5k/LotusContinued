@@ -78,7 +78,7 @@ public class Amnesiac : CustomRole, IVariableRole
 
         CustomRole newRole = StandardGameMode.Instance.RoleManager.GetCleanRole(targetRole);
 
-        Game.AssignRole(MyPlayer, newRole);
+        Game.CurrentGameMode.Assign(MyPlayer, newRole);
 
         CustomRole role = MyPlayer.PrimaryRole();
         if (ProjectLotus.AdvancedRoleAssignment) role.Assign();

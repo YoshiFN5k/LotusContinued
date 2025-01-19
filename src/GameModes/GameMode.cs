@@ -60,10 +60,18 @@ public abstract class GameMode : IGameMode
 
     public virtual void AssignRoles(List<PlayerControl> players)
     {
-        if (ProjectLotus.AdvancedRoleAssignment) Players.GetAllPlayers().ForEach(p => p.RpcSetRole(RoleTypes.Crewmate, true));
-        else Players.GetAllPlayers().Sorted(p => p.IsHost() ? 0 : 1).ForEach(p => p.PrimaryRole().Assign());
-        if (!ProjectLotus.AdvancedRoleAssignment) return;
-        players = Players.GetPlayers().ToList();
+        if (!ProjectLotus.AdvancedRoleAssignment)
+        {
+            Players.GetAllPlayers().Sorted(p => p.IsHost() ? 0 : 1).ForEach(p => p.PrimaryRole().Assign());
+            return;
+        }
+        players = Players.GetAllPlayers().ToList();
+        PlayerControl lastPlayer = players.Last();
+
+        log.Debug("Assigning roles...");
+        players.Where(p => p != lastPlayer).ForEach(p => p.PrimaryRole().Assign());
+        log.Debug("Assigned everyone but the last player.");
+
         Async.Schedule(() =>
         {
             Dictionary<byte, bool> Disconnected = new();
@@ -72,38 +80,15 @@ public abstract class GameMode : IGameMode
                 Disconnected[pc.PlayerId] = pc.Data.Disconnected;
                 pc.Data.Disconnected = true;
             });
-            log.Trace("Sending Disconncted Data.");
+            log.Debug("Sending Disconncted Data.");
             GeneralRPC.SendGameData();
             players.ForEach(pc => pc.Data.Disconnected = Disconnected[pc.PlayerId]);
         }, NetUtils.DeriveDelay(0.5f));
         Async.Schedule(() =>
         {
-            // CustomRole currentRole = PlayerControl.LocalPlayer.PrimaryRole();
-            // PlayerControl[] alliedPlayers = Players.GetPlayers().Where(p => currentRole.Relationship(p) is Relation.FullAllies).ToArray();
-            // int[] alliedPlayerClientIds = alliedPlayers.Where(currentRole.Faction.CanSeeRole).Select(p => p.GetClientId()).ToArray();
-            // RoleTypes currentRole = PlayerControl.LocalPlayer.Data.Role.Role;
-            RoleTypes currentRole = RoleTypes.Crewmate;
-            players.Where(pc => !pc.IsHost()).ForEach(pc =>
-            {
-                RpcV3.Immediate(PlayerControl.LocalPlayer.NetId, RpcCalls.SetRole).Write((ushort)currentRole).Write(true).Send(pc.GetClientId());
-                // if (currentRole.RealRole.IsCrewmate())
-                // {
-                //     RpcV3.Immediate(PlayerControl.LocalPlayer.NetId, RpcCalls.SetRole).Write((ushort)currentRole.RealRole).Write(true).Send(pc.GetClientId());
-                //     return;
-                // }
-                // players.ForEach(pc =>
-                // {
-                //     bool shouldSeeThemAsImpostor = alliedPlayerClientIds.Contains(pc.GetClientId()); // if they are allies. e.g. Neutral Teaming/Undead/Impostor
-                //     if (!shouldSeeThemAsImpostor)
-                //     {   // If their team is impostor and they are crew. Force impostor.
-                //         if (currentRole.Faction is ImpostorFaction && pc.PrimaryRole().RealRole.IsCrewmate()) shouldSeeThemAsImpostor = true;
-                //     }
-                //     RoleTypes finalRole = shouldSeeThemAsImpostor ? currentRole.RealRole : RoleTypes.Crewmate;
-                //     RpcV3.Immediate(PlayerControl.LocalPlayer.NetId, RpcCalls.SetRole).Write((ushort)finalRole).Write(true).Send(pc.GetClientId());
-                // });
-            });
-            // PlayerControl.LocalPlayer.StartCoroutine(PlayerControl.LocalPlayer.CoSetRole(currentRole, true));
-            log.Trace("Sent! Cleaning up in a second...");
+            log.Debug("Sending the last player's role info...");
+            lastPlayer.PrimaryRole().Assign();
+            log.Debug("Sent! Cleaning up in a second...");
         }, NetUtils.DeriveDelay(1f));
         Async.Schedule(() =>
         {

@@ -17,7 +17,7 @@ using Lotus.Roles.Internals;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
-public class Creeper : Shapeshifter
+public class Creeper : Phantom
 {
     private bool canKillNormally;
     private bool creeperProtectedByShields;
@@ -37,10 +37,10 @@ public class Creeper : Shapeshifter
     public override bool TryKill(PlayerControl target) => canKillNormally && base.TryKill(target);
 
     [RoleAction(LotusActionType.OnPet)]
-    [RoleAction(LotusActionType.Unshapeshift)]
+    [RoleAction(LotusActionType.Vanish)]
     private void CreeperExplode(ActionHandle handle)
     {
-        // handle.Cancel();
+        handle.Cancel();
         if (gracePeriod.NotReady()) return;
         RoleUtils.GetPlayersWithinDistance(MyPlayer, explosionRadius).ForEach(p =>
         {
@@ -70,12 +70,16 @@ public class Creeper : Shapeshifter
                 .Build())
             .SubOption(sub => sub.KeyName("Creeper Grace Period", CreeperGracePeriod)
                 .AddFloatRange(0, 60, 2.5f, 4, GeneralOptionTranslations.SecondsSuffix)
-                .BindFloat(gracePeriod.SetDuration)
+                .BindFloat(f =>
+                {
+                    gracePeriod.SetDuration(f);
+                    VanishCooldown = f;
+                })
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
-            .RoleAbilityFlags(RoleAbilityFlag.UsesPet | RoleAbilityFlag.UsesUnshiftTrigger);
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     [Localized(nameof(Creeper))]
     public static class CreeperTranslations

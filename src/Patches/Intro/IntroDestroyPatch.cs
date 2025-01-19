@@ -52,20 +52,12 @@ class IntroDestroyPatch
         {
             Profiler.Sample executeSample = Global.Sampler.Sampled("Execution Pregame Setup");
             Async.Execute(PreGameSetup(p, pet));
-            if (ProjectLotus.AdvancedRoleAssignment)
-                Async.Schedule(() =>
-                {
-                    p.PrimaryRole().Assign();
-                    p.RpcResetAbilityCooldown();
-                    if (i == (players.Count() - 1)) Game.State = GameState.Roaming;
-                }, 0.175f);
-            else p.RpcResetAbilityCooldown();
+            p.RpcResetAbilityCooldown();
             executeSample.Stop();
         });
         Async.Schedule(() => Players.GetPlayers().ForEach(p => Async.Execute(ReverseEngineeredRPC.UnshfitButtonTrigger(p))), NetUtils.DeriveDelay(2f));
         fullSample.Stop();
-        if (!ProjectLotus.AdvancedRoleAssignment)
-            Game.State = GameState.Roaming;
+        Game.State = GameState.Roaming;
         Game.MatchData.StartTime = DateTime.Now;
 
         Profiler.Sample propSample = Global.Sampler.Sampled("Propagation Sample");

@@ -108,7 +108,7 @@ public class Charmer : Crewmate
         NameComponent component = new(charmString, Game.InGameStates, ViewMode.Additive, MyPlayer, player);
 
         CustomRole playerRole = player.PrimaryRole();
-        IStatus status = CustomStatus.Of(Translations.CharmedText).Description(Translations.CharmedDescription).Color(_charmedColor).Build();
+        IStatus status = CustomStatus.Of(Translations.CharmedText).Description(Translations.CharmedDescription).Color(_charmedColor).StatusFlags(StatusFlag.Hidden).Build();
         charmedPlayers[player.PlayerId] = (player.NameModel().GCH<NameHolder>().Insert(0, component), Game.MatchData.AddStatus(player, status, MyPlayer), playerRole.Faction);
         playerRole.Faction = _charmedFaction;
         _charmedPlayers.Increment(MyPlayer.UniquePlayerId());

@@ -14,6 +14,7 @@ using Lotus.GameModes.Standard;
 using Lotus.Options;
 using HarmonyLib;
 using Lotus.Extensions;
+using Lotus.Patches.Actions;
 using Lotus.RPC;
 using Lotus.Patches.Meetings;
 
@@ -89,7 +90,7 @@ public class MeetingPrep
             finally
             {
                 RoleOperations.Current.TriggerFor(p, LotusActionType.RoundEnd, null, handle, _meetingDelegate, false);
-                if (p.PrimaryRole().RoleAbilityFlags.HasFlag(Roles.RoleAbilityFlag.UsesUnshiftTrigger)) p.CRpcRevertShapeshift(false);
+                if (p.IsShapeshifted()) Async.Schedule(() => p.CRpcRevertShapeshift(false), .25f);
             }
         });
 

@@ -39,7 +39,7 @@ namespace Lotus.Roles.Subroles;
 public class Guesser : Subrole
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Guesser));
-    private MeetingPlayerSelector voteSelector = new();
+    [NewOnSetup] private MeetingPlayerSelector voteSelector = null!;
 
     public override string Identifier() => "⌘";
 

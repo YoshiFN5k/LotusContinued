@@ -12,6 +12,7 @@ using Lotus.Roles.Operations;
 using Lotus.API.Player;
 using VentLib.Utilities.Extensions;
 using Lotus.RPC;
+using Lotus.Utilities;
 using VentLib.Utilities;
 
 namespace Lotus.Patches;
@@ -71,8 +72,28 @@ static class ExileControllerWrapUpPatch
 
         RoleOperations.Current.Trigger(LotusActionType.Exiled, exiledPlayer);
 
+        MeetingDelegate meetingDelegate = MeetingDelegate.Instance;
+
+        List<PlayerControl> abstainers = new();
+        List<PlayerControl> voters = new();
+        meetingDelegate.CurrentVotes().ForEach(kvp =>
+        {
+            PlayerControl? voter = Utils.GetPlayerById(kvp.Key);
+            if (voter == null) return;
+            kvp.Value.ForEach(op =>
+            {
+                if (!op.Exists()) abstainers.Add(voter);
+                else if (op.Get() == exiledPlayer.PlayerId) voters.Add(voter);
+                else abstainers.Add(voter);
+            });
+        });
+        ExiledEvent deathEvent = new ExiledEvent(exiledPlayer, voters, abstainers);
+        Game.MatchData.GameHistory.AddEvent(deathEvent);
+        Game.MatchData.GameHistory.SetCauseOfDeath(exiledPlayer.PlayerId, deathEvent);
+        Game.MatchData.RegenerateFrozenPlayers(exiledPlayer);
+
         Hooks.PlayerHooks.PlayerExiledHook.Propagate(new PlayerHookEvent(exiledPlayer!));
-        Hooks.PlayerHooks.PlayerDeathHook.Propagate(new PlayerDeathHookEvent(exiledPlayer!, new ExiledEvent(exiledPlayer!, new List<PlayerControl>(), new List<PlayerControl>())));
+        Hooks.PlayerHooks.PlayerDeathHook.Propagate(new PlayerDeathHookEvent(exiledPlayer!, new ExiledEvent(exiledPlayer!, voters, abstainers)));
     }
 
     static void WrapUpFinalizer()

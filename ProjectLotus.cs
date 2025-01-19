@@ -55,7 +55,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
     public const string MajorVersion = "1";
     public const string MinorVersion = "1"; // Update with each release
     public const string PatchVersion = "0";
-    public const string BuildNumber = "2421";
+    public const string BuildNumber = "2613";
 
     public static string PluginVersion = typeof(ProjectLotus).Assembly.GetName().Version!.ToString();
 
@@ -63,7 +63,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 
     public static readonly string ModName = "Project Lotus";
     public static readonly string ModColor = "#4FF918";
-    public static readonly string DevVersionStr = "Dev December 27 2024";
+    public static readonly string DevVersionStr = "Dev January 19 2024";
 
     public static bool DevVersion = false;
 
@@ -73,7 +73,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
     public static ModUpdater ModUpdater = null!;
 
     public static bool FinishedLoading;
-    public static bool AdvancedRoleAssignment = true;
+    public const bool AdvancedRoleAssignment = true;
 
     internal Func<MeetingDelegate, IBlackscreenResolver> GetNewBlackscreenResolver = new(md => new BlackscreenResolver(md));
 

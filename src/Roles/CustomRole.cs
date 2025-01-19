@@ -179,8 +179,8 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
             goto finishAssignment;
         }
 
-        // as impostor, its get a bit tricky..
-        // we need to be wary of Noisemaker and Phantom since those cause isseus if not replicated properly
+        // as impostor, its get a bit tricky.
+        // we need to be wary of Noisemaker and Phantom since those cause issues if not replicated properly
         log.Trace($"Setting {MyPlayer.name} Role => {RealRole} | IsStartGame = {isStartOfGame}", "CustomRole::Assign");
         if (MyPlayer.IsHost()) MyPlayer.StartCoroutine(MyPlayer.CoSetRole(RealRole, ProjectLotus.AdvancedRoleAssignment));
         else RpcV3.Immediate(MyPlayer.NetId, RpcCalls.SetRole).Write((ushort)RealRole).Write(ProjectLotus.AdvancedRoleAssignment).Send(MyPlayer.GetClientId());
@@ -192,7 +192,7 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
         PlayerControl[] crewmates = Players.GetPlayers().Where(p =>
         {
             DevLogger.Log($"Checking: {p.name} ({p.GetVanillaRole()})");
-            return p.GetVanillaRole().IsCrewmate();
+            return p != MyPlayer && p.GetVanillaRole().IsCrewmate();
         }).ToArray();
         int[] crewmateClientIds = crewmates.Select(p => p.GetClientId()).ToArray();
         log.Trace($"Current Crewmates: [{crewmates.Select(p => p.name).Fuse()}]");
@@ -253,7 +253,7 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
     {
         if (MyPlayer.IsHost() || MyPlayer.IsModded()) return "";
         //Get role info font size based on the length of the role info
-        static int GetInfoSize(string RoleInfo)
+        int GetInfoSize(string RoleInfo)
         {
             RoleInfo = Regex.Replace(RoleInfo, "<[^>]*>", "");
             RoleInfo = Regex.Replace(RoleInfo, "{[^}]*}", "");

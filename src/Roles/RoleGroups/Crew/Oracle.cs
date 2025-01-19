@@ -31,7 +31,7 @@ public class Oracle : Crewmate
     private bool targetLockedIn;
     private bool initialSkip;
 
-    private MeetingPlayerSelector voteSelector = new();
+    [NewOnSetup] private MeetingPlayerSelector voteSelector = null!;
 
 
     [RoleAction(LotusActionType.RoundEnd)]

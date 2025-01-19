@@ -56,10 +56,16 @@ public class KickBanCommand : ICommandReceiver
             if (banWithId && context.Args.Length > 1)
             {
                 string reason = context.Args[1..].Fuse(" ");
+                if (reason.Trim() == string.Empty) reason = "Host Decision";
                 PluginDataManager.BanManager.BanWithReason(player, reason, $"{player.name} was banned for {reason}.");
             }
-            else AmongUsClient.Instance.KickPlayer(player.GetClientId(), ban);
-            ChatHandler.Of(message.Formatted(player.name), "Announcement").Send();
-        }, () => ChatHandler.Of($"Unable to find player: {text}", "Announcement").Send(source));
+            else
+            {
+                string reason = context.Args[1..].Fuse(" ");
+                if (reason.Trim() == string.Empty) AmongUsClient.Instance.KickPlayer(player.GetClientId(), ban);
+                else AmongUsClient.Instance.KickPlayerWithMessage(player, reason, false);
+            }
+            ChatHandler.Of(message.Formatted(player.name)).Send();
+        }, () => ChatHandler.Of($"Unable to find player: {text}").Send(source));
     }
 }

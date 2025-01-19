@@ -35,9 +35,11 @@ static class ChatBubblePatch
         if (LobbyBehaviour.Instance == null)
         {
             if (!voted && seer.PlayerId == target.PlayerId) __instance.NameText.color = seer.GetRoleColor();
-            else if ((seer.PlayerId != target.PlayerId || !seer.IsAlive())
-                && seer.Relationship(PlayerControl.LocalPlayer) is Relation.FullAllies
-                && seer.PrimaryRole().Faction.CanSeeRole(PlayerControl.LocalPlayer)) __instance.NameText.color = target.GetRoleColor();
+            else if (seer.PlayerId != target.PlayerId
+                && (
+                    seer.Relationship(target) is Relation.FullAllies
+                    && seer.PrimaryRole().Faction.CanSeeRole(PlayerControl.LocalPlayer)
+                ) | !seer.IsAlive()) __instance.NameText.color = target.GetRoleColor();
         }
 
         if (ClientOptions.VideoOptions.ChatDarkMode)

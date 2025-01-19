@@ -30,7 +30,7 @@ namespace Lotus.Roles.RoleGroups.Crew;
 public class Altruist : Scientist, IRoleCandidate
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Altruist));
-    public bool ShouldSkip() => !ProjectLotus.AdvancedRoleAssignment; // skip assignment if we dont allow role changes mid game
+    public bool ShouldSkip() => !ProjectLotus.AdvancedRoleAssignment; // skip assignment if we don't allow role changes mid-game
     [NewOnSetup] private HashSet<PlayerControl> deadPlayers = null!;
 
     private float reviveDelay;
@@ -43,9 +43,9 @@ public class Altruist : Scientist, IRoleCandidate
     [RoleAction(LotusActionType.ReportBody)]
     private void OnResurect(Optional<NetworkedPlayerInfo> body, ActionHandle handle)
     {
-        if (!body.Exists() || reviedPlayerId != 255 || arrowComponent != null) return; // if its a meeting or we already revived someone this game.
+        if (!body.Exists() || reviedPlayerId != 255 || arrowComponent != null) return; // if it's a meeting, or we already revived someone this game.
         PlayerControl? reviedPlayer = Players.GetPlayers(PlayerFilter.Dead).FirstOrDefault(p => p.PlayerId == body.Get().PlayerId);
-        if (reviedPlayer == null || reviedPlayer.Data.Disconnected) return; // if they dont exist or left the game already
+        if (reviedPlayer == null || reviedPlayer.Data.Disconnected) return; // if they don't exist or left the game already
         log.Debug($"Starting revive of player {reviedPlayer.name}. Waiting for countdown.");
         handle.Cancel();
         reviedPlayerId = reviedPlayer.PlayerId;
@@ -85,7 +85,7 @@ public class Altruist : Scientist, IRoleCandidate
         {
             // reassign tasks because they get removed in the code
             // why innersloth smh
-            // unfortunately, because some tasks have client-side random positions (wires, diret power), those tasks will be in different positions
+            // unfortunately, because some tasks have client-side random positions (wires, direct power), those tasks will be in different positions
             player.Data.RpcSetTasks(new Il2CppStructArray<byte>(player.myTasks.ToArray().Select(t => (byte)t.Index).ToArray()));
         }
         if (!arrowForRevivedKiller || causeofDeath == null) return;
@@ -101,6 +101,12 @@ public class Altruist : Scientist, IRoleCandidate
     {
         if (MyPlayer.IsAlive()) deadPlayers.Add(victim);
         if (victim.PlayerId == reviedPlayerId) OnMeeting();
+    }
+
+    [RoleAction(LotusActionType.PlayerDeath)]
+    private void MyDeath()
+    {
+
     }
 
     [RoleAction(LotusActionType.RoundEnd, ActionFlag.WorksAfterDeath)]

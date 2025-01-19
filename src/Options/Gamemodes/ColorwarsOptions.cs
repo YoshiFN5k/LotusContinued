@@ -69,13 +69,6 @@ public class ColorwarsOptions
             .Build());
 
         AllOptions.Add(new GameOptionBuilder()
-            .KeyName("Grace Period", Translations.GracePeriod)
-            .IsHeader(true)
-            .AddFloatRange(0, 30, 1f, 5, GeneralOptionTranslations.SecondsSuffix)
-            .BindFloat(v => GracePeriod = v)
-            .Build());
-
-        AllOptions.Add(new GameOptionBuilder()
             .LocaleName($"{ModConstants.Options}.Mayhem.RandomSpawn")
             .Key("Random Spawn")
             .AddBoolean()
@@ -86,6 +79,7 @@ public class ColorwarsOptions
             .KeyName("Custom Teams", Translations.CustomTeams)
             .AddBoolean(false)
             .BindBool(b => CustomTeams = b)
+            .ShowSubOptionPredicate(v => (bool)v)
             .Build();
 
         AllOptions.Add(CustomTeamsOption);

@@ -53,7 +53,7 @@ public class Genie : Crewmate
     private bool selectedPlayer;
     private int remainingWishes;
 
-    private MeetingPlayerSelector voteSelector = new();
+    [NewOnSetup] private MeetingPlayerSelector voteSelector = null!;
 
     public Genie()
     {

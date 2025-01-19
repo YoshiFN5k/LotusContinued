@@ -26,7 +26,8 @@ public class TConditionalUser: CommonConditionalUnit
         {
             UserType.Everyone => true,
             UserType.Host => player.IsHost(),
-            UserType.Admins => player.IsHost(), // TODO
+            UserType.Admins => PluginDataManager.ModManager.GetStatusOfPlayer(player).ModType == "Admin",
+            UserType.Mods => PluginDataManager.ModManager.IsPlayerModded(player),
             UserType.Triggerer => player.PlayerId == TemplateUnit.Triggerer,
             _ => throw new ArgumentOutOfRangeException()
         };
@@ -37,6 +38,7 @@ public class TConditionalUser: CommonConditionalUnit
         Everyone,
         Host,
         Admins,
+        Mods,
         Triggerer
     }
 }

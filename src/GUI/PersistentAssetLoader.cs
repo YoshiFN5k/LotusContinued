@@ -15,7 +15,7 @@ internal class PersistentAssetLoader : MonoBehaviour
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(PersistentAssetLoader));
 
     private static Dictionary<string, SpriteRenderer> _spriteRenderers = new();
-    private static readonly Dictionary<string, (string path, int pixelsPerUnit)> SpriteInfo = new();
+    private static readonly Dictionary<string, (string path, int pixelsPerUnit, Assembly assembly)> SpriteInfo = new();
     private static bool _initialized;
 
     private static PersistentAssetLoader _instance = null!;
@@ -31,7 +31,7 @@ internal class PersistentAssetLoader : MonoBehaviour
 
     private void LoadAssets()
     {
-        SpriteInfo.ForEach(si => LoadSprite(si.Key, si.Value.path, si.Value.pixelsPerUnit));
+        SpriteInfo.ForEach(si => LoadSprite(si.Key, si.Value.path, si.Value.pixelsPerUnit, si.Value.assembly));
     }
 
     private void LoadSprite(string key, string path, int pixelsPerUnit, Assembly? assembly = null)
@@ -48,7 +48,7 @@ internal class PersistentAssetLoader : MonoBehaviour
     public static Func<Sprite> RegisterSprite(string key, string path, int pixelsPerUnit, Assembly? assembly = null)
     {
         assembly ??= Assembly.GetCallingAssembly();
-        SpriteInfo.Add(key, (path, pixelsPerUnit));
+        SpriteInfo.Add(key, (path, pixelsPerUnit, assembly));
         if (_initialized) _instance.LoadSprite(key, path, pixelsPerUnit, assembly);
         return () => _spriteRenderers[key].sprite;
     }

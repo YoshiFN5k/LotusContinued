@@ -50,7 +50,7 @@ public static class DesyncOptions
     {
         GameOptionsFactory optionsFactory = GameOptionsManager.Instance.gameOptionsFactory;
 
-        // this was taken from town of host..
+        // this was taken from town of host.
         MessageWriter writer = MessageWriter.Get(SendOption.None);
         writer.Write(options.Version);
         writer.StartMessage(0);

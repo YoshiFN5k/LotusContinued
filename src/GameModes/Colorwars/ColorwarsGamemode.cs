@@ -138,7 +138,8 @@ public class ColorwarsGamemode : GameMode
                 .BindInt(i => PlayerToTeam[p.PlayerId] = i)
                 .Build();
             playerOptions.Add(newOption);
-            DefaultTabs.ColorwarsTab.GetOptions().Insert(indexOf + playerOptions.Count, newOption);
+            ExtraGamemodeOptions.ColorwarsOptions.CustomTeamsOption.AddChild(newOption);
+            // DefaultTabs.ColorwarsTab.GetOptions().Insert(indexOf + playerOptions.Count, newOption);
         });
 
         refreshing = false;

@@ -4,7 +4,7 @@ namespace Lotus.Roles.Interfaces;
 /// Use this if you want your role to only be assigned on certain conditions.<br></br>
 /// Note that this is in the <i>actual</i> role assigning area.<br></br>
 /// So, depending on the order in which roles are assigned, players might have the fallback role.<br></br>
-/// Don't check for roles here unless you are absolutely sure.
+/// Don't check the roles for players unless you are absolutely sure they would be assigned.
 /// </summary>
 public interface IRoleCandidate
 {

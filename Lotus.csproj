@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>17.0</LangVersion>
+    <langVersion>latest</langVersion>
     <Description>Project Lotus</Description>
     <Authors>Tealeaf, Discussions</Authors>
-    <langVersion>latest</langVersion>
     <AmongUs>D:\Games\AmongUs\steam\Lotus</AmongUs>
     <RootNamespace>Lotus</RootNamespace>
     <Nullable>enable</Nullable>
