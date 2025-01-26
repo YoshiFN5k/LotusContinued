@@ -27,7 +27,7 @@ namespace Lotus.Roles.RoleGroups.Crew;
 // There are probably a million ways to program this role better.
 // But no one ever said I was good at programming.
 
-public class Genie : Crewmate
+public class Genie : Crewmate, IInfoResender
 {
     /// <summary>
     /// A list of subroles the Genie is able to grant.
@@ -62,11 +62,13 @@ public class Genie : Crewmate
 
     protected override void PostSetup() => remainingWishes = totalWishes;
 
+    public void ResendMessages() => ChatHandler.Of(Translations.MeetingMessage, RoleColor.Colorize(RoleName)).Send(MyPlayer);
+
     [RoleAction(LotusActionType.RoundEnd)]
     private void MeetingMessage()
     {
         if (remainingWishes <= 0) return;
-        ChatHandler.Of(Translations.MeetingMessage, RoleColor.Colorize(RoleName)).Send(MyPlayer);
+        ResendMessages();
         selectedPlayer = false;
     }
 

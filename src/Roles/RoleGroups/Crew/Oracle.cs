@@ -19,11 +19,12 @@ using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using Lotus.API.Player;
 using Lotus.API.Vanilla.Meetings;
+using Lotus.Roles.Interfaces;
 using Lotus.Roles.Internals.Trackers;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
-public class Oracle : Crewmate
+public class Oracle : Crewmate, IInfoResender
 {
     private static ColorGradient _oracleGradient = new(new Color(0.49f, 0.57f, 0.84f), new Color(0.67f, 0.36f, 0.76f));
 
@@ -33,6 +34,7 @@ public class Oracle : Crewmate
 
     [NewOnSetup] private MeetingPlayerSelector voteSelector = null!;
 
+    public void ResendMessages() => CHandler().Message(Translations.VotePlayerInfo).Send(MyPlayer);
 
     [RoleAction(LotusActionType.RoundEnd)]
     private void OracleSendMessage()

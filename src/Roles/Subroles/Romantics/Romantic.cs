@@ -27,10 +27,11 @@ using VentLib.Utilities.Optionals;
 using System.Collections.Generic;
 using Lotus.API.Vanilla.Meetings;
 using Lotus.GameModes.Standard;
+using Lotus.Roles.Interfaces;
 
 namespace Lotus.Roles.Subroles.Romantics;
 
-public class Romantic : Subrole
+public class Romantic : Subrole, IInfoResender
 {
     public static Color RomanticColor = new(1f, 0.28f, 0.47f);
     private static VengefulRomantic _vengefulRomantic = new();
@@ -59,6 +60,8 @@ public class Romantic : Subrole
         myRole.Faction = myFaction = new RomanticFaction(originalFaction);
     }
 
+    public void ResendMessages() => RHandler(Translations.RomanticMessage).Send(MyPlayer);
+
     [RoleAction(LotusActionType.OnPet, priority: Priority.VeryHigh)]
     public void HandlePet(ActionHandle handle)
     {
@@ -74,7 +77,7 @@ public class Romantic : Subrole
     public void SendMeetingMessage()
     {
         if (partner != byte.MaxValue) return;
-        Async.Schedule(() => RHandler(Translations.RomanticMessage).Send(MyPlayer), 1.5f);
+        ResendMessages();
     }
 
     [RoleAction(LotusActionType.Interaction, ActionFlag.GlobalDetector)]

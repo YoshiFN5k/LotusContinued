@@ -12,12 +12,13 @@ using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using System.Collections.Generic;
 using System;
+using Lotus.Roles.Interfaces;
 using Lotus.Roles.RoleGroups.Crew;
 
 namespace Lotus.Roles.Subroles;
 
 [Localized("Roles.Subroles.Sleuth")]
-public class Sleuth : Subrole
+public class Sleuth : Subrole, IInfoResender
 {
     /// <summary>
     /// A list of roles that Sleuth is not compatiable with. Add your role to this list to make it not be assigned with your role.
@@ -32,7 +33,11 @@ public class Sleuth : Subrole
     [Localized("SleuthTitle")]
     private static string _sleuthMessageTitle = "Sleuth {0}";
 
+    private string meetingInfo = "No Info";
+
     public override string Identifier() => "◯";
+
+    public void ResendMessages() => ChatHandler.Of(meetingInfo, RoleColor.Colorize(RoleName)).LeftAlign().Send(MyPlayer);
 
     [RoleAction(LotusActionType.ReportBody)]
     private void SleuthReportBody(Optional<NetworkedPlayerInfo> target)
@@ -45,7 +50,8 @@ public class Sleuth : Subrole
 
         CustomRole role = Game.MatchData.Roles.GetMainRole(deadBody.PlayerId);
         string title = RoleColor.Colorize($"{_sleuthMessageTitle.Formatted(MyPlayer.name)}");
-        ChatHandler handler = ChatHandler.Of(_sleuthMessage.Formatted(Game.MatchData.FrozenPlayers[gameId].Name, role), title);
+        meetingInfo = _sleuthMessage.Formatted(Game.MatchData.FrozenPlayers[gameId].Name, role);
+        ChatHandler handler = ChatHandler.Of(meetingInfo, title);
 
         Async.Schedule(() => handler.Send(MyPlayer), NetUtils.DeriveDelay(1.5f));
     }

@@ -7,6 +7,7 @@ using Lotus.Extensions;
 using Lotus.GUI.Name;
 using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name.Holders;
+using Lotus.Roles.Interfaces;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Internals.Enums;
@@ -22,7 +23,7 @@ using static Lotus.Roles.RoleGroups.Neutral.Swapper.SwapperTranslations;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
-public class Swapper : Crewmate
+public class Swapper : Crewmate, IInfoResender
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Swapper));
     private byte target1 = byte.MaxValue;
@@ -38,6 +39,10 @@ public class Swapper : Crewmate
         CounterComponent counter = new(new LiveString(() => RoleUtils.Counter(currentSwaps, swapsPerGame)), new[] { GameState.InMeeting }, ViewMode.Additive, MyPlayer);
         MyPlayer.NameModel().GetComponentHolder<CounterHolder>().Add(counter);
     }
+
+    public void ResendMessages() => ChatHandler.Of(SwapperInfoMessage, RoleColor.Colorize(SwapperAbility))
+        .LeftAlign()
+        .Send(MyPlayer);
 
     [RoleAction(LotusActionType.RoundEnd, ActionFlag.WorksAfterDeath)]
     private void SendSwappingMessage()

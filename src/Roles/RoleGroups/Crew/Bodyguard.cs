@@ -24,10 +24,11 @@ using static Lotus.Roles.RoleGroups.Crew.Medic.MedicTranslations.MedicOptionTran
 using static Lotus.Utilities.TranslationUtil;
 using Lotus.API.Vanilla.Meetings;
 using System.Linq;
+using Lotus.Roles.Interfaces;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
-public class Bodyguard : Crewmate
+public class Bodyguard : Crewmate, IInfoResender
 {
     private static readonly Color CrossColor = new(0.74f, 0.58f, 0f);
     private bool protectAgainstHelpfulInteraction;
@@ -47,6 +48,11 @@ public class Bodyguard : Crewmate
     private void RoundEndMessage()
     {
         confirmedVote = false;
+        ResendMessages();
+    }
+
+    public void ResendMessages()
+    {
         if (guardedPlayer == byte.MaxValue) CHandler(Translations.BodyguardHelpMessage).Send(MyPlayer);
         else if (mode is GuardMode.AnyMeeting) CHandler(ProtectingMessage.Formatted(Players.FindPlayerById(guardedPlayer)?.name)).Send(MyPlayer);
     }

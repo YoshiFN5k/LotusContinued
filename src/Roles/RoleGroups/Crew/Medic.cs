@@ -21,11 +21,12 @@ using VentLib.Utilities.Optionals;
 using static Lotus.Options.GeneralOptionTranslations;
 using static Lotus.Roles.RoleGroups.Crew.Medic.MedicTranslations;
 using Lotus.API.Vanilla.Meetings;
+using Lotus.Roles.Interfaces;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
 [Localized("Roles")]
-public class Medic : Crewmate
+public class Medic : Crewmate, IInfoResender
 {
     private static readonly Color CrossColor = new(0.2f, 0.49f, 0f);
     private GuardMode mode;
@@ -38,12 +39,17 @@ public class Medic : Crewmate
 
     private const string CrossText = "<size=3><b>+</b></size>";
 
+    public void ResendMessages()
+    {
+        if (guardedPlayer == byte.MaxValue) CHandler(MedicHelpMessage).Send(MyPlayer);
+        else if (mode is GuardMode.AnyMeeting) CHandler(ProtectingMessage.Formatted(Players.FindPlayerById(guardedPlayer)?.name)).Send(MyPlayer);
+    }
+
     [RoleAction(LotusActionType.RoundEnd)]
     private void RoundEndMessage()
     {
         confirmedVote = false;
-        if (guardedPlayer == byte.MaxValue) CHandler(MedicHelpMessage).Send(MyPlayer);
-        else if (mode is GuardMode.AnyMeeting) CHandler(ProtectingMessage.Formatted(Players.FindPlayerById(guardedPlayer)?.name)).Send(MyPlayer);
+        ResendMessages();
     }
 
     [RoleAction(LotusActionType.Interaction, ActionFlag.GlobalDetector)]

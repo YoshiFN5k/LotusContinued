@@ -30,10 +30,11 @@ using Lotus.API.Vanilla.Sabotages;
 using static Lotus.Roles.RoleGroups.Impostors.Mafioso.MafiaTranslations;
 using static Lotus.Roles.RoleGroups.Impostors.Mafioso.MafiaTranslations.MafiaOptionTranslations;
 using Lotus.Patches.Systems;
+using Lotus.Roles.Interfaces;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
-public class Mafioso : Engineer
+public class Mafioso : Engineer, IInfoResender
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Mafioso));
     internal static Color CashColor = new(1f, 0.82f, 0.18f);
@@ -68,6 +69,8 @@ public class Mafioso : Engineer
     private ShopItem[] currentShopItems;
 
     public override bool TasksApplyToTotal() => false;
+
+    public void ResendMessages() => GetChatHandler().Message(ShopMessage).Send();
 
     [UIComponent(UI.Counter, ViewMode.Absolute, GameState.InMeeting)]
     private string DisableTaskCounter() => "";
