@@ -29,6 +29,7 @@ public class AdminOptions
     public bool KickPlayersWithoutFriendcodes;
     public int KickPlayersUnderLevel;
     public bool KickMobilePlayers;
+    public bool EnableWhitelist;
 
     public int AutoStartPlayerThreshold;
     public int AutoStartMaxTime = -1;
@@ -95,6 +96,13 @@ public class AdminOptions
             .Name(AdminOptionTranslations.AutoKickMobile)
             .AddBoolean(false)
             .BindBool(b => KickMobilePlayers = b)
+            .Build());
+
+        AllOptions.Add(new GameOptionBuilder()
+            .Builder("Enable Whitelist", _optionColor)
+            .Name(AdminOptionTranslations.EnableWhitelist)
+            .AddBoolean(false)
+            .BindBool(b => EnableWhitelist = b)
             .Build());
 
         AllOptions.Add(new GameOptionBuilder()
@@ -205,6 +213,9 @@ public class AdminOptions
 
         [Localized(nameof(AutoHauntCooldown))]
         public static string AutoHauntCooldown = "Auto Haunt Cooldown";
+
+        [Localized(nameof(EnableWhitelist))]
+        public static string EnableWhitelist = "Enable Whitelist via Friendcode";
     }
 
 }

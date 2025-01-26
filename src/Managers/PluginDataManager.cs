@@ -27,12 +27,14 @@ public static class PluginDataManager
     private const string WordListFile = "BannedWords.yaml";
     private const string TemplateFile = "Templates.yaml";
 
+    private const string WhitelistFile = "Whitelist.txt";
     private const string FriendListFile = "Friends.txt";
 
     public static readonly DirectoryInfo ModifiableDataDirectory;
     public static readonly DirectoryInfo HiddenDataDirectory;
 
     public static CustomAnnouncementManager AnnouncementManager;
+    public static WhitelistManager WhitelistManager;
     public static TemplateManager TemplateManager;
     public static FriendManager FriendManager;
     public static TitleManager TitleManager;
@@ -51,11 +53,12 @@ public static class PluginDataManager
         if (!HiddenDataDirectory.Exists) HiddenDataDirectory.Create();
 
         AnnouncementManager = TryLoad(() => new CustomAnnouncementManager(ModifiableDataDirectory.GetFile(ReadAnnouncementsFile)), "Announcement Manager")!;
+        WhitelistManager = TryLoad(() => new WhitelistManager(ModifiableDataDirectory.GetFile(WhitelistFile)), "Whitelist Manager")!;
         TemplateManager = TryLoad(() => new TemplateManager(ModifiableDataDirectory.GetFile(TemplateFile)), "Template Manager")!;
-        TitleManager = TryLoad(() => new TitleManager(ModifiableDataDirectory.GetDirectory(TitleDirectory)), "Title Manager")!;
         FriendManager = TryLoad(() => new FriendManager(ModifiableDataDirectory.GetFile(FriendListFile)), "Friend Manager")!;
-        BanManager = TryLoad(() => new BanManager(ModifiableDataDirectory.GetFile(BannedPlayerFile)), "Ban Manager")!;
+        TitleManager = TryLoad(() => new TitleManager(ModifiableDataDirectory.GetDirectory(TitleDirectory)), "Title Manager")!;
         ModManager = TryLoad(() => new ModManager(ModifiableDataDirectory.GetFile(ModdedPlayerFile)), "Mod Manager")!;
+        BanManager = TryLoad(() => new BanManager(ModifiableDataDirectory.GetFile(BannedPlayerFile)), "Ban Manager")!;
         ChatManager = TryLoad(() => new ChatManager(ModifiableDataDirectory.GetFile(WordListFile)), "Chat Manager")!;
     }
 
@@ -75,11 +78,12 @@ public static class PluginDataManager
         }
 
         TemplateManager = TryLoad(() => new TemplateManager(ModifiableDataDirectory.GetFile(TemplateFile)), "Template Manager", onError)!;
-        TitleManager = TryLoad(() => new TitleManager(ModifiableDataDirectory.GetDirectory(TitleDirectory)), "Title Manager", onError)!;
         FriendManager = TryLoad(() => new FriendManager(ModifiableDataDirectory.GetFile(FriendListFile)), "Friend Manager", onError)!;
+        WhitelistManager = TryLoad(() => new WhitelistManager(ModifiableDataDirectory.GetFile(WhitelistFile)), "Whitelist Manager")!;
+        TitleManager = TryLoad(() => new TitleManager(ModifiableDataDirectory.GetDirectory(TitleDirectory)), "Title Manager", onError)!;
         BanManager = TryLoad(() => new BanManager(ModifiableDataDirectory.GetFile(BannedPlayerFile)), "Ban Manager", onError)!;
-        ModManager = TryLoad(() => new ModManager(ModifiableDataDirectory.GetFile(ModdedPlayerFile)), "Mod Manager", onError)!;
         ChatManager = TryLoad(() => new ChatManager(ModifiableDataDirectory.GetFile(WordListFile)), "Chat Manager", onError)!;
+        ModManager = TryLoad(() => new ModManager(ModifiableDataDirectory.GetFile(ModdedPlayerFile)), "Mod Manager", onError)!;
     }
 
     private static T? TryLoad<T>(Func<T> loadFunction, string name, Action<(Exception ex, string erorrStuff)>? onError = null)

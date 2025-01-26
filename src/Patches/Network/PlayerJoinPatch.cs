@@ -11,6 +11,7 @@ using Lotus.Options;
 using VentLib.Utilities;
 using VentLib.Utilities.Attributes;
 using VentLib.Utilities.Harmony.Attributes;
+using xCloud;
 using static Platforms;
 
 
@@ -59,6 +60,7 @@ public class PlayerJoinPatch
             return;
         }
 
+        PluginDataManager.WhitelistManager.CheckWhitelistPlayer(player, client);
         PluginDataManager.BanManager.CheckBanPlayer(player, client);
 
         Hooks.PlayerHooks.PlayerJoinHook.Propagate(new PlayerHookEvent(player));

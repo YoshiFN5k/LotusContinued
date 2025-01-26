@@ -85,7 +85,7 @@ public class ModKeybindings
             .Do(InstantReduceTimer)
             .DevOnly();
 
-        // Reload T
+        // Reload All Files in LOTUS_DATA
         Bind(KeyCode.LeftControl, KeyCode.T)
             .If(p => p.State(GameState.InLobby))
             .Do(ReloadAllFiles);
