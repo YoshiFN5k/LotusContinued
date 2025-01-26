@@ -81,7 +81,7 @@ public class Swooper : Impostor
 
         swoopingDuration.StartThenRun(EndSwooping);
         Game.MatchData.GameHistory.AddEvent(new GenericAbilityEvent(MyPlayer, $"{MyPlayer.name} began swooping."));
-        Async.Schedule(() => KickFromVent(vent, unaffected), 0.4f);
+        Async.Schedule(() => KickFromVent(vent, unaffected), NetUtils.DeriveDelay(0.4f));
     }
 
     private void KickFromVent(Vent vent, List<PlayerControl> unaffected)
@@ -98,12 +98,12 @@ public class Swooper : Impostor
         switch (returnLocation)
         {
             case ReturnLocation.Start:
-                Async.Schedule(() => MyPlayer.MyPhysics.RpcBootFromVent(ventId), 0.4f);
+                Async.Schedule(() => MyPlayer.MyPhysics.RpcBootFromVent(ventId), NetUtils.DeriveDelay(0.4f));
                 break;
             case ReturnLocation.Current:
                 UnityEngine.Vector2 currentLocation = MyPlayer.GetTruePosition();
-                Async.Schedule(() => MyPlayer.MyPhysics.RpcBootFromVent(ventId), 0.4f);
-                Async.Schedule(() => Utils.Teleport(MyPlayer.NetTransform, currentLocation), 0.8f);
+                Async.Schedule(() => MyPlayer.MyPhysics.RpcBootFromVent(ventId), NetUtils.DeriveDelay(0.4f));
+                Async.Schedule(() => Utils.Teleport(MyPlayer.NetTransform, currentLocation), NetUtils.DeriveDelay(0.8f));
                 break;
         }
         swooperCooldown.Start();
