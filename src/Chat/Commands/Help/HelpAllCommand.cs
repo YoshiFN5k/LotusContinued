@@ -40,7 +40,8 @@ public class HelpAllCommand : CommandTranslations
             {
                 new("/m", MyRoleCommandDescription),
                 new("/o", RoleOptionCommandDescription),
-                new("/desc", DescCommandDescription)
+                new("/desc", DescCommandDescription),
+                new("/info", InfoCommandDescription)
             } },
 
             { CommandSection.Lobby, new List<CommandHelp>
@@ -180,6 +181,9 @@ public class HelpAllCommand : CommandTranslations
 
         [Localized(nameof(StartCommandDescription))]
         public static string StartCommandDescription = "Forcefully starts the game immediately. Added for admins to start the game without host.";
+
+        [Localized(nameof(InfoCommandDescription))]
+        public static string InfoCommandDescription = "Resend information that your role displayed in chat at the start of the round.";
     }
 
 }

@@ -5,12 +5,14 @@ using Lotus.API;
 using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.Chat.Patches;
+using Lotus.Extensions;
 using Lotus.Factions.Neutrals;
 using Lotus.Logging;
 using Lotus.Managers;
 using Lotus.Managers.Blackscreen;
 using Lotus.Options;
 using Lotus.Roles;
+using Lotus.Roles.Interfaces;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Managers.Interfaces;
 using Lotus.Roles.Subroles;
@@ -31,6 +33,7 @@ public class BasicCommands : CommandTranslations
     [Localized(nameof(Winners))] public static string Winners = "Winners";
     [Localized("Dump.Success")] public static string DumpSuccess = "Successfully dumped log. Check your logs folder for a \"dump.log!\"";
     [Localized("Ids.PlayerIdMessage")] public static string PlayerIdMessage = "{0}'s player ID is {1}";
+    [Localized("Info.NoInfoMessage")] public static string NoInfoMessage = "Your role has no information to display.";
 
     [Command("perc", "percentage", "percentages", "p")]
     public static void Percentage(PlayerControl source)
@@ -222,5 +225,12 @@ public class BasicCommands : CommandTranslations
         if (player == null) ChatHandler.Of(PlayerNotFoundText.Formatted(id), CommandError).LeftAlign().Send(source);
         else if (!LegacyResolver.PerformForcedReset(player)) ChatHandler.Of("Unable to perform forced Blackscreen Fix. No players have died yet.", CommandError).LeftAlign().Send(source);
         else ChatHandler.Of($"Successfully cleared blackscreen of \"{player.name}\"").LeftAlign().Send(source);
+    }
+
+    [Command(CommandFlag.InGameOnly, "info", "i")]
+    public static void ResendRoleMessages(PlayerControl source)
+    {
+        if (source.PrimaryRole() is IInfoResender infoResender) infoResender.ResendMessages();
+        else ChatHandler.Of(NoInfoMessage).LeftAlign().Send(source);
     }
 }
