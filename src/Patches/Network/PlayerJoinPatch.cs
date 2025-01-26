@@ -50,7 +50,7 @@ public class PlayerJoinPatch
         }
         player.name = client.PlayerName;
         bool kickPlayer = false;
-        kickPlayer = kickPlayer || GeneralOptions.AdminOptions.KickPlayersWithoutFriendcodes && client.FriendCode == "";
+        kickPlayer = kickPlayer || GeneralOptions.AdminOptions.KickPlayersWithoutFriendcodes && client.FriendCode == "" && AmongUsClient.Instance.NetworkMode is not NetworkModes.LocalGame;
         kickPlayer = kickPlayer || client.PlatformData.Platform is Android or IPhone && GeneralOptions.AdminOptions.KickMobilePlayers;
 
         if (kickPlayer)
