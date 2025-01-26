@@ -12,6 +12,7 @@ using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using System.Collections.Generic;
 using System;
+using Lotus.Chat.Commands;
 using Lotus.Roles.Interfaces;
 using Lotus.Roles.RoleGroups.Crew;
 
@@ -33,11 +34,11 @@ public class Sleuth : Subrole, IInfoResender
     [Localized("SleuthTitle")]
     private static string _sleuthMessageTitle = "Sleuth {0}";
 
-    private string meetingInfo = "No Info";
+    private string meetingInfo = BasicCommands.NoInfoMessage;
 
     public override string Identifier() => "◯";
 
-    public void ResendMessages() => ChatHandler.Of(meetingInfo, RoleColor.Colorize(RoleName)).LeftAlign().Send(MyPlayer);
+    public void ResendMessages() => ChatHandler.Of(meetingInfo, RoleColor.Colorize($"{_sleuthMessageTitle.Formatted(MyPlayer.name)}")).Send(MyPlayer);
 
     [RoleAction(LotusActionType.ReportBody)]
     private void SleuthReportBody(Optional<NetworkedPlayerInfo> target)
