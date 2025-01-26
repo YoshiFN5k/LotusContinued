@@ -230,7 +230,14 @@ public class BasicCommands : CommandTranslations
     [Command(CommandFlag.InGameOnly, "info", "i")]
     public static void ResendRoleMessages(PlayerControl source)
     {
-        if (source.PrimaryRole() is IInfoResender infoResender) infoResender.ResendMessages();
-        else ChatHandler.Of(NoInfoMessage).LeftAlign().Send(source);
+        if (source.GetSubroles().Concat([source.PrimaryRole()]).Where(r =>
+            {
+                if (r is IInfoResender infoResender)
+                {
+                    infoResender.ResendMessages();
+                    return true;
+                }
+                return false;
+            }).Count() == 0) ChatHandler.Of(NoInfoMessage).LeftAlign().Send(source);
     }
 }
