@@ -243,11 +243,11 @@ public abstract class AbstractBaseRole
 
     protected void CreateInstanceBasedVariables()
     {
-        this.GetType().GetFields(AccessFlags.InstanceAccessFlags)
+        this.GetType().GetFields(AccessFlags.InstanceAccessFlags | BindingFlags.FlattenHierarchy)
             .Where(f => f.GetCustomAttribute<NewOnSetupAttribute>() != null)
             .Select(f => new NewOnSetup(f, f.GetCustomAttribute<NewOnSetupAttribute>()!.UseCloneIfPresent))
             .ForEach(CreateAnnotatedFields);
-        this.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+        this.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy)
             .Where(f => f.FieldType == typeof(Cooldown) || (f.FieldType.IsGenericType && typeof(Optional<>).IsAssignableFrom(f.FieldType.GetGenericTypeDefinition())))
             .Do(f =>
             {

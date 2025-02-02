@@ -6,6 +6,7 @@ using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
 using Lotus.Extensions;
 using Lotus.Managers.History;
+using Lotus.Network;
 using Lotus.Roles;
 using Lotus.Roles.Exceptions;
 using Lotus.Roles.Overrides;
@@ -135,7 +136,8 @@ public class MatchData
     // TODO make way better
     public static RemoteList<GameOptionOverride> GetGlobalOptions()
     {
-        RemoteList<GameOptionOverride> globalOverrides = new() { new GameOptionOverride(Override.ShapeshiftCooldown, 0.1f) };
+        RemoteList<GameOptionOverride> globalOverrides = new();
+        globalOverrides.Add(new GameOptionOverride(Override.ShapeshiftCooldown, 0.1f));
         if (AUSettings.ConfirmImpostor()) globalOverrides.Add(new GameOptionOverride(Override.ConfirmEjects, false));
         return globalOverrides;
     }

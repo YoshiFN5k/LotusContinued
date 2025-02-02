@@ -50,6 +50,8 @@ public class ChatDarkMode
             __instance.quickChatField.background.color = new Color32(40, 40, 40, byte.MaxValue);
             __instance.quickChatField.text.color = Color.white;
 
+            __instance.freeChatField.textArea.outputText.color = Color.white;
+
             if (QuickChatIcon == null)
                 QuickChatIcon = GameObject.Find("QuickChatIcon")?.transform.GetComponent<SpriteRenderer>()!;
             else

@@ -12,6 +12,7 @@ using UnityEngine;
 using Lotus.Roles.Builtins;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Factions.Impostors;
+using Lotus.Roles.Internals.Trackers;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 

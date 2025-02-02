@@ -44,7 +44,7 @@ class RpcReporter: IReportProducer
         string content = "";
         rpcs.ForEach(tuple =>
         {
-            string timestamp = tuple.Item1.ToString("hh:mm:ss");
+            string timestamp = tuple.Item1.ToString("hh:mm:ss.fff");
             RpcMeta meta = tuple.Item2;
             if (meta is RpcMassMeta massMeta)
             {

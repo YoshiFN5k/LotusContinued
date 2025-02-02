@@ -158,7 +158,7 @@ public class LastResultCommand : CommandTranslations
 
     private static ChatHandler ErrorHandler(PlayerControl source) => new ChatHandler().Title(t => t.Text(CommandError).Color(KillingColor).Build()).Player(source).LeftAlign();
 
-    private static Color StatusColor(PlayerStatus status)
+    public static Color StatusColor(PlayerStatus status)
     {
         return status switch
         {

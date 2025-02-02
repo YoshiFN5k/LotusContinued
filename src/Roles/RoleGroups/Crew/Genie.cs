@@ -70,6 +70,7 @@ public class Genie : Crewmate, IInfoResender
         if (remainingWishes <= 0) return;
         ResendMessages();
         selectedPlayer = false;
+        voteSelector.Reset();
     }
 
     [RoleAction(LotusActionType.Vote)]

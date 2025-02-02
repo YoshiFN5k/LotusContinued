@@ -35,6 +35,7 @@ using Lotus.Managers;
 using System.Text.RegularExpressions;
 using Lotus.Utilities;
 using Lotus.Roles.RoleGroups.Crew;
+using VentLib.Networking.RPC.Interfaces;
 
 namespace Lotus.Roles;
 
@@ -206,6 +207,13 @@ public abstract class CustomRole : AbstractBaseRole, IRpcSendable<CustomRole>
 
         RpcV3.Immediate(MyPlayer.NetId, RpcCalls.SetRole).Write((ushort)RoleTypes.Crewmate).Write(ProjectLotus.AdvancedRoleAssignment).SendInclusive(nonAlliedImpostorClientIds);
         if (isStartOfGame) nonAlliedImpostors.ForEach(p => p.GetTeamInfo().AddVanillaCrewmate(MyPlayer.PlayerId));
+        else
+        {
+            // Make non-allied impostors crewmate for us.
+            MassRpc massRpc = RpcV3.Mass(SendOption.Reliable);
+            nonAlliedImpostors.ForEach(p => massRpc.Start(p.NetId, RpcCalls.SetRole).Write((ushort)RoleTypes.Crewmate).Write(ProjectLotus.AdvancedRoleAssignment).End());
+            massRpc.Send(MyPlayer.GetClientId());
+        }
 
         // This code exists to hopefully better split up the roles to cause less blackscreens
         RoleTypes splitRole = Faction is ImpostorFaction ? RealRole : RoleTypes.Crewmate;

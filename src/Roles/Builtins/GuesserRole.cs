@@ -29,8 +29,7 @@ namespace Lotus.Roles.Builtins;
 
 public class GuesserRole : CustomRole
 {
-    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Guesser));
-    [NewOnSetup] private MeetingPlayerSelector voteSelector = null!;
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(GuesserRole));
 
     private int guessesPerMeeting;
     private bool followGuesserSettings;
@@ -43,6 +42,14 @@ public class GuesserRole : CustomRole
 
     protected int CorrectGuesses;
     protected string? GuesserMessage;
+
+    protected MeetingPlayerSelector voteSelector = null!;
+
+    protected override void PostSetup()
+    {
+        voteSelector = new();
+        base.PostSetup();
+    }
 
     [RoleAction(LotusActionType.RoundStart)]
     [RoleAction(LotusActionType.RoundEnd)]

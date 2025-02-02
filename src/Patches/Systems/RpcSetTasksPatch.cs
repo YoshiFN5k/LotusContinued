@@ -87,7 +87,7 @@ public class RpcSetTasksPatch
         Il2CppSystem.Collections.Generic.List<byte> tasksList = new();
         foreach (byte num in taskTypeIds) tasksList.Add(num);
 
-        if (hasCommonTasks) tasksList.RemoveRange(AUSettings.NumCommonTasks(), tasksList.Count - AUSettings.NumCommonTasks());
+        if (hasCommonTasks && tasksList.Count > 0) tasksList.RemoveRange(AUSettings.NumCommonTasks(), tasksList.Count - AUSettings.NumCommonTasks());
         else tasksList.Clear();
 
         Il2CppSystem.Collections.Generic.HashSet<TaskTypes> usedTaskTypes = new();

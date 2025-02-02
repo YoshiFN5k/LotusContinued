@@ -12,6 +12,9 @@ using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using InnerNet;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using Lotus.Network;
+using Array = Il2CppSystem.Array;
+using Buffer = Il2CppSystem.Buffer;
 
 namespace Lotus.Options;
 
@@ -38,26 +41,41 @@ public static class DesyncOptions
             return;
         }
 
-        foreach (var com in GameManager.Instance.LogicComponents)
+        if (GameManager.Instance?.LogicComponents != null)
         {
-            if (com.TryCast<LogicOptions>(out var lo))
-                lo!.SetGameOptions(options);
+            try
+            {
+                foreach (GameLogicComponent com in GameManager.Instance.LogicComponents)
+                    if (com.TryCast(out LogicOptions lo))
+                    {
+                        if (ConnectionManager.IsVanillaServer) lo.SetGameOptions(options);
+                        else
+                        {
+                            // Custom servers don't like SetGameOptions unfortunately.
+                            if (com.TryCast(out LogicOptionsNormal normalOpt)) normalOpt.GameOptions = options.Cast<NormalGameOptionsV08>();
+                            else if (com.TryCast(out LogicOptionsHnS hnsOpt)) hnsOpt.GameOptions = options.Cast<HideNSeekGameOptionsV08>();
+                            else log.Warn("Option cast failed. Could not set options for host.");
+                        }
+                    }
+            }
+            catch (Exception ex)
+            {
+                log.Exception(ex);
+            }
         }
         GameOptionsManager.Instance.CurrentGameOptions = options;
     }
 
     public static void SyncToClient(IGameOptions options, int clientId)
     {
-        GameOptionsFactory optionsFactory = GameOptionsManager.Instance.gameOptionsFactory;
-
-        // this was taken from town of host.
         MessageWriter writer = MessageWriter.Get(SendOption.None);
         writer.Write(options.Version);
         writer.StartMessage(0);
         writer.Write((byte)options.GameMode);
-        if (options.TryCast<NormalGameOptionsV08>(out var normalOpt))
+
+        if (options.TryCast(out NormalGameOptionsV08 normalOpt))
             NormalGameOptionsV08.Serialize(writer, normalOpt);
-        else if (options.TryCast<HideNSeekGameOptionsV08>(out var hnsOpt))
+        else if (options.TryCast(out HideNSeekGameOptionsV08 hnsOpt))
             HideNSeekGameOptionsV08.Serialize(writer, hnsOpt);
         else
         {
@@ -66,39 +84,48 @@ public static class DesyncOptions
         }
         writer.EndMessage();
 
-        // 配列化&送信
+        // Array & Send
         var byteArray = new Il2CppStructArray<byte>(writer.Length - 1);
         // MessageWriter.ToByteArray
-        Il2CppSystem.Buffer.BlockCopy(writer.Buffer.Cast<Il2CppSystem.Array>(), 1, byteArray.Cast<Il2CppSystem.Array>(), 0, writer.Length - 1);
+        Buffer.BlockCopy(writer.Buffer.CastFast<Array>(), 1, byteArray.CastFast<Array>(), 0, writer.Length - 1);
 
-        GameManager.Instance.LogicComponents.ToArray().ForEach((lc, i) =>
+        try
         {
-            if (!lc.TryCast<LogicOptions>(out _)) return;
-            // the actual writer that sends the game options out
-            var realWriter = MessageWriter.Get(SendOption.Reliable);
-
-            realWriter.StartMessage(clientId == -1 ? Tags.GameData : Tags.GameDataTo);
+            for (byte i = 0; i < GameManager.Instance.LogicComponents.Count; i++)
             {
-                realWriter.Write(AmongUsClient.Instance.GameId);
-                if (clientId != -1) realWriter.WritePacked(clientId);
-                realWriter.StartMessage(1);
+                Il2CppSystem.Object logicComponent = GameManager.Instance.LogicComponents[(Index)i];
+                if (!logicComponent.TryCast<LogicOptions>(out _)) continue;
+                MessageWriter sentWriter = MessageWriter.Get(SendOption.Reliable);
+
+                sentWriter.StartMessage(clientId == -1 ? Tags.GameData : Tags.GameDataTo);
+
                 {
-                    realWriter.WritePacked(GameManager.Instance.NetId);
-                    realWriter.StartMessage((byte)i);
+                    sentWriter.Write(AmongUsClient.Instance.GameId);
+                    if (clientId != -1) sentWriter.WritePacked(clientId);
+
+                    sentWriter.StartMessage(1);
+
                     {
-                        realWriter.WriteBytesAndSize(byteArray);
+                        sentWriter.WritePacked(GameManager.Instance.NetId);
+                        sentWriter.StartMessage(i);
+
+                        {
+                            sentWriter.WriteBytesAndSize(byteArray);
+                        }
+
+                        sentWriter.EndMessage();
                     }
-                    realWriter.EndMessage();
+
+                    sentWriter.EndMessage();
                 }
-                realWriter.EndMessage();
+
+                sentWriter.EndMessage();
+
+                AmongUsClient.Instance.SendOrDisconnect(sentWriter);
+                sentWriter.Recycle();
             }
-            realWriter.EndMessage();
-
-            AmongUsClient.Instance.SendOrDisconnect(realWriter);
-            realWriter.Recycle();
-            log.Debug("Sent new options to client.");
-        });
-
+        }
+        catch (Exception ex) { log.Fatal(ex.ToString()); }
         writer.Recycle();
     }
 

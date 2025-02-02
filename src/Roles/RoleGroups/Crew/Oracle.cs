@@ -42,6 +42,7 @@ public class Oracle : Crewmate, IInfoResender
         initialSkip = false;
         if (selectedPlayer.Exists()) return;
         CHandler().Message(Translations.VotePlayerInfo).Send(MyPlayer);
+        voteSelector.Reset();
     }
 
     [RoleAction(LotusActionType.Vote)]
