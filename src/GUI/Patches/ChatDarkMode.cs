@@ -6,6 +6,7 @@ using Lotus.Extensions;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using VentLib.Utilities.Attributes;
+using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Harmony.Attributes;
 
 namespace Lotus.GUI.Patches;
@@ -53,17 +54,17 @@ public class ChatDarkMode
             __instance.freeChatField.textArea.outputText.color = Color.white;
 
             if (QuickChatIcon == null)
-                QuickChatIcon = GameObject.Find("ChatScreenContainer/QuickChatIcon")?.transform.GetComponent<SpriteRenderer>()!;
+                QuickChatIcon = __instance.GetComponentsInChildren<SpriteRenderer>(true).FirstOrDefault(c => c.name == "QuickChatIcon")!;
             else
                 QuickChatIcon.sprite = PersistentAssetLoader.GetSprite("QuickChatIcon");
 
             if (OpenBanMenuIcon == null)
-                OpenBanMenuIcon = GameObject.Find("ChatScreenContainer/OpenBanMenuIcon")?.transform.GetComponent<SpriteRenderer>()!;
+                OpenBanMenuIcon = __instance.GetComponentsInChildren<SpriteRenderer>(true).FirstOrDefault(c => c.name == "OpenBanMenuIcon")!;
             else
                 OpenBanMenuIcon.sprite = PersistentAssetLoader.GetSprite("DarkReport");
 
             if (OpenKeyboardIcon == null)
-                OpenKeyboardIcon = GameObject.Find("ChatScreenContainer/OpenKeyboardIcon")?.transform.GetComponent<SpriteRenderer>()!;
+                OpenKeyboardIcon = __instance.GetComponentsInChildren<SpriteRenderer>(true).FirstOrDefault(c => c.name == "OpenKeyboardIcon")!;
             else
                 OpenKeyboardIcon.sprite = PersistentAssetLoader.GetSprite("DarkKeyboard");
         }
