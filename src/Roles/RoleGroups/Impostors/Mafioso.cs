@@ -157,6 +157,7 @@ public class Mafioso : Engineer, IInfoResender
     [RoleAction(LotusActionType.Vote)]
     private void HandleVoting(Optional<PlayerControl> player, MeetingDelegate meetingDelegate, ActionHandle handle)
     {
+        if (cashAmount <= 0) return;
         player.Handle(p =>
         {
             if (p.PlayerId == MyPlayer.PlayerId) HandleSelfVote(handle);
