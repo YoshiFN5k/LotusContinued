@@ -58,6 +58,10 @@ public static class Game
     {
         return player == null ? "Unknown" : player.name;
     }
+    public static string GetName(FrozenPlayer? player)
+    {
+        return player == null ? "Unknown" : player.Name;
+    }
 
     public static ulong GetGameID(byte playerId) => GameIDs.GetOrCompute(playerId, () => _gameID++);
     public static ulong GetGameID(this PlayerControl player) => GetGameID(player.PlayerId);

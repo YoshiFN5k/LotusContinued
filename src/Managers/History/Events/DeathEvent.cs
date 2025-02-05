@@ -8,7 +8,7 @@ namespace Lotus.Managers.History.Events;
 
 public class DeathEvent : IDeathEvent
 {
-    private PlayerControl deadPlayer;
+    private FrozenPlayer? deadPlayer;
     private CustomRole playerRole;
     private Optional<FrozenPlayer> killer;
     private Optional<CustomRole> killerRole;
@@ -17,13 +17,13 @@ public class DeathEvent : IDeathEvent
 
     public DeathEvent(PlayerControl deadPlayer, PlayerControl? killer)
     {
-        this.deadPlayer = deadPlayer;
-        playerRole = this.deadPlayer.PrimaryRole();
+        this.deadPlayer = Game.MatchData.GetFrozenPlayer(deadPlayer);
+        playerRole = deadPlayer.PrimaryRole();
         this.killer = Optional<FrozenPlayer>.Of(Game.MatchData.GetFrozenPlayer(killer));
         this.killerRole = this.killer.Map(p => Optional<CustomRole>.Of(p.MyPlayer.PrimaryRole()).OrElse(p.MainRole));
     }
 
-    public PlayerControl Player() => deadPlayer;
+    public FrozenPlayer Player() => deadPlayer!;
 
     public Optional<CustomRole> RelatedRole() => Optional<CustomRole>.NonNull(playerRole);
 

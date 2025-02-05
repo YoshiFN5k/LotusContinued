@@ -128,7 +128,7 @@ public class Dictator : Crewmate
         {
         }
 
-        public override string Message() => TranslationUtil.Colorize(DictateMessage.Formatted(Player().name, Target().name), Player().GetRoleColor(), Target().GetRoleColor());
+        public override string Message() => TranslationUtil.Colorize(DictateMessage.Formatted(Game.GetName(Player()), Game.GetName(Target())), Player().MainRole.RoleColor, Target().MainRole.RoleColor);
     }
 
     [Localized(nameof(Dictator))]

@@ -1,3 +1,5 @@
+using Lotus.API.Odyssey;
+using Lotus.API.Player;
 using Lotus.Managers.History;
 using Lotus.Managers.History.Events;
 using Lotus.Extensions;
@@ -7,10 +9,10 @@ namespace Lotus.Roles.Events;
 
 public abstract class TargetedAbilityEvent : ITargetedEvent, IRoleEvent
 {
-    private PlayerControl source;
+    private FrozenPlayer? source;
     private Optional<CustomRole> sourceRole;
 
-    private PlayerControl target;
+    private FrozenPlayer? target;
     private Optional<CustomRole> targetRole;
 
     private Timestamp timestamp = new();
@@ -19,15 +21,15 @@ public abstract class TargetedAbilityEvent : ITargetedEvent, IRoleEvent
 
     public TargetedAbilityEvent(PlayerControl source, PlayerControl target, bool successful = true)
     {
-        this.source = source;
+        this.source = Game.MatchData.GetFrozenPlayer(source);
         sourceRole = Optional<CustomRole>.Of(source.PrimaryRole());
 
-        this.target = target;
+        this.target = Game.MatchData.GetFrozenPlayer(target);
         targetRole = Optional<CustomRole>.Of(target.PrimaryRole());
         success = successful;
     }
 
-    public PlayerControl Player() => source;
+    public FrozenPlayer Player() => source!;
 
     public Optional<CustomRole> RelatedRole() => sourceRole;
 
@@ -37,7 +39,7 @@ public abstract class TargetedAbilityEvent : ITargetedEvent, IRoleEvent
 
     public abstract string Message();
 
-    public PlayerControl Target() => target;
+    public FrozenPlayer Target() => target!;
 
     public Optional<CustomRole> TargetRole() => targetRole;
 }
