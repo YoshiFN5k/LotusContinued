@@ -53,17 +53,17 @@ public class ChatDarkMode
             __instance.freeChatField.textArea.outputText.color = Color.white;
 
             if (QuickChatIcon == null)
-                QuickChatIcon = GameObject.Find("QuickChatIcon")?.transform.GetComponent<SpriteRenderer>()!;
+                QuickChatIcon = GameObject.Find("ChatScreenContainer/QuickChatIcon")?.transform.GetComponent<SpriteRenderer>()!;
             else
                 QuickChatIcon.sprite = PersistentAssetLoader.GetSprite("QuickChatIcon");
 
             if (OpenBanMenuIcon == null)
-                OpenBanMenuIcon = GameObject.Find("OpenBanMenuIcon")?.transform.GetComponent<SpriteRenderer>()!;
+                OpenBanMenuIcon = GameObject.Find("ChatScreenContainer/OpenBanMenuIcon")?.transform.GetComponent<SpriteRenderer>()!;
             else
                 OpenBanMenuIcon.sprite = PersistentAssetLoader.GetSprite("DarkReport");
 
             if (OpenKeyboardIcon == null)
-                OpenKeyboardIcon = GameObject.Find("OpenKeyboardIcon")?.transform.GetComponent<SpriteRenderer>()!;
+                OpenKeyboardIcon = GameObject.Find("ChatScreenContainer/OpenKeyboardIcon")?.transform.GetComponent<SpriteRenderer>()!;
             else
                 OpenKeyboardIcon.sprite = PersistentAssetLoader.GetSprite("DarkKeyboard");
         }
