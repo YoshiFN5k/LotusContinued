@@ -53,7 +53,7 @@ public class Genie : Crewmate, IInfoResender
     private bool selectedPlayer;
     private int remainingWishes;
 
-    [NewOnSetup] private MeetingPlayerSelector voteSelector = null!;
+    [NewOnSetup(true)] private MeetingPlayerSelector voteSelector = new();
 
     public Genie()
     {
@@ -91,10 +91,10 @@ public class Genie : Crewmate, IInfoResender
                     ChatHandler.Of(Translations.AlreadyWished.Formatted(voted.Get().name), RoleColor.Colorize(RoleName)).Send(MyPlayer);
                     return;
                 }
-                result.Message().Send(MyPlayer);
+                result.Send(MyPlayer);
                 break;
             case VoteResultType.Skipped:
-                result.Message().Send(MyPlayer);
+                result.Send(MyPlayer);
                 selectedPlayer = true;
                 break;
             case VoteResultType.Confirmed:
@@ -107,10 +107,10 @@ public class Genie : Crewmate, IInfoResender
     {
         if (target == null) return;
         IEnumerable<string> allowedSubRoleNames = SubroleAllowedDictionary.Where(kvp => kvp.Value).Select(kvp => kvp.Key);
-        if (allowedSubRoleNames.Count() == 0) return;
+        if (allowedSubRoleNames.Any()) return;
 
         IEnumerable<Subrole> allowedSubRoles = allowedSubRoleNames.Select(n => (Subrole)StandardRoles.Instance.AllRoles.First(r => r.EnglishRoleName == n)).Where(r => r.IsAssignableTo(target));
-        if (allowedSubRoles.Count() == 0) return;
+        if (allowedSubRoles.Any()) return;
         Subrole chosenSubRole = allowedSubRoles.ToList().GetRandom();
 
         selectedPlayer = true;
