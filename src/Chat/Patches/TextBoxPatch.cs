@@ -38,29 +38,6 @@ public static class IsCharAllowedPatch
         if (!__instance.gameObject.HasParentInHierarchy("ChatScreenRoot/ChatScreenContainer")) return;
         __instance.allowAllCharacters = true; // not used by game's code, but I include it anyway
         __instance.AllowEmail = true;
-        __instance.AllowPaste = true;
         __instance.AllowSymbols = true;
-    }
-}
-
-[HarmonyPatch(typeof(TextBoxTMP), nameof(TextBoxTMP.Update))]
-public static class TextBoxTMPUpdatePatch
-{
-    public static void Postfix(TextBoxTMP __instance)
-    {
-        if (!__instance.hasFocus || !__instance.gameObject.HasParentInHierarchy("ChatScreenRoot/ChatScreenContainer")) { return; }
-
-        // If player presses Ctrl + C, copy the text from the chatbox to the clipboard
-        if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.C))
-            ClipboardHelper.PutClipboardString(__instance.text);
-
-        if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.V))
-            __instance.SetText(__instance.text + GUIUtility.systemCopyBuffer.Trim());
-
-        if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.X))
-        {
-            ClipboardHelper.PutClipboardString(__instance.text);
-            __instance.SetText("");
-        }
     }
 }

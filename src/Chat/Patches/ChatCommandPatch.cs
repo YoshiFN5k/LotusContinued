@@ -9,7 +9,7 @@ public class ChatUpdatePatch
 {
     public static void Postfix(ChatController __instance)
     {
-        __instance.freeChatField.textArea.AllowPaste = true;
+        // __instance.freeChatField.textArea.AllowPaste = true;
         __instance.chatBubblePool.Prefab.Cast<ChatBubble>().TextArea.overrideColorTags = false;
         __instance.timeSinceLastMessage = 3f;
     }
