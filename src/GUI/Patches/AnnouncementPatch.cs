@@ -10,7 +10,7 @@ using Lotus.Managers;
 using AmongUs.Data;
 using VentLib.Utilities.Extensions;
 using System.Globalization;
-using xCloud;
+using Lotus;
 
 namespace Lotus.GUI.Patches;
 
@@ -23,6 +23,7 @@ public class AnnouncementPatch
     {
         PluginDataManager.AnnouncementManager.GetAnnouncements().ForEach(a =>
         {
+            if (a.DevOnly && !ProjectLotus.DevVersion) return;
             AnnouncementPanel panel = Object.Instantiate<AnnouncementPanel>(__instance.AnnouncementPanelPrefab, __instance.AnnouncementListSlider.transform);
             panel.announcement = new Assets.InnerNet.Announcement() { Title = ModdedText, Number = 69 };
             panel.Background.enabled = false;

@@ -27,6 +27,7 @@ public class EOSManagerPatch
 
     private static IEnumerator CreateForum(EOSManager __instance)
     {
+        if (!ProjectLotus.DevVersion) yield break;
         if (PrivacyPolicyInfo.Instance != null)
         {
             if (!PrivacyPolicyInfo.Instance.ConnectWithAPI) yield break;

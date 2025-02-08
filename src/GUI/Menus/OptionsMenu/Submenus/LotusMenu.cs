@@ -73,6 +73,7 @@ public class LotusMenu : MonoBehaviour, IBaseOptionMenuComponent
         anonymousBugReports.SetToggleOffAction(() => PrivacyPolicyPatch.EditPrivacyPolicy(PrivacyPolicyEditType.AnonymousBugReports, false));
         anonymousBugReports.SetState(PrivacyPolicyInfo.Instance.AnonymousBugReports);
         anonReportObject.transform.localPosition = new Vector3(2.048f, 0.353f, -1f);
+        anonReportObject.SetActive(ProjectLotus.DevVersion);
 
         GameObject connectAPIObject = new("Connect With API");
         connectAPIObject.transform.SetParent(anchorObject.transform);
@@ -83,7 +84,7 @@ public class LotusMenu : MonoBehaviour, IBaseOptionMenuComponent
         connectWithAPI.SetToggleOnAction(() =>
         {
             PrivacyPolicyPatch.EditPrivacyPolicy(PrivacyPolicyEditType.ConnectWithAPI, true);
-            anonReportObject.SetActive(true);
+            anonReportObject.SetActive(ProjectLotus.DevVersion);
         });
         connectWithAPI.SetToggleOffAction(() =>
         {

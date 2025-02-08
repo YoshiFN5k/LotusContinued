@@ -33,6 +33,12 @@ public class BugReportCommand : ICommandReceiver
     private static readonly List<byte> reportingPlayerIds = new();
     public void Receive(PlayerControl source, CommandContext context)
     {
+        if (!ProjectLotus.DevVersion)
+        {
+            ChatHandlers.NotPermitted().Send(source);
+            return;
+        }
+
         if (PrivacyPolicyInfo.Instance != null)
         {
             if (!PrivacyPolicyInfo.Instance.ConnectWithAPI) return;
