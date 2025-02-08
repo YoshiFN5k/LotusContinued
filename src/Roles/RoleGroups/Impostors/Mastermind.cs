@@ -51,7 +51,7 @@ public class Mastermind : Impostor
 
         PlayerControl[] viewers = impostorsCanSeeManipulated
             ? Players.GetAllPlayers().Where(p => !p.IsAlive() || Relationship(p) is Relation.FullAllies).AddItem(MyPlayer).ToArray()
-            : new[] { MyPlayer };
+            : [MyPlayer];
         TextComponent alliedText = new(new LiveString(ManipulatedText, RoleColor), GameState.Roaming, ViewMode.Additive, viewers);
 
         ClearManipulated(target);
@@ -128,7 +128,7 @@ public class Mastermind : Impostor
         LiveString killIndicator = new(_ => KillImploredText.Formatted(Color.white.Colorize(playerCooldown + "s")), RoleColor);
 
         TextComponent textComponent = new(killIndicator, GameState.Roaming, viewers: target);
-        remotes.GetOrCompute(target.PlayerId, () => new[] { (Remote<TextComponent>?)null, null })[1] = target.NameModel().GCH<TextHolder>().Add(textComponent);
+        remotes.GetOrCompute(target.PlayerId, () => [ (Remote<TextComponent>?)null, null ])[1] = target.NameModel().GCH<TextHolder>().Add(textComponent);
         playerCooldown.StartThenRun(() => ExecuteSuicide(target));
     }
 
@@ -139,7 +139,7 @@ public class Mastermind : Impostor
 
 
     [RoleAction(LotusActionType.PlayerDeath)] // MY DEATH
-    [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath, priority: API.Priority.Low)]
+    [RoleAction(LotusActionType.RoundEnd)]
     public override void HandleDisconnect()
     {
         manipulatedPlayers.ToArray().Filter(Players.PlayerById).ForEach(p =>
@@ -150,7 +150,7 @@ public class Mastermind : Impostor
         });
     }
 
-    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)] // EVERY OTHER PERSON'S DEATH
+    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath)] // EVERY OTHER PERSON'S DEATH
     private void HandleManipulatedDeath(PlayerControl deadPlayer)
     {
         ClearManipulated(deadPlayer);

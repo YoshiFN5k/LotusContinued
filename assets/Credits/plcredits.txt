@@ -15,6 +15,7 @@ person,Spike MS,Translator (Spanish)
 person,CreepPower,Translator (Spanish)
 person,Shapmaster,Translator (French)
 person,Gotzon,Translator (French)
+person,Fate,Translator (SChinese)
 image,100;;Lotus.assets.Credits.Images.testerstitle.png,
 person,AnonWorks,
 person,AlunnyBunny,
@@ -37,3 +38,6 @@ person,Skarlat,
 person,Shapmaster,
 person,Theta,
 person,Timmay,"""Bestest Tester Ever!"""
+person,,
+person,,
+person,And You!,Thanks for playing.
