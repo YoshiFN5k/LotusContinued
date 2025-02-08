@@ -8,6 +8,7 @@ using Lotus.GUI.Menus.OptionsMenu.Components;
 using Lotus.GUI.Menus.OptionsMenu.Patches;
 using Lotus.Logging;
 using VentLib.Utilities.Extensions;
+using VentLib.Utilities.Optionals;
 
 namespace Lotus.GUI.Menus.OptionsMenu.Submenus;
 
@@ -42,7 +43,18 @@ public class InnerslothMenu : MonoBehaviour, IBaseOptionMenuComponent
     {
         anchorObject.SetActive(false);
 
-        PassiveButton dataCollectionButton = menuBehaviour.FindChild<PassiveButton>("DataCollectionButton", true);
+        DevLogger.Log("checking if exists");
+        UnityOptional<PassiveButton> dataCollectionButton = menuBehaviour.FindChildOrEmpty<PassiveButton>("DataCollectionButton", true);
+        DevLogger.Log("idk at this point");
+        if (!dataCollectionButton.Exists())
+        {
+            // This means we are in game.
+            DevLogger.Log("in game");
+            CustomOptionContainer container = menuBehaviour.gameObject.GetComponent<CustomOptionContainer>();
+            Async.WaitUntil(() => container.innerslothButton, button => button.gameObject.SetActive(false));
+            return;
+        }
+        DevLogger.Log("it exists");
 
         bool openDataCollection = false; // pl auto runs the action when it is made visible. so we keep track of the first visit to stop this.
 
@@ -57,7 +69,7 @@ public class InnerslothMenu : MonoBehaviour, IBaseOptionMenuComponent
                 openDataCollection = true;
                 return;
             }
-            dataCollectionButton.OnClick.Invoke();
+            dataCollectionButton.Get().OnClick.Invoke();
         });
         dataCollectionObject.transform.localPosition = new Vector3(0.029f, 0.353f, -1f);
 
@@ -96,7 +108,9 @@ public class InnerslothMenu : MonoBehaviour, IBaseOptionMenuComponent
         termsOfUseLinkObject.transform.localPosition = new Vector3(0.029f, -2.381f, -1f);
 
         // bring over Innersloth stuff
+        DevLogger.Log("checking twitch link");
         PassiveButton twitchButton = menuBehaviour.FindChild<PassiveButton>("TwitchLinkButton", true);
+        DevLogger.Log("checking show puid");
         PassiveButton puidButton = menuBehaviour.FindChild<PassiveButton>("ShowPUID", true);
 
         twitchButton.transform.SetParent(anchorObject.transform);
