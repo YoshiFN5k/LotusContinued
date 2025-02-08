@@ -1,5 +1,6 @@
 using HarmonyLib;
 using Lotus.Extensions;
+using Lotus.Logging;
 using UnityEngine;
 using VentLib.Utilities.Harmony.Attributes;
 
@@ -51,12 +52,15 @@ public static class TextBoxTMPUpdatePatch
 
         // If player presses Ctrl + C, copy the text from the chatbox to the clipboard
         if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.C))
+            ClipboardHelper.PutClipboardString(__instance.text);
+
+        if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.V))
+            __instance.SetText(__instance.text + GUIUtility.systemCopyBuffer.Trim());
+
+        if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.X))
         {
             ClipboardHelper.PutClipboardString(__instance.text);
-        }
-        else if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.V))
-        {
-            __instance.text += ClipboardHelper.GetClipboardString().Trim();
+            __instance.SetText("");
         }
     }
 }
