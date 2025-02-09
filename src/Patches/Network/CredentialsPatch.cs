@@ -31,12 +31,12 @@ public class VersionShowerStartPatch
         ProjectLotus.CredentialsText += $"v{ProjectLotus.PluginVersion}";
         ProjectLotus.CredentialsText += $" ({ProjectLotus.DevVersionStr})\n";
 #endif
+
         ProjectLotus.CredentialsText += $"{_startColor.Colorize(ProjectLotus.ModName)}";
-#if !DEBUG
-        ProjectLotus.CredentialsText += $" v{ProjectLotus.PluginVersion}";
-#endif
 #if DEBUG
         ProjectLotus.CredentialsText += $": {_endColor.Colorize($"{ProjectLotus.Instance.Version().Branch}({ProjectLotus.Instance.Version().CommitNumber})")}";
+#else
+        ProjectLotus.CredentialsText += $" v{ProjectLotus.PluginVersion}";
 #endif
 
         int addonCount = AddonManager.Addons.Count;
