@@ -52,6 +52,7 @@ public class Escort : Crewmate
         if (roleblockDuration > 0) Async.Schedule(() => blockedPlayers.Remove(target.PlayerId), roleblockDuration);
     }
 
+    [RoleAction(LotusActionType.PlayerDeath)]
     [RoleAction(LotusActionType.RoundStart)]
     [RoleAction(LotusActionType.RoundEnd)]
     private void UnblockPlayers()
@@ -63,13 +64,6 @@ public class Escort : Crewmate
         });
     }
 
-    [RoleAction(LotusActionType.PlayerAction, ActionFlag.GlobalDetector)]
-    private void BlockAction(PlayerControl source, ActionHandle handle, RoleAction action)
-    {
-        if (action.Blockable) Block(source, handle);
-    }
-
-    [RoleAction(LotusActionType.VentEntered, ActionFlag.GlobalDetector)]
     private void Block(PlayerControl source, ActionHandle handle)
     {
         BlockDelegate? blockDelegate = blockedPlayers.GetValueOrDefault(source.PlayerId);
@@ -79,25 +73,20 @@ public class Escort : Crewmate
         blockDelegate.UpdateDelegate();
     }
 
-    [RoleAction(LotusActionType.SabotageStarted)]
-    private void BlockSabotage(PlayerControl caller, ActionHandle handle)
+    [RoleAction(LotusActionType.PlayerAction, ActionFlag.GlobalDetector)]
+    private void BlockAction(PlayerControl source, ActionHandle handle, RoleAction action)
     {
-        BlockDelegate? blockDelegate = blockedPlayers.GetValueOrDefault(caller.PlayerId);
-        if (blockDelegate == null) return;
-
-        handle.Cancel();
-        blockDelegate.UpdateDelegate();
+        if (action.Blockable) Block(source, handle);
     }
+
+    [RoleAction(LotusActionType.VentEntered, ActionFlag.GlobalDetector)]
+    private void BlockVent(PlayerControl source, ActionHandle handle) => Block(source, handle);
+
+    [RoleAction(LotusActionType.SabotageStarted,ActionFlag.GlobalDetector)]
+    private void BlockSabotage(PlayerControl caller, ActionHandle handle)  => Block(caller, handle);
 
     [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector)]
-    private void BlockReport(PlayerControl reporter, ActionHandle handle)
-    {
-        BlockDelegate? blockDelegate = blockedPlayers.GetValueOrDefault(reporter.PlayerId);
-        if (blockDelegate == null) return;
-
-        handle.Cancel();
-        blockDelegate.UpdateDelegate();
-    }
+    private void BlockReport(PlayerControl reporter, ActionHandle handle) => Block(reporter, handle);
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
