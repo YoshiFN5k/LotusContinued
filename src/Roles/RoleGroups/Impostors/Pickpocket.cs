@@ -3,11 +3,12 @@ using Lotus.API.Vanilla.Meetings;
 using Lotus.Extensions;
 using Lotus.GUI;
 using Lotus.GUI.Name;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
@@ -18,10 +19,10 @@ public class PickPocket : Impostor
     private int currentVotes;
     private bool resetVotesAfterMeeting;
 
-    [UIComponent(UI.Counter, GameStates = new [] { GameState.Roaming, GameState.InMeeting})]
+    [UIComponent(UI.Counter, GameStates = new[] { GameState.Roaming, GameState.InMeeting })]
     private string VoteCounter() => RoleUtils.Counter(currentVotes, color: new Color(1f, 0.45f, 0.25f));
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         bool killed = base.TryKill(target);
@@ -30,13 +31,13 @@ public class PickPocket : Impostor
         return true;
     }
 
-    [RoleAction(RoleActionType.MyVote)]
+    [RoleAction(LotusActionType.Vote)]
     private void EnhancedVote(Optional<PlayerControl> target, MeetingDelegate meetingDelegate)
     {
         for (int i = 0; i < currentVotes; i++) meetingDelegate.CastVote(MyPlayer, target);
     }
 
-    [RoleAction(RoleActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundStart)]
     private void ResetVoteCounter()
     {
         if (resetVotesAfterMeeting) currentVotes = 0;

@@ -9,6 +9,7 @@ using Lotus.GUI.Name.Impl;
 using Lotus.Logging;
 using Lotus.Roles.Events;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Utilities;
@@ -17,14 +18,15 @@ using Lotus.API.Vanilla.Sabotages;
 using Lotus.Extensions;
 using Lotus.Options;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
-public class Escort: Crewmate
+public class Escort : Crewmate
 {
     private float roleblockDuration;
     [NewOnSetup]
@@ -33,7 +35,7 @@ public class Escort: Crewmate
     [UIComponent(UI.Cooldown)]
     private Cooldown roleblockCooldown;
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     private void ChangeToBlockMode()
     {
         if (roleblockCooldown.NotReady()) return;
@@ -50,8 +52,8 @@ public class Escort: Crewmate
         if (roleblockDuration > 0) Async.Schedule(() => blockedPlayers.Remove(target.PlayerId), roleblockDuration);
     }
 
-    [RoleAction(RoleActionType.RoundStart)]
-    [RoleAction(RoleActionType.RoundEnd)]
+    [RoleAction(LotusActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundEnd)]
     private void UnblockPlayers()
     {
         blockedPlayers.ToArray().ForEach(k =>
@@ -61,13 +63,13 @@ public class Escort: Crewmate
         });
     }
 
-    [RoleAction(RoleActionType.AnyPlayerAction)]
+    [RoleAction(LotusActionType.PlayerAction, ActionFlag.GlobalDetector)]
     private void BlockAction(PlayerControl source, ActionHandle handle, RoleAction action)
     {
         if (action.Blockable) Block(source, handle);
     }
 
-    [RoleAction(RoleActionType.AnyEnterVent)]
+    [RoleAction(LotusActionType.VentEntered, ActionFlag.GlobalDetector)]
     private void Block(PlayerControl source, ActionHandle handle)
     {
         BlockDelegate? blockDelegate = blockedPlayers.GetValueOrDefault(source.PlayerId);
@@ -77,7 +79,7 @@ public class Escort: Crewmate
         blockDelegate.UpdateDelegate();
     }
 
-    [RoleAction(RoleActionType.SabotageStarted)]
+    [RoleAction(LotusActionType.SabotageStarted)]
     private void BlockSabotage(PlayerControl caller, ActionHandle handle)
     {
         BlockDelegate? blockDelegate = blockedPlayers.GetValueOrDefault(caller.PlayerId);
@@ -87,7 +89,7 @@ public class Escort: Crewmate
         blockDelegate.UpdateDelegate();
     }
 
-    [RoleAction(RoleActionType.AnyReportedBody)]
+    [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector)]
     private void BlockReport(PlayerControl reporter, ActionHandle handle)
     {
         BlockDelegate? blockDelegate = blockedPlayers.GetValueOrDefault(reporter.PlayerId);
@@ -99,7 +101,8 @@ public class Escort: Crewmate
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Roleblock Cooldown")
+            .SubOption(sub => sub
+                .KeyName("Role-Block Cooldown", EscortTranslations.EscortOptionTranslations.RoleblockCooldown)
                 .BindFloat(roleblockCooldown.SetDuration)
                 .AddFloatRange(0, 120, 2.5f, 18, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
@@ -111,7 +114,7 @@ public class Escort: Crewmate
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier).RoleColor(new Color(1f, 0.73f, 0.92f));
+        base.Modify(roleModifier).RoleColor(new Color(1f, 0.73f, 0.92f)).RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
 
     public class BlockDelegate
@@ -156,7 +159,7 @@ public class Escort: Crewmate
             Async.Schedule(() => text.Delete(), 1f);
 
             if (BlockedCounter != null) return;
-            LiveString liveString = new(() => RelRbIndicator(BlockDuration?.TimeRemaining() ?? 60));
+            LiveString liveString = new(_ => RelRbIndicator(BlockDuration?.TimeRemaining() ?? 60));
             BlockedCounter = thisPlayer.NameModel().GetComponentHolder<IndicatorHolder>().Add(new IndicatorComponent(liveString, GameState.Roaming, viewers: thisPlayer));
         }
 
@@ -171,6 +174,20 @@ public class Escort: Crewmate
         {
             BlockedIndicator.Delete();
             BlockedCounter?.Delete();
+        }
+    }
+
+    [Localized(nameof(Escort))]
+    public static class EscortTranslations
+    {
+        [Localized(ModConstants.Options)]
+        public static class EscortOptionTranslations
+        {
+            [Localized(nameof(RoleblockCooldown))]
+            public static string RoleblockCooldown = "Role-Block Cooldown";
+
+            [Localized(nameof(RoleblockDuration))]
+            public static string RoleblockDuration = "Role-Block Duration";
         }
     }
 }

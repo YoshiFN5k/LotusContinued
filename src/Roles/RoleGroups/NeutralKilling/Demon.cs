@@ -11,17 +11,18 @@ using Lotus.Options;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Interactions.Interfaces;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 
-public class Demon: NeutralKillingBase
+public class Demon : NeutralKillingBase
 {
     [NewOnSetup] private Dictionary<byte, Remote<NameComponent>> healthBars = null!;
     [NewOnSetup] private Dictionary<byte, int> healthInfo = null!;
@@ -38,7 +39,7 @@ public class Demon: NeutralKillingBase
         Players.GetPlayers().ForEach(p => healthBars[p.PlayerId] = SetupHealthBar(p));
     }
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         InteractionResult result = MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this));
@@ -52,7 +53,7 @@ public class Demon: NeutralKillingBase
         return true;
     }
 
-    [RoleAction(RoleActionType.Interaction, priority: Priority.Low)]
+    [RoleAction(LotusActionType.Interaction, priority: Priority.Low)]
     private void InterceptAttack(Interaction interaction, ActionHandle handle)
     {
         if (interaction.Intent is not IKillingIntent || handle.IsCanceled) return;
@@ -63,14 +64,14 @@ public class Demon: NeutralKillingBase
 
     public override void HandleDisconnect() => CleanupHealthBar(MyPlayer);
 
-    [RoleAction(RoleActionType.AnyExiled)]
-    private void CleanupHealthBarExiled(GameData.PlayerInfo exiled)
+    [RoleAction(LotusActionType.Exiled, ActionFlag.GlobalDetector)]
+    private void CleanupHealthBarExiled(PlayerControl exiled)
     {
         healthBars[exiled.PlayerId].Delete();
         if (exiled.PlayerId == MyPlayer.PlayerId) healthBars.Values.ForEach(remote => remote.Delete());
     }
 
-    [RoleAction(RoleActionType.AnyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
     private void CleanupHealthBar(PlayerControl deadPlayer)
     {
         healthBars[deadPlayer.PlayerId].Delete();

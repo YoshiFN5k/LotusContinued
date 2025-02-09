@@ -1,3 +1,4 @@
+using Lotus.API.Player;
 using Lotus.Roles;
 using VentLib.Utilities.Optionals;
 
@@ -5,7 +6,7 @@ namespace Lotus.Managers.History.Events;
 
 public interface IHistoryEvent
 {
-    public PlayerControl Player();
+    public FrozenPlayer Player();
     public Optional<CustomRole> RelatedRole();
     public Timestamp Timestamp();
 

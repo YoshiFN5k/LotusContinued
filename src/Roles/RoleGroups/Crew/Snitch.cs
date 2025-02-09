@@ -9,16 +9,19 @@ using Lotus.GUI.Name;
 using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name.Holders;
 using Lotus.Roles.Internals.Attributes;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Extensions;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using static Lotus.Roles.RoleGroups.Crew.Snitch.SnitchTranslations.SnitchOptionTranslations;
 using static Lotus.Utilities.TranslationUtil;
+using Lotus.API.Player;
+using Lotus.Factions;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -35,18 +38,16 @@ public class Snitch : Crewmate
 
     [NewOnSetup] private List<Remote<IndicatorComponent>> indicatorComponents = null!;
 
-    [RoleAction(RoleActionType.MyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath)]
     private void ClearComponents() => indicatorComponents.ForEach(c => c.Delete());
-
-
 
     protected override void OnTaskComplete(Optional<NormalPlayerTask> _)
     {
         int remainingTasks = TotalTasks - TasksComplete;
         if (remainingTasks == SnitchWarningTasks)
         {
-            PlayerControl[] trackablePlayers = Game.GetAllPlayers().Where(IsTrackable).ToArray();
-            MyPlayer.NameModel().GetComponentHolder<IndicatorHolder>().Add(new IndicatorComponent(new LiveString("⚠", RoleColor), GameStates.IgnStates, viewers: trackablePlayers.AddItem(MyPlayer).ToArray()));
+            PlayerControl[] trackablePlayers = Players.GetAllPlayers().Where(IsTrackable).ToArray();
+            MyPlayer.NameModel().GetComponentHolder<IndicatorHolder>().Add(new IndicatorComponent(new LiveString("⚠", RoleColor), Game.InGameStates, viewers: trackablePlayers.AddItem(MyPlayer).ToArray()));
             if (EvilHaveArrow)
                 trackablePlayers.ForEach(p =>
                 {
@@ -57,13 +58,13 @@ public class Snitch : Crewmate
         }
 
         if (remainingTasks != 0) return;
-        Game.GetAllPlayers().Where(IsTrackable).ForEach(p =>
+        Players.GetAllPlayers().Where(IsTrackable).ForEach(p =>
         {
             p.NameModel().GetComponentHolder<RoleHolder>().Components().ForEach(rc => rc.AddViewer(MyPlayer));
 
             if (!SnitchHasArrow) return;
 
-            Color color = ArrowIsColored ? p.GetCustomRole().RoleColor : Color.white;
+            Color color = ArrowIsColored ? p.PrimaryRole().RoleColor : Color.white;
             LiveString liveString = new(() => RoleUtils.CalculateArrow(MyPlayer, p, color));
             var remote = MyPlayer.NameModel().GetComponentHolder<IndicatorHolder>().Add(new IndicatorComponent(liveString, GameState.Roaming, viewers: MyPlayer));
             indicatorComponents.Add(remote);
@@ -72,7 +73,7 @@ public class Snitch : Crewmate
 
     private bool IsTrackable(PlayerControl player)
     {
-        CustomRole role = player.GetCustomRole();
+        CustomRole role = player.PrimaryRole();
         if (role.Faction is ImpostorFaction) return true;
         if (!SnitchCanTrackNk) return false;
         return role.Faction is not Crewmates && role.RealRole.IsImpostor();

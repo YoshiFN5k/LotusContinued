@@ -3,9 +3,11 @@ using System.Linq;
 using HarmonyLib;
 using Lotus.API;
 using Lotus.API.Odyssey;
+using Lotus.API.Player;
 using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name.Holders;
 using Lotus.GUI.Name.Interfaces;
+using Lotus.Patches.Actions;
 using UnityEngine;
 using VentLib.Networking.RPC;
 using VentLib.Utilities;
@@ -22,13 +24,13 @@ public class SimpleNameModel : INameModel
 
     private string cacheString = "";
 
-    public NameHolder NameHolder = new NameHolder();
-    public IndicatorHolder IndicatorHolder = new IndicatorHolder();
-    public RoleHolder RoleHolder = new RoleHolder(1);
-    public SubroleHolder SubroleHolder = new SubroleHolder(1);
-    public CounterHolder CounterHolder = new CounterHolder(1);
-    public CooldownHolder CooldownHolder = new CooldownHolder(2);
-    public TextHolder TextHolder = new TextHolder(2);
+    public NameHolder NameHolder = new();
+    public IndicatorHolder IndicatorHolder = new();
+    public RoleHolder RoleHolder = new(1);
+    public SubroleHolder SubroleHolder = new(1);
+    public CounterHolder CounterHolder = new(1);
+    public CooldownHolder CooldownHolder = new(2);
+    public TextHolder TextHolder = new(2);
 
     private List<IComponentHolder> componentHolders;
     private PlayerControl player;
@@ -48,7 +50,12 @@ public class SimpleNameModel : INameModel
         this.player = player;
         SetHolders();
         this.unalteredName = player.name;
-        NameHolder.Add(new NameComponent(new LiveString(unalteredName, Color.white), new[] { GameState.Roaming, GameState.InMeeting}));
+        NameHolder.Add(new NameComponent(new LiveString(state =>
+        {
+            byte shapeshiftedId = player.GetShapeshifted();
+            if (shapeshiftedId == 255 || state is GameState.InMeeting) return unalteredName;
+            else return Players.GetAllPlayers().FirstOrDefault(p => p.PlayerId == shapeshiftedId, PlayerControl.LocalPlayer).name; // use host's name as a "scapegoat"
+        }, Color.white), [GameState.Roaming, GameState.InMeeting]));
     }
 
     public bool Updated() => didUpdate;
@@ -79,18 +86,22 @@ public class SimpleNameModel : INameModel
 
         didUpdate = true;
         cacheString = renders.Select(s => s.Join(delimiter: " ".Repeat(spacing - 1))).Join(delimiter: "\n").TrimStart('\n').TrimEnd('\n').Replace("\n\n", "\n");
-        if (Game.State is GameState.InMeeting) cacheString = $"<nobr>{cacheString}</nobr>";
         if (sendToPlayer)
         {
             if (rPlayer.IsHost()) Api.Local.SetName(player, cacheString);
             else
             {
                 int clientId = rPlayer.GetClientId();
-                if (clientId != -1) RpcV3.Immediate(player.NetId, RpcCalls.SetName).Write(cacheString).Send(clientId);
+                if (clientId != -1) RpcV3.Immediate(player.NetId, RpcCalls.SetName).Write(player.Data.NetId).Write(cacheString).Send(clientId);
             }
         }
         Profilers.Global.Sampler.Stop(id);
         return cacheString;
+    }
+
+    public void RenderForAll(GameState? state = null, bool sendToPlayer = true, bool force = false)
+    {
+        Players.GetPlayers().ForEach(p => RenderFor(p, state, sendToPlayer, force));
     }
 
     public List<IComponentHolder> ComponentHolders() => componentHolders;

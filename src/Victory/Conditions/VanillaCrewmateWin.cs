@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Lotus.API.Odyssey;
+using Lotus.API.Player;
 using Lotus.Factions;
 using Lotus.Factions.Interfaces;
 using Lotus.Roles;
@@ -11,7 +12,7 @@ using VentLib.Localization.Attributes;
 namespace Lotus.Victory.Conditions;
 
 
-public class VanillaCrewmateWin: IFactionWinCondition
+public class VanillaCrewmateWin : IFactionWinCondition
 {
     [Localized($"{ModConstants.Localization.WinConditions}.{nameof(TaskWin)}")]
     public static string TaskWin = "Task Win";
@@ -35,7 +36,7 @@ public class VanillaCrewmateWin: IFactionWinCondition
 
         bool hasAliveEnemy = false;
         bool hasOneTaskDoer = false;
-        foreach (CustomRole role in Game.GetAllPlayers().Select(p => p.GetCustomRole()))
+        foreach (CustomRole role in Players.GetAllPlayers().Select(p => p.PrimaryRole()))
         {
             if (role is ITaskHolderRole taskHolder && taskHolder.TasksApplyToTotal() && taskHolder.HasTasks()) hasOneTaskDoer = true;
             if (IsEligibleEnemy(role)) hasAliveEnemy = true;
@@ -49,7 +50,7 @@ public class VanillaCrewmateWin: IFactionWinCondition
     }
 
     // Determines if the given role is an "enemy role"
-    private static bool IsEligibleEnemy(AbstractBaseRole role)
+    private static bool IsEligibleEnemy(CustomRole role)
     {
         PlayerControl player = role.MyPlayer;
         if (!player.IsAlive()) return false;

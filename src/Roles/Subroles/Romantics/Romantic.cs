@@ -13,20 +13,25 @@ using Lotus.GUI.Name.Holders;
 using Lotus.Options;
 using Lotus.Roles.Interactions.Interfaces;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Utilities;
 using Lotus.Victory;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
+using System.Collections.Generic;
+using Lotus.API.Vanilla.Meetings;
+using Lotus.GameModes.Standard;
+using Lotus.Roles.Interfaces;
 
 namespace Lotus.Roles.Subroles.Romantics;
 
-public class Romantic: Subrole
+public class Romantic : Subrole, IInfoResender
 {
     public static Color RomanticColor = new(1f, 0.28f, 0.47f);
     private static VengefulRomantic _vengefulRomantic = new();
@@ -35,6 +40,8 @@ public class Romantic: Subrole
     private bool targetKnowsRomantic;
     private Cooldown protectionCooldown = null!;
     private Cooldown protectionDuration = null!;
+    private bool parterCanWin;
+    private bool cancelGameWin;
 
     private bool partnerLockedIn;
     private byte partner = byte.MaxValue;
@@ -48,12 +55,14 @@ public class Romantic: Subrole
     {
         DisplayOrder = 100;
         winDelegateRemote = Game.GetWinDelegate().AddSubscriber(InterceptWinCondition);
-        CustomRole myRole = MyPlayer.GetCustomRole();
+        CustomRole myRole = MyPlayer.PrimaryRole();
         originalFaction = myRole.Faction;
         myRole.Faction = myFaction = new RomanticFaction(originalFaction);
     }
 
-    [RoleAction(RoleActionType.OnPet, priority: Priority.VeryHigh)]
+    public void ResendMessages() => RHandler(Translations.RomanticMessage).Send(MyPlayer);
+
+    [RoleAction(LotusActionType.OnPet, priority: Priority.VeryHigh)]
     public void HandlePet(ActionHandle handle)
     {
         PlayerControl? love = Players.FindPlayerById(partner);
@@ -64,38 +73,38 @@ public class Romantic: Subrole
         Async.Schedule(() => protectionCooldown.Start(), protectionDuration.Duration);
     }
 
-    [RoleAction(RoleActionType.MeetingCalled)]
+    [RoleAction(LotusActionType.RoundEnd)]
     public void SendMeetingMessage()
     {
         if (partner != byte.MaxValue) return;
-        Async.Schedule(() => RHandler(Translations.RomanticMessage).Send(MyPlayer), 1.5f);
+        ResendMessages();
     }
 
-    [RoleAction(RoleActionType.AnyInteraction)]
-    public void InterceptActions(PlayerControl _, PlayerControl target, Interaction interaction, ActionHandle handle)
+    [RoleAction(LotusActionType.Interaction, ActionFlag.GlobalDetector)]
+    public void InterceptActions(PlayerControl target, PlayerControl _, Interaction interaction, ActionHandle handle)
     {
         if (protectionDuration.IsReady()) return;
         if (interaction.Intent is not IFatalIntent) return;
         if (target.PlayerId == partner) handle.Cancel();
     }
 
-    [RoleAction(RoleActionType.AnyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
     private void CheckPartnerDeath(PlayerControl dead, PlayerControl killer)
     {
         if (dead.PlayerId != partner) return;
         MyPlayer.GetSubroles().Remove(this);
         winDelegateRemote?.Delete();
-        if (Random.RandomRange(0, 100) < _ruthlessRomantic.Chance) MatchData.AssignSubrole(MyPlayer, _ruthlessRomantic);
+        if (Random.RandomRange(0, 100) < _ruthlessRomantic.Chance) Game.AssignSubRole(MyPlayer, _ruthlessRomantic);
         else
         {
-            MatchData.AssignSubrole(MyPlayer, _vengefulRomantic);
-            MyPlayer.GetCustomRole().Faction = FactionInstances.Neutral;
+            Game.AssignSubRole(MyPlayer, _vengefulRomantic);
+            MyPlayer.PrimaryRole().Faction = FactionInstances.Neutral;
             MyPlayer.GetSubrole<VengefulRomantic>()?.SetupVengeful(killer, originalFaction);
         }
     }
 
-    [RoleAction(RoleActionType.MyVote, priority: Priority.High)]
-    public void SetPartner(Optional<PlayerControl> votedPlayer, ActionHandle handle)
+    [RoleAction(LotusActionType.Vote, priority: Priority.High)]
+    public void SetPartner(Optional<PlayerControl> votedPlayer, MeetingDelegate _, ActionHandle handle)
     {
         if (!partnerLockedIn) handle.Cancel();
         else return;
@@ -123,7 +132,7 @@ public class Romantic: Subrole
         RHandler(Translations.ConfirmedPartnerMessage.Formatted(player.name)).Send(MyPlayer);
 
         string partnerText = TranslationUtil.Colorize(Translations.PartnerIndicator.Formatted(player.name), RoleColor);
-        NameComponent nameComponent = new(new LiveString(partnerText), Game.IgnStates, ViewMode.Replace, MyPlayer);
+        NameComponent nameComponent = new(new LiveString(partnerText), Game.InGameStates, ViewMode.Replace, MyPlayer);
         player.NameModel().GCH<NameHolder>().Add(nameComponent);
         LiveString protectionIndicator = new(() => protectionDuration.NotReady() ? RoleColor.Colorize(Identifier()) : "");
         player.NameModel().GCH<IndicatorHolder>().Add(new IndicatorComponent(protectionIndicator, GameState.Roaming, ViewMode.Additive, MyPlayer));
@@ -131,33 +140,51 @@ public class Romantic: Subrole
         if (!targetKnowsRomantic) return;
 
         string myText = TranslationUtil.Colorize(Translations.PartnerIndicator.Formatted(MyPlayer.name), RoleColor);
-        nameComponent = new NameComponent(new LiveString(myText), Game.IgnStates, ViewMode.Replace, player);
+        nameComponent = new NameComponent(new LiveString(myText), Game.InGameStates, ViewMode.Replace, player);
         MyPlayer.NameModel().GCH<NameHolder>().Add(nameComponent);
         RHandler(Translations.NotifyPartnerMessage.Formatted(MyPlayer.name)).Send(player);
     }
 
-    [RoleAction(RoleActionType.MeetingEnd)]
-    public void KillIfUndecided()
+    [RoleAction(LotusActionType.MeetingEnd)]
+    public void KillIfUndecided(bool _, bool isForceEnd)
     {
-        if (partner == byte.MaxValue) ProtectedRpc.CheckMurder(MyPlayer, MyPlayer);
+        if (partner == byte.MaxValue && !isForceEnd) ProtectedRpc.CheckMurder(MyPlayer, MyPlayer);
     }
 
     private void InterceptWinCondition(WinDelegate winDelegate)
     {
-        Players.PlayerById(partner).IfPresent(p => p.GetSubroles().Insert(0, new Partner()));
-        if (winDelegate.GetWinners().All(w => w.PlayerId != partner))
+        Optional<PlayerControl> partnerControl = Players.PlayerById(partner);
+        if (!partnerControl.Exists()) return; // if we win round1, do nothing
+        if (!partnerControl.Get().IsAlive()) return; // if they died, do nothing.
+        StandardGameMode.Instance.Assign(partnerControl.Get(), new Partner(), false);
+        bool hasRomantic = winDelegate.GetWinners().Any(w => w.PlayerId == MyPlayer.PlayerId);
+        bool hasPartner = winDelegate.GetWinners().Any(w => w.PlayerId == partner);
+        if ((!hasRomantic && !hasPartner) || (hasRomantic && hasPartner)) return; // includes neither or both us so we skip.
+        if (parterCanWin)
         {
-            winDelegate.RemoveWinner(MyPlayer);
+            if (hasRomantic && !hasPartner) winDelegate.AddAdditionalWinner(partnerControl.Get()); // add partner if we win
+            else if (hasPartner && !hasRomantic) winDelegate.AddAdditionalWinner(MyPlayer); // add us if partner wins
             return;
         }
-        if (!Players.FindPlayerById(partner)?.IsAlive() ?? true) return;
-        winDelegate.AddAdditionalWinner(MyPlayer);
+        if (hasPartner) // add us without questions if partner wins
+        {
+            winDelegate.AddAdditionalWinner(MyPlayer);
+            return;
+        }
+
+        if (winDelegate.GetWinners().Count == 1) // if we are a solo winner
+        {
+            if (!cancelGameWin) return; // if option to cancel is not on
+            winDelegate.CancelGameWin(); // cancel win. this will prob cancel jester exile win
+        }
+        // since we are NOT a solo winner. we can safely remove us from the win con
+        else winDelegate.RemoveWinner(MyPlayer);
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddRestrictToCrew(base.RegisterOptions(optionStream))
             .SubOption(sub => sub.KeyName("Notify Target of Romance", Translations.Options.TargetKnowsRomantic)
-                .AddOnOffValues()
+                .AddBoolean()
                 .BindBool(b => targetKnowsRomantic = b)
                 .Build())
             .SubOption(sub => sub.KeyName("Protection Cooldown", Translations.Options.ProtectionCooldown)
@@ -167,49 +194,55 @@ public class Romantic: Subrole
             .SubOption(sub => sub.KeyName("Protection Duration", Translations.Options.ProtectionDuration)
                 .AddFloatRange(0, 120, 2.5f, 2, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(protectionDuration.SetDuration)
+                .Build())
+            .SubOption(sub => sub.KeyName("Partner can Win with Romantic", Translations.Options.PartnerCanWin)
+                .AddBoolean()
+                .BindBool(b => parterCanWin = b)
+                .ShowSubOptionPredicate(v => !(bool)v)
+                .SubOption(sub2 => sub2
+                    .KeyName("Cancel Game Win if Solo Winner", Translations.Options.CancelGameWinIfSolo)
+                    .AddBoolean(false)
+                    .BindBool(b => cancelGameWin = b)
+                    .Build())
                 .Build());
 
+    protected override List<CustomRole> LinkedRoles() => base.LinkedRoles().Concat(new List<CustomRole>() { _vengefulRomantic, _ruthlessRomantic }).ToList();
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(RomanticColor)
-            .LinkedRoles(_vengefulRomantic, _ruthlessRomantic);
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     private ChatHandler RHandler(string message) => new ChatHandler().Title(t => t.PrefixSuffix(Identifier()).Color(RoleColor).Text(RoleName).Build()).LeftAlign().Message(message);
 
     [Localized(nameof(Romantic))]
     private static class Translations
     {
-        [Localized(nameof(PartnerText))]
-        public static string PartnerText = "Partner ♥";
+        [Localized(nameof(PartnerText))] public static string PartnerText = "Partner ♥";
 
         public static string PartnerIndicator = "{0} ♥::0";
 
-        [Localized(nameof(RomanticMessage))]
-        public static string RomanticMessage = "You are a Romantic. You must select a partner by the end of this meeting or die! To select a partner, vote them twice! Afterwards, you may vote normally.";
+        [Localized(nameof(RomanticMessage))] public static string RomanticMessage = "You are a Romantic. You must select a partner by the end of this meeting or die! To select a partner, vote them twice! Afterwards, you may vote normally.";
 
-        [Localized(nameof(RomanticSelectMessage))]
-        public static string RomanticSelectMessage = "You have selected {0} to be your partner. To confirm, vote them again, otherwise vote a different player.";
+        [Localized(nameof(RomanticSelectMessage))] public static string RomanticSelectMessage = "You have selected {0} to be your partner. To confirm, vote them again, otherwise vote a different player.";
 
-        [Localized(nameof(ConfirmedPartnerMessage))]
-        public static string ConfirmedPartnerMessage = "You have confirmed {0} to be your partner. You may now vote normally";
+        [Localized(nameof(ConfirmedPartnerMessage))] public static string ConfirmedPartnerMessage = "You have confirmed {0} to be your partner. You may now vote normally";
 
-        [Localized(nameof(NotifyPartnerMessage))]
-        public static string NotifyPartnerMessage = "You have been selected by {0} to be their romantic partner! Congrats!";
+        [Localized(nameof(NotifyPartnerMessage))] public static string NotifyPartnerMessage = "You have been selected by {0} to be their romantic partner! Congrats!";
 
-        [Localized(nameof(NoSkipMessage))]
-        public static string NoSkipMessage = "You may not skip until you have chosen a partner!";
+        [Localized(nameof(NoSkipMessage))] public static string NoSkipMessage = "You may not skip until you have chosen a partner!";
 
         [Localized(ModConstants.Options)]
         public static class Options
         {
-            [Localized(nameof(TargetKnowsRomantic))]
-            public static string TargetKnowsRomantic = "Notify Target of Romance";
+            [Localized(nameof(TargetKnowsRomantic))] public static string TargetKnowsRomantic = "Notify Target of Romance";
 
-            [Localized(nameof(ProtectionCooldown))]
-            public static string ProtectionCooldown = "Protection Cooldown";
+            [Localized(nameof(ProtectionCooldown))] public static string ProtectionCooldown = "Protection Cooldown";
 
-            [Localized(nameof(ProtectionDuration))]
-            public static string ProtectionDuration = "Protection Duration";
+            [Localized(nameof(ProtectionDuration))] public static string ProtectionDuration = "Protection Duration";
+
+            [Localized(nameof(PartnerCanWin))] public static string PartnerCanWin = "Partner can win with Romantic";
+
+            [Localized(nameof(CancelGameWinIfSolo))] public static string CancelGameWinIfSolo = "Cancel Game Win if Solo Winner";
         }
     }
 }

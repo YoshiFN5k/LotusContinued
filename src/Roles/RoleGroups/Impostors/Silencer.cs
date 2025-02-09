@@ -2,7 +2,7 @@ using Lotus.Roles.RoleGroups.Vanilla;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
-public class Silencer: Impostor
+public class Silencer : Impostor
 {
     /*private static string _blackmailedMessage = Localizer.Translate("Roles.Blackmail.BlackmailMessage");
     private static string _warningMessage = Localizer.Translate("Roles.Blackmail.BlackmailWarning");
@@ -14,10 +14,10 @@ public class Silencer: Impostor
     private int warnsUntilKick;
     private int currentWarnings;
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target) => base.TryKill(target);
 
-    [RoleAction(RoleActionType.Shapeshift)]
+    [RoleAction(LotusActionType.Shapeshift)]
     public void Blackmail(PlayerControl target, ActionHandle handle)
     {
         if (target.PlayerId == MyPlayer.PlayerId) return;
@@ -28,7 +28,7 @@ public class Silencer: Impostor
         blackmailingText = target.NameModel().GetComponentHolder<TextHolder>().Add(textComponent);
     }
 
-    [RoleAction(RoleActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundStart)]
     public void ClearBlackmail()
     {
         blackmailedPlayer = Optional<PlayerControl>.Null();
@@ -36,7 +36,7 @@ public class Silencer: Impostor
         blackmailingText?.Delete();
     }
 
-    [RoleAction(RoleActionType.RoundEnd)]
+    [RoleAction(LotusActionType.RoundEnd)]
     public void NotifyBlackmailed()
     {
         List<PlayerControl> allPlayers = showBlackmailedToAll
@@ -51,7 +51,7 @@ public class Silencer: Impostor
         });
     }
 
-    [RoleAction(RoleActionType.Chat)]
+    [RoleAction(LotusActionType.Chat)]
     public void InterceptChat(PlayerControl speaker, GameState state, bool isAlive)
     {
         if (!isAlive || state is not GameState.InMeeting) return;

@@ -4,18 +4,20 @@ using Lotus.GUI.Name;
 using Lotus.Options;
 using Lotus.Roles.Events;
 using Lotus.Roles.Interactions;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
-using static Lotus.Roles.RoleGroups.Impostors.Creeper.CreeperTranslations.CreeperOptionTranslations;
+using static Lotus.Roles.RoleGroups.Impostors.Creeper.CreeperTranslations.Options;
+using Lotus.Roles.Internals;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
-public class Creeper : Shapeshifter
+public class Creeper : Phantom
 {
     private bool canKillNormally;
     private bool creeperProtectedByShields;
@@ -23,21 +25,22 @@ public class Creeper : Shapeshifter
     private Cooldown gracePeriod;
 
     [UIComponent(UI.Text)]
-    public string GracePeriodText() => gracePeriod.IsReady() ? "" : Color.red.Colorize(CreeperTranslations.ExplosionGracePeriod).Formatted(gracePeriod + "s");
+    public string GracePeriodText() => gracePeriod.IsReady() ? "" : Color.red.Colorize(CreeperTranslations.ExplosionGracePeriod).Formatted(gracePeriod + GeneralOptionTranslations.SecondsSuffix);
 
-    [RoleAction(RoleActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundStart)]
     private void BeginGracePeriod()
     {
         gracePeriod.Start();
     }
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target) => canKillNormally && base.TryKill(target);
 
-    [RoleAction(RoleActionType.OnPet)]
-    [RoleAction(RoleActionType.Shapeshift)]
-    private void CreeperExplode()
+    [RoleAction(LotusActionType.OnPet)]
+    [RoleAction(LotusActionType.Vanish)]
+    private void CreeperExplode(ActionHandle handle)
     {
+        handle.Cancel();
         if (gracePeriod.NotReady()) return;
         RoleUtils.GetPlayersWithinDistance(MyPlayer, explosionRadius).ForEach(p =>
         {
@@ -67,17 +70,25 @@ public class Creeper : Shapeshifter
                 .Build())
             .SubOption(sub => sub.KeyName("Creeper Grace Period", CreeperGracePeriod)
                 .AddFloatRange(0, 60, 2.5f, 4, GeneralOptionTranslations.SecondsSuffix)
-                .BindFloat(gracePeriod.SetDuration)
+                .BindFloat(f =>
+                {
+                    gracePeriod.SetDuration(f);
+                    VanishCooldown = f;
+                })
                 .Build());
 
+    protected override RoleModifier Modify(RoleModifier roleModifier) =>
+        base.Modify(roleModifier)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
+
     [Localized(nameof(Creeper))]
-    internal static class CreeperTranslations
+    public static class CreeperTranslations
     {
         [Localized(nameof(ExplosionGracePeriod))]
         public static string ExplosionGracePeriod = "Explosion Grace Period: {0}";
 
         [Localized(ModConstants.Options)]
-        internal static class CreeperOptionTranslations
+        public static class Options
         {
             public static string SmallDistance = "Small";
 

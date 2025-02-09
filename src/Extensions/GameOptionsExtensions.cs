@@ -7,14 +7,14 @@ namespace Lotus.Extensions;
 public static class GameOptionsExtensions
 {
     [Obsolete("Looking into new TOH code to figure out a better way to do this")]
-    public static NormalGameOptionsV07? AsNormalOptions(this IGameOptions options)
+    public static NormalGameOptionsV08? AsNormalOptions(this IGameOptions options)
     {
-        return options.Cast<NormalGameOptionsV07>();
+        return options.Cast<NormalGameOptionsV08>();
     }
 
     public static Byte[] ToBytes(this IGameOptions gameOptions)
     {
-        return GameOptionsManager.Instance.gameOptionsFactory.ToBytes(gameOptions);
+        return GameOptionsManager.Instance.gameOptionsFactory.ToBytes(gameOptions, false);
     }
 
     public static IGameOptions DeepCopy(this IGameOptions opt)

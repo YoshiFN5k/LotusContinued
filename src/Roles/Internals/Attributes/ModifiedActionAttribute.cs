@@ -1,14 +1,15 @@
 using Lotus.API;
+using Lotus.Roles.Internals.Enums;
 
 namespace Lotus.Roles.Internals.Attributes;
 
-public class ModifiedActionAttribute: RoleActionAttribute
+public class ModifiedActionAttribute : RoleActionAttribute
 {
     public ModifiedBehaviour Behaviour = ModifiedBehaviour.Replace;
 
-    public ModifiedActionAttribute(RoleActionType actionType, bool triggerAfterDeath = false, bool blockable = false, Priority priority = Priority.Normal) : base(actionType, triggerAfterDeath, blockable, priority) { }
+    public ModifiedActionAttribute(LotusActionType actionType, ActionFlag actionFlags = ActionFlag.None, Priority priority = Priority.Normal) : base(actionType, actionFlags, priority) { }
 
-    public ModifiedActionAttribute(RoleActionType actionType, ModifiedBehaviour behaviour, bool triggerAfterDeath = false, bool blockable = false,  Priority priority = Priority.Normal) : base(actionType, triggerAfterDeath, blockable, priority)
+    public ModifiedActionAttribute(LotusActionType actionType, ModifiedBehaviour behaviour, ActionFlag actionFlags = ActionFlag.None, Priority priority = Priority.Normal) : base(actionType, actionFlags, priority)
     {
         Behaviour = behaviour;
     }

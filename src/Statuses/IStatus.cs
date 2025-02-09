@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Lotus.Statuses;
 
@@ -15,4 +16,6 @@ public interface IStatus
     public void Clear();
 
     public void Apply(PlayerControl player);
+
+    public IEnumerable<PlayerControl> VisiblePlayers();
 }

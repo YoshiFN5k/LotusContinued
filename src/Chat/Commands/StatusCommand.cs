@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using Lotus.API.Odyssey;
 using Lotus.API.Player;
+using Lotus.Extensions;
+using Lotus.Statuses;
 using UnityEngine;
 using VentLib.Commands;
 using VentLib.Commands.Attributes;
@@ -24,14 +26,17 @@ public class StatusCommand: CommandTranslations
         }
     }
 
-    public static string GetPlayerStatus(FrozenPlayer player)
+    public static string GetPlayerStatus(PlayerControl source, FrozenPlayer player)
     {
-        return player.Statuses.Select(s => $"{s.Color.Colorize(s.Name)}\n{s.Description}").Fuse("\n\n");
+        return player.Statuses
+            .Where(s => s.StatusFlags.HasFlag(StatusFlag.None) | s.VisiblePlayers().Any(p => source.PlayerId == player.PlayerId) | !source.IsAlive())
+            .Select(s => $"{s.Color.Colorize(s.Name)}\n{s.Description}")
+            .Fuse("\n\n");
     }
 
     private static void DisplayPlayerStatus(PlayerControl source, FrozenPlayer frozenPlayer)
     {
-        CHandler(GetPlayerStatus(frozenPlayer)).Send(source);
+        CHandler(GetPlayerStatus(source, frozenPlayer)).Send(source);
     }
 
     private static void DisplayStatusFromName(PlayerControl source, string name)

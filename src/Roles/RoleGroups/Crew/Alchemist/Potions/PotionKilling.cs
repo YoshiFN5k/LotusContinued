@@ -8,7 +8,7 @@ using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Crew.Potions;
 
-public class PotionKilling: Potion
+public class PotionKilling : Potion
 {
     [Localized("Death")]
     public static string PotionName = "Potion of Death";
@@ -25,7 +25,7 @@ public class PotionKilling: Potion
     {
         List<PlayerControl> sortedPlayers = user.GetPlayersInAbilityRangeSorted();
         if (sortedPlayers.Count == 0) return false;
-        user.InteractWith(sortedPlayers[0], LotusInteraction.FatalInteraction.Create(user.GetCustomRole()));
+        user.InteractWith(sortedPlayers[0], LotusInteraction.FatalInteraction.Create(user.PrimaryRole()));
         return true;
     }
 }

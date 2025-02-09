@@ -10,6 +10,7 @@ using Lotus.GUI.Name.Holders;
 using Lotus.GUI.Name.Impl;
 using Lotus.Roles.Events;
 using Lotus.Roles.Interactions;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Utilities;
@@ -19,19 +20,20 @@ using Lotus.Options;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Logging;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Options.IO;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
-using static Lotus.Roles.Internals.InteractionResult;
+using static Lotus.Roles.Internals.Enums.InteractionResult;
 using static Lotus.Roles.RoleGroups.NeutralKilling.AgiTater.AgitaterTranslations;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 
 [Localized("Roles")]
-public class AgiTater: NeutralKillingBase
+public class AgiTater : NeutralKillingBase
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(AgiTater));
     private ExplodeCondition Condition;
     private Cooldown bombDuration = null!;
     private int bombsPerRound;
@@ -44,9 +46,9 @@ public class AgiTater: NeutralKillingBase
     private int currentBombs;
 
     [UIComponent(UI.Counter, ViewMode.Additive, GameState.Roaming)]
-    private string BombCounter() => bombsPerRound == -1 ? "" : RoleUtils.Counter(currentBombs, bombsPerRound, RoleColor);
+    private string BombCounter() => bombsPerRound == -1 ? RoleUtils.Counter(currentBombs, color: RoleColor) : RoleUtils.Counter(currentBombs, bombsPerRound, RoleColor);
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         if (currentBombs == 0) return false;
@@ -69,24 +71,25 @@ public class AgiTater: NeutralKillingBase
         return false;
     }
 
-    [RoleAction(RoleActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundStart)]
     private void AgitaterBombReset()
     {
-        VentLogger.Trace($"Resetting AgiTater's Bombs ({bombsPerRound})", "AgitaterBombReset");
+        log.Trace($"(AgitaterBombReset) Resetting AgiTater's Bombs ({bombsPerRound})");
         currentBombs = bombsPerRound;
     }
 
-    [RoleAction(RoleActionType.FixedUpdate, triggerAfterDeath: true)]
+    [RoleAction(LotusActionType.FixedUpdate, ActionFlag.WorksAfterDeath)]
     private void AgitaterFixedUpdate()
     {
         if (!fixedUpdateLock.AcquireLock()) return;
         bombs.RemoveAll(b => b.DoUpdate());
     }
 
-    [RoleAction(RoleActionType.MeetingCalled, triggerAfterDeath: true)]
+    [RoleAction(LotusActionType.ReportBody, ActionFlag.WorksAfterDeath | ActionFlag.GlobalDetector, priority: API.Priority.Low)]
     private void KillPlayersBeforeMeeting()
     {
         if (Condition.HasFlag(ExplodeCondition.Meetings)) bombs.RemoveAll(b => b.Explode());
+        bombs.RemoveAll(b => b.DeleteBomb());
         bombs.Clear();
     }
 
@@ -112,7 +115,7 @@ public class AgiTater: NeutralKillingBase
                 .Build())
             .SubOption(sub2 => sub2.KeyName("Bombs per Round", AgiOptions.BombsPerRound)
                 .Value(v => v.Text(ModConstants.Infinity).Color(ModConstants.Palette.InfinityColor).Value(-1).Build())
-                .AddIntRange(1, 15, 1, 3)
+                .AddIntRange(1, ModConstants.MaxPlayers, 1, 3)
                 .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
                 .BindInt(i => bombsPerRound = i)
                 .Build())
@@ -167,7 +170,7 @@ public class AgiTater: NeutralKillingBase
             if (!owner.IsAlive()) return false;
 
             // ReSharper disable once Unity.NoNullPropagation
-            VentLogger.Trace($"AgiTater Bomb Exploding (AgiTater={agitater.MyPlayer.name}, target={owner.name})", "AgiTater::Explode");
+            log.Trace($"AgiTater Bomb Exploding (AgiTater={agitater.MyPlayer.name}, target={owner.name})", "AgiTater::Explode");
             BombedEvent bombedEvent = new(owner, agitater.MyPlayer);
             FatalIntent fatalIntent = new(true, () => bombedEvent);
 
@@ -202,7 +205,7 @@ public class AgiTater: NeutralKillingBase
 
         private bool Transfer(PlayerControl newPlayer)
         {
-            VentLogger.Trace($"Transferring AgiTater Bomb {Utils.GetPlayerById(Owner)?.name} => {newPlayer.name}", "AgiTater::Transfer");
+            log.Trace($"Transferring AgiTater Bomb {Utils.GetPlayerById(Owner)?.name} => {newPlayer.name}", "AgiTater::Transfer");
             bombText?.Delete();
             if (agitater.bombCounts.ContainsKey(Owner)) agitater.bombCounts[Owner]--;
             Owner = newPlayer.PlayerId;

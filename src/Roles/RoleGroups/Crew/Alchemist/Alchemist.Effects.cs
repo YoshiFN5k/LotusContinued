@@ -2,6 +2,7 @@ using Lotus.API.Vanilla.Meetings;
 using Lotus.API.Vanilla.Sabotages;
 using Lotus.Roles.Interactions.Interfaces;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using VentLib.Utilities.Optionals;
 
@@ -9,14 +10,14 @@ namespace Lotus.Roles.RoleGroups.Crew;
 
 public partial class Alchemist
 {
-    [RoleAction(RoleActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundStart)]
     private void ResetCertainEffects()
     {
         ExtraVotes = 0;
         QuickFixSabotage = false;
     }
 
-    [RoleAction(RoleActionType.Interaction)]
+    [RoleAction(LotusActionType.Interaction)]
     private void ProtectionEffect(PlayerControl actor, Interaction interaction, ActionHandle handle)
     {
         if (!IsProtected) return;
@@ -25,17 +26,16 @@ public partial class Alchemist
         handle.Cancel();
     }
 
-    [RoleAction(RoleActionType.MyVote)]
+    [RoleAction(LotusActionType.Vote)]
     private void IncreasedVoting(Optional<PlayerControl> votedFor, MeetingDelegate meetingDelegate)
     {
         if (!votedFor.Exists()) return;
         for (int i = 0; i < ExtraVotes; i++) meetingDelegate.CastVote(MyPlayer, votedFor);
     }
 
-    [RoleAction(RoleActionType.SabotagePartialFix)]
-    private void SabotageQuickFix(PlayerControl fixer, ISabotage sabotage)
+    [RoleAction(LotusActionType.SabotagePartialFix)]
+    private void SabotageQuickFix(ISabotage sabotage)
     {
-        if (fixer.PlayerId != MyPlayer.PlayerId) return;
         sabotage.Fix(MyPlayer);
         QuickFixSabotage = false;
     }

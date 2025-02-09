@@ -4,27 +4,22 @@ using InnerNet;
 using Lotus.API.Odyssey;
 using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
-using Lotus.Gamemodes;
 using Lotus.Roles.Internals;
-using Lotus.Roles.Internals.Attributes;
-using VentLib.Logging;
+using Lotus.Roles.Internals.Enums;
+using Lotus.Roles.Operations;
+using Lotus.RPC.CustomObjects;
 
 namespace Lotus.Patches.Network;
 
-[HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnDisconnected))]
-class OnDisconnectedPatch
-{
-    public static void Postfix(AmongUsClient __instance)
-    {
-    }
-}
-
 [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnPlayerLeft))]
-class OnPlayerLeftPatch
+class PlayerLeavePatch
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(PlayerLeavePatch));
+
     public static void Postfix(AmongUsClient __instance, [HarmonyArgument(0)] ClientData data, [HarmonyArgument(1)] DisconnectReasons reason)
     {
-        VentLogger.Debug($"{data.PlayerName} (ClientID={data.Id}) left the game. (Reason={reason})", "SessionEnd");
+        log.Debug($"{data.PlayerName} (ClientID={data.Id}) left the game. (Reason={reason})", "SessionEnd");
+        if (!AmongUsClient.Instance.AmHost) return;
         if (Game.State is GameState.InLobby)
         {
             PlayerJoinPatch.CheckAutostart();
@@ -34,15 +29,19 @@ class OnPlayerLeftPatch
 
         //Game.NameModels.Remove(data.Character.PlayerId);
 
-        ActionHandle uselessHandle = ActionHandle.NoInit();
         if (Game.State is not (GameState.InLobby or GameState.InIntro))
         {
-            PlayerControl.AllPlayerControls.ToArray().Trigger(RoleActionType.Disconnect, ref uselessHandle, data.Character);
+            RoleOperations.Current.Trigger(LotusActionType.Disconnect, data.Character);
             Game.MatchData.Roles.MainRoles.GetValueOrDefault(data.Character.PlayerId)?.HandleDisconnect();
             Game.MatchData.Roles.SubRoles.GetValueOrDefault(data.Character.PlayerId)?.ForEach(r => r.HandleDisconnect());
+            try
+            {
+                Game.MatchData.RegenerateFrozenPlayers(data.Character);
+            }
+            catch { }
+            // CustomNetObject.DespawnOnQuit(data.Character.PlayerId);
         }
         Hooks.PlayerHooks.PlayerDisconnectHook.Propagate(new PlayerHookEvent(data.Character));
         data.Character.Data.PlayerName = data.Character.name;
-        Game.CurrentGamemode.Trigger(GameAction.GameLeave, data);
     }
 }

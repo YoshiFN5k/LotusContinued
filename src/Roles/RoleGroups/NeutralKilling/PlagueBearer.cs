@@ -19,21 +19,21 @@ using Lotus.Extensions;
 using Lotus.Logging;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Logging;
-using VentLib.Options.Game;
+using Lotus.Roles.Internals.Enums;
+using VentLib.Options.UI;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
+using Lotus.GameModes.Standard;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 
-public class PlagueBearer: NeutralKillingBase
+public class PlagueBearer : NeutralKillingBase
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(PlagueBearer));
     private static readonly Pestilence Pestilence = new();
 
     [NewOnSetup] private List<Remote<IndicatorComponent>> indicatorRemotes = new();
     [NewOnSetup] private HashSet<byte> infectedPlayers = null!;
-    private int cooldownSetting;
-    private float customCooldown;
     private int alivePlayers;
 
     public override bool CanSabotage() => false;
@@ -41,32 +41,34 @@ public class PlagueBearer: NeutralKillingBase
     protected override void PostSetup()
     {
         RelatedRoles.Add(typeof(Pestilence));
-        CheckPestilenceTransform(new ActionHandle(RoleActionType.RoundStart));
+        CheckPestilenceTransform(new ActionHandle(LotusActionType.RoundStart));
     }
 
     [UIComponent(UI.Counter)]
     private string InfectionCounter() => RoleUtils.Counter(infectedPlayers.Count, alivePlayers, RoleColor);
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         if (infectedPlayers.Contains(target.PlayerId))
         {
             MyPlayer.RpcMark(target);
+            // in case the game bugs check pestilence
+            CheckPestilenceTransform(ActionHandle.NoInit());
             return false;
         }
 
         if (MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this)) is InteractionResult.Halt) return false;
         MyPlayer.RpcMark(target);
 
-        DevLogger.Log(Translations.InfectedHistoryMessage);
         string historyMessage = Translations.InfectedHistoryMessage.Formatted(MyPlayer.name, target.name);
         historyMessage = TranslationUtil.Colorize(historyMessage, RoleColor, target.GetRoleColor());
         Game.MatchData.GameHistory.AddEvent(new GenericTargetedEvent(MyPlayer, target, historyMessage));
+        log.Debug(historyMessage.RemoveColorTags());
 
         infectedPlayers.Add(target.PlayerId);
 
-        IndicatorComponent indicator = new SimpleIndicatorComponent("☀", RoleColor, GameStates.IgnStates, MyPlayer);
+        IndicatorComponent indicator = new SimpleIndicatorComponent("☀", RoleColor, Game.InGameStates, MyPlayer);
         indicatorRemotes.Add(target.NameModel().GetComponentHolder<IndicatorHolder>().Add(indicator));
 
         CheckPestilenceTransform(ActionHandle.NoInit());
@@ -74,22 +76,23 @@ public class PlagueBearer: NeutralKillingBase
         return false;
     }
 
-    [RoleAction(RoleActionType.RoundStart)]
-    [RoleAction(RoleActionType.RoundEnd)]
-    [RoleAction(RoleActionType.AnyDeath)]
+    [RoleAction(LotusActionType.RoundEnd)]
+    [RoleAction(LotusActionType.RoundStart)]
+    [RoleAction(LotusActionType.Disconnect, ActionFlag.GlobalDetector)]
+    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
     public void CheckPestilenceTransform(ActionHandle handle)
     {
         PlayerControl[] allCountedPlayers = GetAlivePlayers().ToArray();
-        if (handle.ActionType is RoleActionType.RoundStart or RoleActionType.RoundEnd)
+        if (handle.ActionType is LotusActionType.RoundStart or LotusActionType.RoundEnd)
         {
             alivePlayers = allCountedPlayers.Length;
-            infectedPlayers = infectedPlayers.Where(p => Players.PlayerById(p).Compare(o => o.IsAlive())).ToHashSet();
         }
-        if (allCountedPlayers.Count(r => infectedPlayers.Contains(r.PlayerId)) != alivePlayers) return;
+        if (allCountedPlayers.Any(p => !infectedPlayers.Contains(p.PlayerId))) return;
 
         indicatorRemotes.ForEach(remote => remote.Delete());
-        MyPlayer.NameModel().GetComponentHolder<CounterHolder>().RemoveAt(0);
-        MatchData.AssignRole(MyPlayer, Pestilence);
+        var counterHolder = MyPlayer.NameModel().GetComponentHolder<CounterHolder>();
+        if (counterHolder.Count > 0) counterHolder.RemoveAt(0);
+        Game.AssignRole(MyPlayer, Pestilence);
 
         Game.MatchData.GameHistory.AddEvent(new RoleChangeEvent(MyPlayer, Pestilence));
     }
@@ -103,11 +106,12 @@ public class PlagueBearer: NeutralKillingBase
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddKillCooldownOptions(base.RegisterOptions(optionStream), key: "Infect Cooldown", name: Translations.Options.InfectCooldown);
 
+    protected override List<CustomRole> LinkedRoles() => base.LinkedRoles().Concat(new List<CustomRole>() { Pestilence }).ToList();
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(0.9f, 1f, 0.7f))
-            .RoleAbilityFlags(RoleAbilityFlag.CannotVent)
-            .LinkedRoles(Pestilence)
+            .RoleAbilityFlags(RoleAbilityFlag.CannotVent | RoleAbilityFlag.CannotSabotage)
             .OptionOverride(new IndirectKillCooldown(KillCooldown));
 
     [Localized(nameof(PlagueBearer))]

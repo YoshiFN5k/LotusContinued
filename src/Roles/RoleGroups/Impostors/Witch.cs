@@ -9,6 +9,7 @@ using Lotus.GUI.Name.Holders;
 using Lotus.Roles.Events;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Extensions;
@@ -17,15 +18,16 @@ using Lotus.Statuses;
 using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
+using Lotus.GameModes.Standard;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
-public class Witch: Vanilla.Impostor
+public class Witch : Vanilla.Impostor
 {
     private static Color cursingColor = new(0.37f, 0.74f, 0.35f);
     private bool freelySwitchModes;
@@ -37,9 +39,9 @@ public class Witch: Vanilla.Impostor
     private bool isCursingMode = true;
 
     [UIComponent(UI.Text)]
-    private string ModeDisplay() => freelySwitchModes ? isCursingMode ? cursingColor.Colorize(Translations.CursingModeText) : Color.red.Colorize(Translations.KillingModeText) : "";
+    private string ModeDisplay() => (freelySwitchModes || switchModesAfterAttack) ? (isCursingMode ? cursingColor.Colorize(Translations.CursingModeText) : Color.red.Colorize(Translations.KillingModeText)) : "";
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         if (!isCursingMode)
@@ -54,23 +56,23 @@ public class Witch: Vanilla.Impostor
         if (cursedPlayers.ContainsKey(target.PlayerId)) return false;
 
         CustomStatus status = CustomStatus.Of(RoleName).Description(Translations.CursedStatusDescription).Color(RoleColor).Build();
-        cursedPlayers.Add(target.PlayerId,  MatchData.AddStatus(target, status, MyPlayer));
+        cursedPlayers.Add(target.PlayerId, Game.MatchData.AddStatus(target, status, MyPlayer));
         indicators.GetValueOrDefault(target.PlayerId)?.Delete();
         indicators[target.PlayerId] = target.NameModel().GCH<IndicatorHolder>().Add(new SimpleIndicatorComponent("†", Color.red, GameState.InMeeting));
 
-        string eventMessage = TranslationUtil.Colorize(Translations.CursedMessage.Formatted(MyPlayer.name, target.name), RoleColor, target.GetCustomRole().RoleColor);
+        string eventMessage = TranslationUtil.Colorize(Translations.CursedMessage.Formatted(MyPlayer.name, target.name), RoleColor, target.PrimaryRole().RoleColor);
         Game.MatchData.GameHistory.AddEvent(new GenericTargetedEvent(MyPlayer, target, eventMessage));
         return false;
     }
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     public void SwitchWitchMode()
     {
         if (freelySwitchModes) isCursingMode = !isCursingMode;
     }
 
-    [RoleAction(RoleActionType.MeetingEnd)]
-    public void KillCursedPlayers(Optional<GameData.PlayerInfo> exiledPlayer)
+    [RoleAction(LotusActionType.MeetingEnd, ActionFlag.WorksAfterDeath)]
+    public void KillCursedPlayers(Optional<NetworkedPlayerInfo> exiledPlayer)
     {
         if (exiledPlayer.Compare(p => p.PlayerId == MyPlayer.PlayerId)) return;
 
@@ -80,11 +82,18 @@ public class Witch: Vanilla.Impostor
             MyPlayer.InteractWith(p, new UnblockedInteraction(new FatalIntent(false, () => cod), this));
             cursedPlayers[p.PlayerId]?.Delete();
         });
-        cursedPlayers.Clear();
+    }
+
+    [RoleAction(LotusActionType.RoundStart, ActionFlag.WorksAfterDeath)]
+    private void ClearCursedPlayers()
+    {
+        cursedPlayers.ForEach(c => c.Value?.Delete());
         indicators.ForEach(i => i.Value.Delete());
+        cursedPlayers.Clear();
         indicators.Clear();
     }
 
+    public override void HandleDisconnect() => ClearCursedPlayers();
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
@@ -99,7 +108,8 @@ public class Witch: Vanilla.Impostor
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
-            .OptionOverride(new IndirectKillCooldown(KillCooldown, () => isCursingMode));
+            .OptionOverride(new IndirectKillCooldown(KillCooldown, () => isCursingMode))
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
 
     [Localized(nameof(Witch))]

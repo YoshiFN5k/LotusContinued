@@ -2,15 +2,15 @@
 using Lotus.API.Odyssey;
 using Lotus.Extensions;
 using Lotus.Options;
-using Lotus.Roles.Legacy;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Overrides;
 using Lotus.Roles.RoleGroups.Vanilla;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles.Subroles;
 
-public class Nimble: Subrole
+public class Nimble : Subrole
 {
     protected float VentCooldown;
     protected float VentDuration;
@@ -19,7 +19,7 @@ public class Nimble: Subrole
 
     protected override void PostSetup()
     {
-        CustomRole myRole = MyPlayer.GetCustomRole();
+        CustomRole myRole = MyPlayer.PrimaryRole();
         myRole.BaseCanVent = true;
         myRole.RoleAbilityFlags &= ~RoleAbilityFlag.CannotVent;
         if (!myRole.RealRole.IsImpostor()) myRole.VirtualRole = RoleTypes.Engineer;
@@ -49,5 +49,5 @@ public class Nimble: Subrole
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier).RoleColor(new Color(1f, 0.98f, 0.65f));
+        base.Modify(roleModifier).RoleColor(new Color(1f, 0.98f, 0.65f)).CanVent(true);
 }

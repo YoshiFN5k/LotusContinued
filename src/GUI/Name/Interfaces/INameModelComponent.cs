@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Lotus.API.Odyssey;
 using Lotus.GUI.Name.Impl;
-using Lotus.API;
 using VentLib.Utilities.Optionals;
 
 namespace Lotus.GUI.Name.Interfaces;
@@ -19,7 +18,7 @@ public interface INameModelComponent
 
     public GameState[] GameStates();
 
-    public string GenerateText();
+    public string GenerateText(GameState currentText);
 
     public void SetMainText(LiveString liveString);
 

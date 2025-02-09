@@ -4,14 +4,16 @@ using Lotus.GUI;
 using Lotus.GUI.Name;
 using Lotus.Options;
 using Lotus.Roles.Interactions.Interfaces;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Victory;
 using Lotus.Victory.Conditions;
 using Lotus.Extensions;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
@@ -37,7 +39,7 @@ public class Survivor : CustomRole
         Game.GetWinDelegate().AddSubscriber(GameEnd);
     }
 
-    [RoleAction(RoleActionType.Interaction)]
+    [RoleAction(LotusActionType.Interaction)]
     private void SurvivorProtection(Interaction interaction, ActionHandle handle)
     {
         if (vestDuration.IsReady()) return;
@@ -45,12 +47,12 @@ public class Survivor : CustomRole
         handle.Cancel();
     }
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     public void OnPet()
     {
         if (remainingVests == 0 || vestDuration.NotReady() || vestCooldown.NotReady()) return;
         remainingVests--;
-        vestDuration.StartThenRun(() => vestCooldown.Start());;
+        vestDuration.StartThenRun(() => vestCooldown.Start()); ;
     }
 
     private void GameEnd(WinDelegate winDelegate)
@@ -63,16 +65,17 @@ public class Survivor : CustomRole
         base.RegisterOptions(optionStream)
             .Tab(DefaultTabs.NeutralTab)
             .SubOption(sub => sub
-                .Name("Vest Duration")
+                .KeyName("Vest Duration", Translations.Options.VestDuration)
                 .BindFloat(vestDuration.SetDuration)
                 .AddFloatRange(2.5f, 180f, 2.5f, 11, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
-                .Name("Vest Cooldown")
+                .KeyName("Vest Cooldown", Translations.Options.VestCooldown)
                 .BindFloat(vestCooldown.SetDuration)
                 .AddFloatRange(2.5f, 180f, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
-            .SubOption(sub => sub.Name("Vest Usages")
+            .SubOption(sub => sub
+                .KeyName("Number of Shields", Translations.Options.TotalShields)
                 .BindInt(i => vestUsages = i)
                 .Value(v => v.Value(-1).Text("∞").Color(ModConstants.Palette.InfinityColor).Build())
                 .AddIntRange(1, 60, 1)
@@ -82,5 +85,23 @@ public class Survivor : CustomRole
         roleModifier
             .Faction(FactionInstances.Neutral)
             .SpecialType(SpecialType.Neutral)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
             .RoleColor(new Color(1f, 0.9f, 0.3f));
+
+    [Localized(nameof(Survivor))]
+    public static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(VestDuration))]
+            public static string VestDuration = "Shield Duration";
+
+            [Localized(nameof(VestCooldown))]
+            public static string VestCooldown = "Shield Cooldown";
+
+            [Localized(nameof(TotalShields))]
+            public static string TotalShields = "Number of Shields";
+        }
+    }
 }

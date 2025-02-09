@@ -4,13 +4,12 @@ using AmongUs.GameOptions;
 using HarmonyLib;
 using InnerNet;
 using Lotus.API;
-using Lotus.Options;
 using Lotus.Options.General;
+using Lotus.Options;
 using UnityEngine;
 using VentLib.Utilities.Extensions;
-using VentLib.Logging;
 using VentLib.Utilities;
-using GameStates = Lotus.API.GameStates;
+using Lotus.Logging;
 
 namespace Lotus.Patches;
 
@@ -25,7 +24,6 @@ public static class GameStartManagerUpdatePatch
 //タイマーとコード隠し
 public static class GameStartManagerPatch
 {
-    private static float timer = 600f;
     [HarmonyPatch(typeof(GameStartManager), nameof(GameStartManager.Start))]
     public class GameStartManagerStartPatch
     {
@@ -33,8 +31,6 @@ public static class GameStartManagerPatch
         public static void Postfix(GameStartManager __instance)
         {
             __instance.GameRoomNameCode.text = GameCode.IntToGameName(AmongUsClient.Instance.GameId);
-            // Reset lobby countdown timer
-            timer = 600f;
 
             HideName = Object.Instantiate(__instance.GameRoomNameCode, __instance.GameRoomNameCode.transform);
             /*HideName.text = ColorUtility.TryParseHtmlString(TOHPlugin.HideColor.Value, out _)
@@ -49,12 +45,9 @@ public static class GameStartManagerPatch
             }*/
         }
     }
-
     [HarmonyPatch(typeof(GameStartManager), nameof(GameStartManager.Update))]
     public class GameStartManagerUpdatePatch
     {
-        private static bool update = false;
-        private static string currentText = "";
         public static void Prefix(GameStartManager __instance)
         {
             // Lobby code
@@ -68,26 +61,9 @@ public static class GameStartManagerPatch
                 __instance.GameRoomNameCode.color = new(255, 255, 255, 255);
                 GameStartManagerStartPatch.HideName.enabled = false;
             }
-            if (!AmongUsClient.Instance.AmHost || !GameData.Instance || AmongUsClient.Instance.NetworkMode == NetworkModes.LocalGame) return; // Not host or no instance or LocalGame
-            update = GameData.Instance.PlayerCount != __instance.LastPlayerCount;
-        }
-        public static void Postfix(GameStartManager __instance)
-        {
-            // Lobby timer
-            if (!AmongUsClient.Instance.AmHost || !GameData.Instance || AmongUsClient.Instance.NetworkMode == NetworkModes.LocalGame) return;
-
-            if (update) currentText = __instance.PlayerCounter.text;
-
-            timer = Mathf.Max(0f, timer -= Time.deltaTime);
-            int minutes = (int)timer / 60;
-            int seconds = (int)timer % 60;
-            string suffix = $" ({minutes:00}:{seconds:00})";
-            if (timer <= 60) suffix = Color.red.Colorize(suffix);
-
-            __instance.PlayerCounter.text = currentText + suffix;
-            __instance.PlayerCounter.autoSizeTextContainer = true;
         }
     }
+
     [HarmonyPatch(typeof(TextBoxTMP), nameof(TextBoxTMP.SetText))]
     public static class HiddenTextPatch
     {
@@ -102,16 +78,23 @@ public class GameStartRandomMap
 {
     public static bool Prefix(GameStartManager __instance)
     {
-        if (GeneralOptions.AdminOptions.HostGM) VentLogger.SendInGame("[Info] GM is Enabled");
+        if (__instance.startState != GameStartManager.StartingStates.NotStarting)
+        {
+            return false;
+        }
+        if (GeneralOptions.AdminOptions.HostGM) LogManager.SendInGame("[Info] GM is Enabled");
 
         __instance.ReallyBegin(false);
         return false;
     }
     public static bool Prefix(GameStartRandomMap __instance)
     {
+        AUSettings.StaticOptions.SetFloat(FloatOptionNames.ProtectionDurationSeconds, 3600f);
+        AUSettings.StaticOptions.SetBool(BoolOptionNames.ImpostorsCanSeeProtect, false);
         if (!GeneralOptions.MayhemOptions.UseRandomMap) return true;
 
         List<byte> randomMaps = new();
+
         AuMap map = GeneralOptions.MayhemOptions.RandomMaps;
         if (map.HasFlag(AuMap.Skeld)) randomMaps.Add(0);
         if (map.HasFlag(AuMap.Mira)) randomMaps.Add(1);
@@ -130,9 +113,9 @@ class ResetStartStatePatch
 {
     public static void Prefix()
     {
-        if (GameStates.IsCountDown)
+        if (GameStartManager.InstanceExists && GameStartManager.Instance.startState == GameStartManager.StartingStates.Countdown)
         {
-            PlayerControl.LocalPlayer.RpcSyncSettings(GameOptionsManager.Instance.gameOptionsFactory.ToBytes(GameOptionsManager.Instance.CurrentGameOptions));
+            PlayerControl.LocalPlayer.RpcSyncSettings(GameOptionsManager.Instance.gameOptionsFactory.ToBytes(GameOptionsManager.Instance.CurrentGameOptions, false));
         }
     }
 }

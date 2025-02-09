@@ -2,12 +2,13 @@ using AmongUs.GameOptions;
 using Lotus.API;
 using Lotus.Factions;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Overrides;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Extensions;
 using Lotus.Options;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles.RoleGroups.Madmates.Roles;
 
@@ -19,22 +20,13 @@ public abstract class MadCrewmate : Engineer
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddTaskOverrideOptions(base.RegisterOptions(optionStream)
             .SubOption(sub => sub.Name("Has Impostor Vision")
-                .AddOnOffValues()
+                .AddBoolean()
                 .BindBool(b => impostorVision = b)
-                .Build()
-            )
-            .SubOption(sub => sub.Name("Can Vent")
-                .AddOnOffValues()
+                .Build())
+            .SubOption(sub => AddVentingOptions(sub)
+                .KeyName("Can Vent", RoleTranslations.CanVent)
+                .AddBoolean()
                 .BindBool(b => canVent = b)
-                .SubOption(sub2 => sub2.Name("Vent Cooldown")
-                    .BindFloat(f => this.VentCooldown = f)
-                    .AddFloatRange(0, 60, 2.5f, 8, GeneralOptionTranslations.SecondsSuffix)
-                    .Build())
-                .SubOption(sub2 => sub2.Name("Vent Duration")
-                    .BindFloat(f => this.VentDuration = f)
-                    .Value(1f)
-                    .AddFloatRange(2, 120, 2.5f, 4, GeneralOptionTranslations.SecondsSuffix)
-                    .Build())
                 .Build()));
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>

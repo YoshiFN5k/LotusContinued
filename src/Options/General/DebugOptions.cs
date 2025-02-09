@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.Linq;
 using Lotus.Extensions;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
+using VentLib.Utilities.Extensions;
 
 namespace Lotus.Options.General;
 
@@ -20,27 +22,28 @@ public class DebugOptions
     public DebugOptions()
     {
         AllOptions.Add(new GameOptionTitleBuilder()
-            .Tab(DefaultTabs.GeneralTab)
             .Title(DebugOptionTranslations.DebugOptionTitle)
             .Color(_optionColor)
             .Build());
 
-        AllOptions.Add(Builder("NoGameEnd")
+        AllOptions.Add(Builder("No Game End")
             .Name(DebugOptionTranslations.NoGameEndText)
             .BindBool(b => NoGameEnd = b)
             .IsHeader(true)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Name Based Role Assignment")
             .Name(DebugOptionTranslations.NameBasedRoleAssignmentText)
             .BindBool(b => NameBasedRoleAssignment = b)
-            .BuildAndRegister());
+            .Build());
 
-        additionalOptions.ForEach(o =>
-        {
-            o.Register();
-            AllOptions.Add(o);
-        });
+        // AllOptions.Add(Builder("Advanced Role Assignment")
+        //     .Name(DebugOptionTranslations.AdvancedRoleAssignment)
+        //     .BindBool(b => ProjectLotus.AdvancedRoleAssignment = b)
+        //     .Build());
+
+        AllOptions.AddRange(additionalOptions);
+        AllOptions.Where(o => !o.Attributes.ContainsKey("Title")).ForEach(o => GeneralOptions.StandardOptionManager.Register(o, VentLib.Options.OptionLoadMode.LoadOrCreate));
     }
 
     /// <summary>
@@ -53,7 +56,7 @@ public class DebugOptions
         additionalOptions.Add(option);
     }
 
-    private GameOptionBuilder Builder(string key) => new GameOptionBuilder().Key(key).Tab(DefaultTabs.GeneralTab).Color(_optionColor).AddOnOffValues(false);
+    private GameOptionBuilder Builder(string key) => new GameOptionBuilder().AddBoolean(false).Builder(key, _optionColor);
 
     [Localized("Debug")]
     private static class DebugOptionTranslations
@@ -66,5 +69,8 @@ public class DebugOptions
 
         [Localized("NameRoleAssignment")]
         public static string NameBasedRoleAssignmentText = "Name-Based Role Assignment";
+
+        [Localized("AdvancedRoleAssignment")]
+        public static string AdvancedRoleAssignment = "Advanced Role Assignment";
     }
 }

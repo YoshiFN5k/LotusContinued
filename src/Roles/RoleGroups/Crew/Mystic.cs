@@ -11,6 +11,7 @@ using Lotus.GUI.Name.Holders;
 using Lotus.Logging;
 using Lotus.Managers;
 using Lotus.Options;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Interfaces;
 using Lotus.Roles.Subroles;
 using Lotus.Utilities;
@@ -19,7 +20,7 @@ using VentLib;
 using VentLib.Localization.Attributes;
 using VentLib.Networking.RPC;
 using VentLib.Networking.RPC.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Options.IO;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
@@ -36,7 +37,7 @@ public class Mystic : Crewmate, ISubrole
     private bool isSubrole;
     private bool restrictedToCrew;
 
-    public string? Identifier() => null;
+    public string? Identifier() => "ī";
 
     protected override void PostSetup()
     {
@@ -46,10 +47,10 @@ public class Mystic : Crewmate, ISubrole
 
     public bool IsAssignableTo(PlayerControl player)
     {
-        return !restrictedToCrew || player.GetCustomRole().Faction is Crewmates;
+        return !restrictedToCrew || player.PrimaryRole().Faction is Crewmates;
     }
 
-    [RoleAction(RoleActionType.AnyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
     private void MysticAnyDeath(PlayerControl deadPlayer)
     {
         if (MyPlayer.Data.IsDead) return;
@@ -100,10 +101,10 @@ public class Mystic : Crewmate, ISubrole
                 })
                 .ShowSubOptionPredicate(b => (bool)b)
                 .SubOption(sub2 => sub2.KeyName("Restricted to Crewmates", TranslationUtil.Colorize(Translations.Options.RestrictedToCrewmates, FactionInstances.Crewmates.Color))
-                    .AddOnOffValues()
+                    .AddBoolean()
                     .BindBool(b => restrictedToCrew = b)
                     .Build())
-                .AddOnOffValues(false)
+                .AddBoolean(false)
                 .Build())
             .SubOption(sub => sub
                 .KeyName("Flash Duration", Translations.Options.FlashDuration)
@@ -114,7 +115,7 @@ public class Mystic : Crewmate, ISubrole
             .SubOption(sub => sub
                 .KeyName("Send Audio Alert", Translations.Options.SendAudioAlert)
                 .BindBool(v => sendAudioAlert = v)
-                .AddOnOffValues()
+                .AddBoolean()
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier)
@@ -124,7 +125,7 @@ public class Mystic : Crewmate, ISubrole
     }
 
     [Localized(nameof(Mystic))]
-    private static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options

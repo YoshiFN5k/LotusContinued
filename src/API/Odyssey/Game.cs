@@ -1,139 +1,99 @@
 using System.Collections.Generic;
-using System.Linq;
 using HarmonyLib;
 using Lotus.API.Player;
 using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
-using Lotus.Factions.Impostors;
-using Lotus.Gamemodes;
+using Lotus.GameModes;
 using Lotus.GUI.Name.Impl;
 using Lotus.GUI.Name.Interfaces;
-using Lotus.Roles;
-using Lotus.Roles.Interfaces;
-using Lotus.Roles.Internals;
-using Lotus.Roles.Internals.Attributes;
 using Lotus.Victory;
 using Lotus.Extensions;
-using VentLib.Logging;
 using VentLib.Utilities.Extensions;
+using VentLib.Networking.RPC.Attributes;
+using Lotus.Roles;
+using Lotus.RPC;
+using System.Threading.Tasks;
+using Lotus.Logging;
+using VentLib.Utilities;
 
 namespace Lotus.API.Odyssey;
 
 public static class Game
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Game));
+
+    private static readonly Dictionary<byte, ulong> GameIDs = new();
+    private static ulong _gameID;
+    private static MatchData tempData = new(); // used for roles the IndirectKillCooldown class
+
+    public static MatchData MatchData => CurrentGameMode?.MatchData ?? tempData;
+    public static Dictionary<byte, INameModel> NameModels = new();
+    public static RandomSpawn RandomSpawn = null!;
+    public static int RecursiveCallCheck;
+    public static IGameMode CurrentGameMode => ProjectLotus.GameModeManager.CurrentGameMode;
+    public static GameState State = GameState.InLobby;
+    private static WinDelegate _winDelegate = new();
+
     static Game()
     {
         Hooks.NetworkHooks.GameJoinHook.Bind("GameHook", ev =>
         {
             if (!ev.IsNewLobby) return;
-            VentLogger.Trace("Joined new lobby. Cleaning up old game states.", "GameCleanupCheck");
+            log.Trace("Joined new lobby. Cleaning up old game states.");
             Cleanup(true);
         });
     }
 
-    private static readonly Dictionary<byte, ulong> GameIDs = new();
-    private static ulong _gameID;
+    public static ulong NextMatchID() => MatchData.MatchID++;
 
-    public static MatchData? LastMatch;
-    public static MatchData MatchData = new();
-    public static Dictionary<byte, INameModel> NameModels = new();
-    public static RandomSpawn RandomSpawn = null!;
-    public static int RecursiveCallCheck;
-
-    public static GameState[] IgnStates => new[] { GameState.Roaming, GameState.InMeeting };
+    public static GameState[] InGameStates => [GameState.Roaming, GameState.InMeeting];
 
     public static INameModel NameModel(this PlayerControl playerControl) => NameModels.GetOrCompute(playerControl.PlayerId, () => new SimpleNameModel(playerControl));
 
-    public static void RenderAllForAll(GameState? state = null, bool force = false) => NameModels.Values.ForEach(n => GetAllPlayers().ForEach(pp => n.RenderFor(pp, state, true, force)));
+    public static void RenderAllForAll(GameState? state = null, bool force = false) => NameModels.Values.ForEach(n => Players.GetPlayers().ForEach(pp => n.RenderFor(pp, state, true, force)));
 
-    public static IEnumerable<PlayerControl> GetAllPlayers() => PlayerControl.AllPlayerControls.ToArray();
-    public static IEnumerable<PlayerControl> GetAlivePlayers() => GetAllPlayers().Where(p => p.IsAlive());
-
-    public static IEnumerable<CustomRole> GetAliveRoles(bool includePhantomRoles = false)
-    {
-        IEnumerable<CustomRole> roles = GetAlivePlayers().Select(p => p.GetCustomRole());
-        return includePhantomRoles ? roles : roles.Where(r => r is not IPhantomRole pr || pr.IsCountedAsPlayer());
-    }
-
-
-    public static IEnumerable<PlayerControl> GetDeadPlayers(bool disconnected = false) => GetAllPlayers().Where(p => p.Data.IsDead || (disconnected && p.Data.Disconnected));
-    public static List<PlayerControl> GetAliveImpostors()
-    {
-        return GetAlivePlayers().Where(p => p.GetCustomRole().Faction is ImpostorFaction).ToList();
-    }
-
-    public static IEnumerable<PlayerControl> FindAlivePlayersWithRole(params CustomRole[] roles) =>
-        GetAllPlayers()
-            .Where(p => roles.Any(r => r.GetType() == p.GetCustomRole().GetType()) || p.GetSubroles().Any(s => s.GetType() == roles.GetType()));
-
-    public static void SyncAll() => GetAllPlayers().Do(p => p.SyncAll());
-
-    public static void TriggerForAll(RoleActionType action, ref ActionHandle handle, params object[] parameters)
-    {
-        List<PlayerControl> players = Players.GetPlayers().ToList();
-        /*VentLogger.Debug($"TriggerForAll - Players => {players.Select(p => p.name).Fuse()}");*/
-        players.Trigger(action, ref handle, parameters);
-    }
-
-    public static void Trigger(this IEnumerable<PlayerControl> players, RoleActionType action, ref ActionHandle handle, params object[] parameters)
-    {
-        if (action is RoleActionType.FixedUpdate)
-            foreach (PlayerControl player in players) player.Trigger(action, ref handle, parameters);
-        // Using a new Trigger algorithm to deal with ordering of triggers
-        else
-        {
-            List<PlayerControl> allPlayers = players.ToList();
-            handle.ActionType = action;
-            parameters = parameters.AddToArray(handle);
-            List<(RoleAction, AbstractBaseRole)> actionList = allPlayers.SelectMany(p => p.GetCustomRole().GetActions(action)).ToList();
-            actionList.AddRange(allPlayers.SelectMany(p => p.GetSubroles().SelectMany(r => r.GetActions(action))));
-            /*VentLogger.Debug($"All Actions: {actionList.Select(a => a.Item1.ToString()).Fuse()}");*/
-            foreach ((RoleAction roleAction, AbstractBaseRole role) in actionList.OrderBy(a1 => a1.Item1.Priority))
-            {
-                if (role.MyPlayer == null || !role.MyPlayer.IsAlive() && !roleAction.TriggerWhenDead) return;
-                roleAction.Execute(role, parameters);
-            }
-        }
-    }
+    public static void SyncAll() => Players.GetPlayers().Do(p => p.SyncAll());
 
     public static string GetName(PlayerControl player)
     {
         return player == null ? "Unknown" : player.name;
     }
+    public static string GetName(FrozenPlayer? player)
+    {
+        return player == null ? "Unknown" : player.Name;
+    }
 
-    public static ulong GetGameID(this PlayerControl player) => GameIDs.GetOrCompute(player.PlayerId, () => _gameID++);
     public static ulong GetGameID(byte playerId) => GameIDs.GetOrCompute(playerId, () => _gameID++);
-
-    public static ulong NextMatchID() => MatchData.MatchID++;
-
-    public static IGamemode CurrentGamemode => ProjectLotus.GamemodeManager.CurrentGamemode;
-
-    //public static void ResetNames() => players.Values.Select(p => p.DynamicName).Do(name => name.ClearComponents());
-    public static GameState State = GameState.InLobby;
-    private static WinDelegate _winDelegate = new();
+    public static ulong GetGameID(this PlayerControl player) => GetGameID(player.PlayerId);
 
     public static WinDelegate GetWinDelegate() => _winDelegate;
 
     public static void Setup()
     {
-        LastMatch = MatchData;
-        MatchData = new MatchData();
         _winDelegate = new WinDelegate();
         RandomSpawn = new RandomSpawn();
         NameModels.Clear();
-        GetAllPlayers().Do(p => NameModels.Add(p.PlayerId, new SimpleNameModel(p)));
+        MatchData.Cleanup();
+        Players.GetPlayers().Do(p => NameModels.Add(p.PlayerId, new SimpleNameModel(p)));
+        GameIDs.ForEach(kv => GameIDs.Remove(kv.Key));
 
-        Hooks.GameStateHooks.GameStartHook.Propagate(new GameStateHookEvent(MatchData));
-        CurrentGamemode.SetupWinConditions(_winDelegate);
+        Hooks.GameStateHooks.GameStartHook.Propagate(new GameStateHookEvent(MatchData, CurrentGameMode));
+        ProjectLotus.GameModeManager.StartGame(_winDelegate);
     }
 
     public static void Cleanup(bool newLobby = false)
     {
         NameModels.Clear();
         if (newLobby) MatchData.Cleanup();
-        Hooks.GameStateHooks.GameEndHook.Propagate(new GameStateHookEvent(MatchData));
+        Hooks.GameStateHooks.GameEndHook.Propagate(new GameStateHookEvent(MatchData, CurrentGameMode));
         State = GameState.InLobby;
     }
+
+    [ModRPC((uint)ModCalls.SetCustomRole, RpcActors.Host, RpcActors.NonHosts, MethodInvocation.ExecuteBefore)]
+    public static void AssignRole(PlayerControl player, CustomRole roleDefinition, bool sendToClient = false) => MatchData.AssignRole(player, roleDefinition, sendToClient);
+
+    [ModRPC((uint)ModCalls.AddSubrole, RpcActors.Host, RpcActors.NonHosts, MethodInvocation.ExecuteBefore)]
+    public static void AssignSubRole(PlayerControl player, CustomRole role, bool sendToClient = false) => MatchData.AssignSubRole(player, role, sendToClient);
 }
 
 public enum GameState

@@ -9,6 +9,7 @@ using Lotus.GUI.Name.Holders;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Interactions.Interfaces;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.NeutralKilling;
 using Lotus.Utilities;
@@ -18,11 +19,12 @@ using Lotus.Options;
 using Lotus.Roles.Subroles;
 using UnityEngine;
 using VentLib.Networking.RPC;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using Object = UnityEngine.Object;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Undead.Roles;
 
@@ -46,7 +48,7 @@ public class Retributionist : NeutralKillingBase
         MyPlayer.NameModel().GetComponentHolder<CooldownHolder>()[0].SetPrefix("Time until Death: ").SetTextColor(RoleColor);
     }
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         if (attacker != null && target.PlayerId != attacker.PlayerId)
@@ -60,7 +62,7 @@ public class Retributionist : NeutralKillingBase
         return true;
     }
 
-    [RoleAction(RoleActionType.Interaction)]
+    [RoleAction(LotusActionType.Interaction)]
     private void InitialAttack(PlayerControl actor, Interaction interaction, ActionHandle handle)
     {
         if (retributionLimit != -1 && remainingRevenges == 0) return;
@@ -98,26 +100,29 @@ public class Retributionist : NeutralKillingBase
         Async.Schedule(() => RpcV3.Immediate(MyPlayer.MyPhysics.NetId, RpcCalls.BootFromVent).WritePacked(randomVent.Id).Send(MyPlayer.GetClientId()), NetUtils.DeriveDelay(1.1f));
     }
 
-    [RoleAction(RoleActionType.MeetingCalled)]
+    [RoleAction(LotusActionType.RoundEnd)]
     private void CheckRevenge()
     {
         if (!MyPlayer.IsAlive() || attacker == null) return;
         remote?.Delete();
         remote = null;
-        attacker.InteractWith(MyPlayer, new UnblockedInteraction(new FatalIntent(true), attacker.GetCustomRole()));
+        attacker.InteractWith(MyPlayer, new UnblockedInteraction(new FatalIntent(true), attacker.PrimaryRole()));
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Revenge Time Limit")
+            .SubOption(sub => sub
+                .KeyName("Revenge Time Limit", Translations.Options.RevengeTimeLimit)
                 .AddFloatRange(5, 60, 2.5f, 2, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(revengeDuration.SetDuration)
                 .Build())
-            .SubOption(sub => sub.Name("Invisible During Revenge")
+            .SubOption(sub => sub
+                .KeyName("Invisible During Revenge", Translations.Options.InvisibleRevenge)
                 .AddOnOffValues(false)
                 .BindBool(b => invisibleRevenge = b)
                 .Build())
-            .SubOption(sub => sub.Name("Number of Revenges")
+            .SubOption(sub => sub
+                .KeyName("Number of Revenges", Translations.Options.TotalRevengeAmount)
                 .Value(v => v.Text("∞").Color(ModConstants.Palette.InfinityColor).Value(-1).Build())
                 .AddIntRange(1, 20, 1, 0)
                 .BindInt(i => retributionLimit = i)
@@ -126,4 +131,21 @@ public class Retributionist : NeutralKillingBase
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier).RoleColor(new Color(0.73f, 0.66f, 0.69f));
+
+    [Localized(nameof(Retributionist))]
+    public static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(RevengeTimeLimit))]
+            public static string RevengeTimeLimit = "Revenge Time Limit";
+
+            [Localized(nameof(InvisibleRevenge))]
+            public static string InvisibleRevenge = "Invisible During Revenge";
+
+            [Localized(nameof(TotalRevengeAmount))]
+            public static string TotalRevengeAmount = "Number of Revenges";
+        }
+    }
 }

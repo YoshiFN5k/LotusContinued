@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Options.General;
 
@@ -23,42 +23,40 @@ public class MeetingOptions
         AllOptions.Add(new GameOptionTitleBuilder()
             .Title(MeetingOptionTranslations.SectionTitle)
             .Color(_optionColor)
-            .Tab(DefaultTabs.GeneralTab)
             .Build());
 
-        AllOptions.Add(Builder("Single Meeting Pool")
-            .IsHeader(true)
-            .Name(MeetingOptionTranslations.SingleMeetingPool)
-            .BindInt(i => MeetingButtonPool= i)
+        AllOptions.Add(new GameOptionBuilder()
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Color(Color.red).Value(-1).Build())
             .AddIntRange(1, 30)
-            .BuildAndRegister());
+            .Builder("Single Meeting Pool", _optionColor)
+            .IsHeader(true)
+            .Name(MeetingOptionTranslations.SingleMeetingPool)
+            .BindInt(i => MeetingButtonPool = i)
+            .Build());
 
-        AllOptions.Add(Builder("Resolve Tie Mode")
-            .Name(MeetingOptionTranslations.ResolveTieMode)
+        AllOptions.Add(new GameOptionBuilder()
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Color(Color.red).Value(0).Build())
             .Value(v => v.Text(MeetingOptionTranslations.RandomPlayer).Color(ModConstants.Palette.InfinityColor).Value(1).Build())
             .Value(v => v.Text(MeetingOptionTranslations.KillAll).Color(ModConstants.Palette.GeneralColor4).Value(2).Build())
+            .Builder("Resolve Tie Mode", _optionColor)
+            .Name(MeetingOptionTranslations.ResolveTieMode)
             .BindInt(i => ResolveTieMode = (ResolveTieMode)i)
-            .BuildAndRegister());
+            .Build());
 
-        AllOptions.Add(Builder("No Vote Mode")
-            .Name(MeetingOptionTranslations.SkipVoteMode)
+        AllOptions.Add(new GameOptionBuilder()
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Color(Color.red).Value(0).Build())
             .Value(v => v.Text(MeetingOptionTranslations.RandomVote).Color(ModConstants.Palette.InfinityColor).Value(1).Build())
             .Value(v => v.Text(MeetingOptionTranslations.ReverseVote).Color(new Color(0.55f, 0.73f, 1f)).Value(2).Build())
             .Value(v => v.Text(MeetingOptionTranslations.ExplodeOnSkip).Color(new Color(1f, 0.4f, 0.2f)).Value(3).Build())
+            .Builder("No Vote Mode", _optionColor)
+            .Name(MeetingOptionTranslations.SkipVoteMode)
             .BindInt(i => NoVoteMode = (SkipVoteMode)i)
-            .BuildAndRegister());
+            .Build());
 
-        additionalOptions.ForEach(o =>
-        {
-            o.Register();
-            AllOptions.Add(o);
-        });
+        AllOptions.AddRange(additionalOptions);
     }
 
-    private GameOptionBuilder Builder(string key) => new GameOptionBuilder().Key(key).Tab(DefaultTabs.GeneralTab).Color(_optionColor);
+    private GameOptionBuilder Builder(string key) => new GameOptionBuilder().Key(key).Color(_optionColor);
 
     public static class MeetingOptionTranslations
     {

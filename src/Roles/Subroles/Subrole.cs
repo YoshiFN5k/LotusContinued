@@ -4,14 +4,15 @@ using System.Linq;
 using Lotus.Factions;
 using Lotus.Factions.Interfaces;
 using Lotus.Extensions;
-using Lotus.Roles.Extra;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Interfaces;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
+using Lotus.Roles.Builtins;
 
 namespace Lotus.Roles.Subroles;
 
-public abstract class Subrole: CustomRole, ISubrole
+public abstract class Subrole : CustomRole, ISubrole
 {
     public readonly HashSet<IFaction> FactionRestrictions = new();
     public readonly HashSet<Type> RoleRestrictions = new();
@@ -43,8 +44,8 @@ public abstract class Subrole: CustomRole, ISubrole
 
     public virtual bool IsAssignableTo(PlayerControl player)
     {
-        CustomRole role = player.GetCustomRole();
-        if (role is GM) return false;
+        CustomRole role = player.PrimaryRole();
+        if (role is GameMaster) return false;
         if (role.BannedModifiers().Contains(this.GetType())) return false;
 
         Type factionType = role.Faction.GetType();
@@ -62,7 +63,9 @@ public abstract class Subrole: CustomRole, ISubrole
         return anyMatchRoles || FactionCompatabilityMode is not CompatabilityMode.Whitelisted;
     }
 
-    protected override RoleModifier Modify(RoleModifier roleModifier) => roleModifier.RoleFlags(RoleFlag.IsSubrole).Faction(FactionInstances.Modifiers);
+    protected override RoleModifier Modify(RoleModifier roleModifier) => roleModifier
+        .RoleFlags(RoleFlag.IsSubrole)
+        .Faction(FactionInstances.Modifiers);
 
     protected GameOptionBuilder AddRestrictToCrew(GameOptionBuilder builder, bool defaultOn = false)
     {

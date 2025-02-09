@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Lotus.Roles.RoleGroups.Crew.Potions;
 using Lotus.Extensions;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 

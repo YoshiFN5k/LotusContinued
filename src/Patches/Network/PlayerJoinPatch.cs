@@ -2,20 +2,16 @@ using System;
 using HarmonyLib;
 using InnerNet;
 using Lotus.API.Odyssey;
-using Lotus.API.Player;
 using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
-using Lotus.Chat;
-using Lotus.Gamemodes;
 using Lotus.Logging;
 using Lotus.Managers;
 using Lotus.Utilities;
-using VentLib.Logging;
+using Lotus.Options;
 using VentLib.Utilities;
 using VentLib.Utilities.Attributes;
-using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Harmony.Attributes;
-using static Lotus.Options.GeneralOptions;
+using xCloud;
 using static Platforms;
 
 
@@ -23,9 +19,11 @@ namespace Lotus.Patches.Network;
 
 [LoadStatic]
 [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnPlayerJoined))]
-internal class PlayerJoinPatch
+public class PlayerJoinPatch
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(PlayerJoinPatch));
     private static FixedUpdateLock _autostartLock = new(10f);
+
     static PlayerJoinPatch()
     {
         PluginDataManager.TemplateManager.RegisterTag("autostart", "Template triggered when the autostart timer begins.");
@@ -33,11 +31,11 @@ internal class PlayerJoinPatch
 
     public static void Postfix(AmongUsClient __instance, [HarmonyArgument(0)] ClientData client)
     {
-        VentLogger.Trace($"{client.PlayerName} (ClientID={client.Id}) (Platform={client.PlatformData.PlatformName}) joined the game.", "Session");
+        log.Trace($"{client.PlayerName} (ClientID={client.Id}) (Platform={client.PlatformData.Platform}) (FriendCode={client.FriendCode}) joined the game.", "Session");
         if (DestroyableSingleton<FriendsListManager>.Instance.IsPlayerBlockedUsername(client.FriendCode) && AmongUsClient.Instance.AmHost)
         {
             AmongUsClient.Instance.KickPlayer(client.Id, true);
-            VentLogger.Old($"ブロック済みのプレイヤー{client?.PlayerName}({client.FriendCode})をBANしました。", "BAN");
+            log.Info($"ブロック済みのプレイヤー{client.PlayerName}({client.FriendCode})をBANしました。", "BAN");
         }
 
         Hooks.NetworkHooks.ClientConnectHook.Propagate(new ClientConnectHookEvent(client));
@@ -46,10 +44,15 @@ internal class PlayerJoinPatch
 
     private static void EnforceAdminSettings(ClientData client, PlayerControl player)
     {
+        if (player == null || client == null)
+        {
+            log.Trace($"Could not enforce admin settings for {client?.PlayerName}.");
+            return;
+        }
         player.name = client.PlayerName;
         bool kickPlayer = false;
-        kickPlayer = kickPlayer || AdminOptions.KickPlayersWithoutFriendcodes && client.FriendCode == "";
-        kickPlayer = kickPlayer || client.PlatformData.Platform is Android or IPhone && AdminOptions.KickMobilePlayers;
+        kickPlayer = kickPlayer || GeneralOptions.AdminOptions.KickPlayersWithoutFriendcodes && client.FriendCode == "" && AmongUsClient.Instance.NetworkMode is not NetworkModes.LocalGame;
+        kickPlayer = kickPlayer || client.PlatformData.Platform is Android or IPhone && GeneralOptions.AdminOptions.KickMobilePlayers;
 
         if (kickPlayer)
         {
@@ -57,40 +60,40 @@ internal class PlayerJoinPatch
             return;
         }
 
-        PluginDataManager.BanManager.CheckBanPlayer(client);
+        PluginDataManager.WhitelistManager.CheckWhitelistPlayer(player, client);
+        PluginDataManager.BanManager.CheckBanPlayer(player, client);
 
         Hooks.PlayerHooks.PlayerJoinHook.Propagate(new PlayerHookEvent(player));
-        Game.CurrentGamemode.Trigger(GameAction.GameJoin, client);
         CheckAutostart();
     }
 
     public static void CheckAutostart()
     {
-        if (!AdminOptions.AutoStartEnabled) return;
-        if (AdminOptions.AutoStartPlayerThreshold == -1 || PlayerControl.AllPlayerControls.Count < AdminOptions.AutoStartPlayerThreshold)
+        if (!GeneralOptions.AdminOptions.AutoStartEnabled) return;
+        if (GeneralOptions.AdminOptions.AutoStartPlayerThreshold == -1 || PlayerControl.AllPlayerControls.Count < GeneralOptions.AdminOptions.AutoStartPlayerThreshold)
         {
-            if (AdminOptions.AutoStartMaxTime == -1)
+            if (GeneralOptions.AdminOptions.AutoStartMaxTime == -1)
             {
                 GameStartManager.Instance.ResetStartState();
                 return;
             }
-            DevLogger.Log(AdminOptions.AutoCooldown.TimeRemaining());
+            DevLogger.Log("Auto Cooldown. Time Remaining: " + GeneralOptions.AdminOptions.AutoCooldown.TimeRemaining());
             GameStartManager.Instance.BeginGame();
-            float timeRemaining = AdminOptions.AutoCooldown.TimeRemaining();
+            float timeRemaining = GeneralOptions.AdminOptions.AutoCooldown.TimeRemaining();
             GameStartManager.Instance.countDownTimer = timeRemaining;
         }
         else
         {
             if (_autostartLock.AcquireLock()) PluginDataManager.TemplateManager.ShowAll("autostart", PlayerControl.LocalPlayer);
             GameStartManager.Instance.BeginGame();
-            GameStartManager.Instance.countDownTimer = AdminOptions.AutoStartGameCountdown;
+            GameStartManager.Instance.countDownTimer = GeneralOptions.AdminOptions.AutoStartGameCountdown;
         }
     }
 
     [QuickPostfix(typeof(GameStartManager), nameof(GameStartManager.Update))]
     private static void HookStartManager(GameStartManager __instance)
     {
-        if (AdminOptions.AutoStartMaxTime == -1) return;
+        if (GeneralOptions.AdminOptions.AutoStartMaxTime == -1) return;
         if (Math.Abs(__instance.countDownTimer - 10f) < 0.5f && _autostartLock.AcquireLock())
             PluginDataManager.TemplateManager.ShowAll("autostart", PlayerControl.LocalPlayer);
     }

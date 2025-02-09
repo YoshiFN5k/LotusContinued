@@ -8,6 +8,7 @@ using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name.Holders;
 using Lotus.Options;
 using Lotus.Roles.Interactions;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Utilities;
@@ -19,17 +20,19 @@ using Lotus.Roles.Interfaces;
 using Lotus.Roles.Internals;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using Object = UnityEngine.Object;
+using Lotus.API.Player;
+using Lotus.Logging;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
 [Localized("Roles.Postman")]
-public class Postman: Crewmate
+public class Postman : Crewmate
 {
     [Localized("Announcement")]
     private static string _postmanAnnouncement = "The Postman has completed all of their deliveries. Vote them otherwise they win the game.";
@@ -45,7 +48,6 @@ public class Postman: Crewmate
     private bool completedDelivery = true;
     [NewOnSetup] private List<Remote<IndicatorComponent>> components;
 
-
     public override bool TasksApplyToTotal() => false;
 
     protected override void OnTaskComplete(Optional<NormalPlayerTask> _)
@@ -54,7 +56,7 @@ public class Postman: Crewmate
         else MyPlayer.InteractWith(MyPlayer, new UnblockedInteraction(new FatalIntent(), this));
     }
 
-    [RoleAction(RoleActionType.AnyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
     private void CheckPlayerDeaths(PlayerControl deadPlayer)
     {
         if (deadPlayer.PlayerId == MyPlayer.PlayerId) components.ForEach(c => c.Delete());
@@ -64,8 +66,8 @@ public class Postman: Crewmate
         AssignNewTarget();
     }
 
-    [RoleAction(RoleActionType.AnyExiled)]
-    private void CheckEndMeeting(GameData.PlayerInfo exiled)
+    [RoleAction(LotusActionType.Exiled, ActionFlag.GlobalDetector)]
+    private void CheckEndMeeting(PlayerControl exiled)
     {
         if (exiled.PlayerId == MyPlayer.PlayerId) components.ForEach(c => c.Delete());
         if (completedDelivery) return;
@@ -73,16 +75,17 @@ public class Postman: Crewmate
         AssignNewTarget();
     }
 
-    [RoleAction(RoleActionType.FixedUpdate)]
+    [RoleAction(LotusActionType.FixedUpdate)]
     private void CheckForDelivery()
     {
         if (completedDelivery) return;
         if (DateTime.Now.Subtract(lastCheck).TotalSeconds < UpdateTimeout) return;
         lastCheck = DateTime.Now;
         if (trackedPlayer.IsAlive())
+        {
             if (RoleUtils.GetPlayersWithinDistance(MyPlayer, 0.8f).All(p => p.PlayerId != trackedPlayer.PlayerId)) return;
-        else if (!trackedPlayer.IsAlive())
-            if (Object.FindObjectsOfType<DeadBody>().All(b => Vector2.Distance(b.TruePosition, MyPlayer.GetTruePosition()) > 0.8)) return;
+        }
+        else if (Object.FindObjectsOfType<DeadBody>().All(b => Vector2.Distance(b.TruePosition, MyPlayer.GetTruePosition()) > 0.8)) return;
 
 
         completedDelivery = true;
@@ -90,14 +93,16 @@ public class Postman: Crewmate
         components.Clear();
     }
 
-    [RoleAction(RoleActionType.RoundEnd)]
+    [RoleAction(LotusActionType.RoundEnd)]
     private void AnnounceGameWin()
     {
+        if (!completedDelivery && targetDiesMode == 0 && (!trackedPlayer?.IsAlive() ?? false))
+            AssignNewTarget();
         if (!completedDelivery || TasksComplete != TotalTasks) return;
         Async.Schedule(() => ChatHandler.Of(_postmanAnnouncement).Send(), 1f);
     }
 
-    [RoleAction(RoleActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundStart)]
     private void CheckGameWin()
     {
         if (completedDelivery && TasksComplete == TotalTasks)
@@ -108,7 +113,12 @@ public class Postman: Crewmate
     {
         components.ForEach(c => c.Delete());
         components.Clear();
-        List<PlayerControl> candidates = Game.GetAlivePlayers().Where(p => p.PlayerId != MyPlayer.PlayerId).ToList();
+        List<byte> bodies = new List<byte>();
+        Object.FindObjectsOfType<DeadBody>().ForEach(delegate (DeadBody body)
+        {
+            bodies.Add(body.ParentId);
+        });
+        List<PlayerControl> candidates = Players.GetPlayers().Where(p => p.PlayerId != MyPlayer.PlayerId && (!p.Data.IsDead || (p.Data.IsDead && bodies.Contains(p.PlayerId)))).ToList();
         if (candidates.Count == 0) return;
         completedDelivery = false; // Important
 
@@ -125,11 +135,13 @@ public class Postman: Crewmate
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddTaskOverrideOptions(base.RegisterOptions(optionStream)
             .Tab(DefaultTabs.NeutralTab)
-            .SubOption(sub => sub.Name("Has Arrow To Targets")
+            .SubOption(sub => sub
+                .KeyName("Has Arrow To Targets", Translations.Options.ArrowsToTargets)
                 .AddOnOffValues()
                 .BindBool(b => hasArrowToTarget = b)
                 .Build())
-            .SubOption(sub => sub.Name("When Target Dies")
+            .SubOption(sub => sub
+                .KeyName("When Target Dies", Translations.Options.TargetDies)
                 .Value(v => v.Text("Deliver to Body").Value(0).Build())
                 .Value(v => v.Text("Reassign in Meeting").Value(1).Build())
                 .Value(v => v.Text("Reassign in Game").Value(2).Build())
@@ -140,4 +152,18 @@ public class Postman: Crewmate
         .RoleColor(new Color(0.6f, 0.6f, 0.6f))
         .SpecialType(SpecialType.Neutral)
         .Faction(FactionInstances.Neutral);
+
+    [Localized(nameof(Postman))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(ArrowsToTargets))]
+            public static string ArrowsToTargets = "Has Arrows to Targets";
+
+            [Localized(nameof(TargetDies))]
+            public static string TargetDies = "When Target Dies";
+        }
+    }
 }

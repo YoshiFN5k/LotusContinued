@@ -4,6 +4,7 @@ using Lotus.API.Odyssey;
 using Lotus.Factions;
 using Lotus.Factions.Impostors;
 using Lotus.Options;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Extensions;
@@ -12,19 +13,35 @@ using Lotus.Roles.Internals;
 using Lotus.Victory;
 using Lotus.Victory.Conditions;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
+using Lotus.API.Player;
+using VentLib.Utilities.Extensions;
+using Lotus.GUI.Name.Holders;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 
-public class Egoist: Shapeshifter
+public class Egoist : Shapeshifter
 {
     private static EgoistFaction _egoistFaction = new();
     private bool egoistIsShapeshifter;
 
-    protected override void PostSetup() => Game.GetWinDelegate().AddSubscriber(PreventImpostorWinCondition);
+    protected override void PostSetup()
+    {
+        base.PostSetup();
+        Players.GetAllPlayers()
+            .Where(p => p.PrimaryRole().Faction is ImpostorFaction)
+            .ForEach(p =>
+            {
+                RoleHolder holder = p.NameModel().GetComponentHolder<RoleHolder>();
+                holder.AddListener(component => component.AddViewer(MyPlayer));
+                holder.Components().ForEach(components => components.AddViewer(MyPlayer));
+            });
+        Game.GetWinDelegate().AddSubscriber(PreventImpostorWinCondition);
+    }
 
-    [RoleAction(RoleActionType.Attack)]
-    public override bool TryKill(PlayerControl target) => base.TryKill(target);
+    [RoleAction(LotusActionType.Attack)]
+    public override bool TryKill(PlayerControl target) => target.PrimaryRole().Faction is not ImpostorFaction && base.TryKill(target);
 
     public override Relation Relationship(CustomRole role)
     {
@@ -41,13 +58,17 @@ public class Egoist: Shapeshifter
         else winDelegate.CancelGameWin();
     }
 
+    protected override string ForceRoleImageDirectory() => "Lotus.assets.RoleImages.Neutral.egoist";
+
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .Tab(DefaultTabs.NeutralTab)
-            .SubOption(sub => AddShapeshiftOptions(sub.Name("Egoist is Shapeshifter")
+            .SubOption(sub => AddShapeshiftOptions(sub
+                .KeyName("IsShapeshifter", Translations.Options.IsShapeshifter)
                 .BindBool(b => egoistIsShapeshifter = b)
                 .ShowSubOptionPredicate(b => (bool)b)
-                .AddOnOffValues()).Build());
+                .AddBoolean())
+                .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
@@ -66,6 +87,17 @@ public class Egoist: Shapeshifter
         {
             if (Game.State is not (GameState.InLobby or GameState.InIntro)) return Relation.None;
             return other is ImpostorFaction ? Relation.FullAllies : Relation.None;
+        }
+    }
+
+    [Localized(nameof(Egoist))]
+    public static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(IsShapeshifter))]
+            public static string IsShapeshifter = "Egoist is a Shapeshifter";
         }
     }
 }

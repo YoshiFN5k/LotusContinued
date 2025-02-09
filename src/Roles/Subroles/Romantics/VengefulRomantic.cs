@@ -8,16 +8,17 @@ using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name.Holders;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 
 namespace Lotus.Roles.Subroles.Romantics;
 
-public class VengefulRomantic: Subrole
+public class VengefulRomantic : Subrole
 {
     private bool canKillBystander;
     private bool suicideAfterRevenge;
@@ -31,16 +32,16 @@ public class VengefulRomantic: Subrole
 
     protected override void PostSetup()
     {
-        MyPlayer.GetCustomRole().RoleFlags |= RoleFlag.CannotWinAlone;
+        MyPlayer.PrimaryRole().RoleFlags |= RoleFlag.CannotWinAlone;
         RoleHolder roleHolder = MyPlayer.NameModel().GetComponentHolder<RoleHolder>();
-        remote = roleHolder.Insert(0, new RoleComponent(new LiveString(Translations.Adjective, RoleColor), Game.IgnStates, ViewMode.Additive, MyPlayer));
+        remote = roleHolder.Insert(0, new RoleComponent(new LiveString(Translations.Adjective, RoleColor), Game.InGameStates, ViewMode.Additive, MyPlayer));
 
         SubroleHolder subroleHolder = MyPlayer.NameModel().GetComponentHolder<SubroleHolder>();
         if (subroleHolder.Count > 0) subroleHolder.RemoveAt(subroleHolder.Count - 1);
         MyPlayer.NameModel().Render(force: true);
     }
 
-    [RoleAction(RoleActionType.OnPet, priority: Priority.VeryHigh)]
+    [RoleAction(LotusActionType.OnPet, priority: Priority.VeryHigh)]
     public void EnablePetKill(ActionHandle handle)
     {
         PlayerControl? target = MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrDefault();
@@ -57,7 +58,7 @@ public class VengefulRomantic: Subrole
         MyPlayer.InteractWith(MyPlayer, new UnblockedInteraction(new FatalIntent(), this));
     }
 
-    [RoleAction(RoleActionType.AnyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
     public void CheckPlayerDeaths(PlayerControl dead, PlayerControl killer)
     {
         if (dead.PlayerId != killerId && killer.PlayerId == MyPlayer.PlayerId) MyPlayer.InteractWith(MyPlayer, new UnblockedInteraction(new FatalIntent(), this));
@@ -67,7 +68,7 @@ public class VengefulRomantic: Subrole
             if (killer.PlayerId == MyPlayer.PlayerId && suicideAfterRevenge) MyPlayer.InteractWith(MyPlayer, new UnblockedInteraction(new FatalIntent(), this));
             remote?.Delete();
             Async.Schedule(() => MyPlayer.GetSubroles().Remove(this), 0.001f);
-            MyPlayer.GetCustomRole().Faction = faction;
+            MyPlayer.PrimaryRole().Faction = faction;
         }
     }
 
@@ -96,9 +97,12 @@ public class VengefulRomantic: Subrole
                 .BindBool(b => suicideAfterRevenge = b)
                 .Build());
 
+    protected override RoleType GetRoleType() => RoleType.Transformation;
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleFlags(RoleFlag.TransformationRole)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
             .RoleColor(new Color(0.71f, 0.23f, 0.35f));
 
     [Localized(nameof(VengefulRomantic))]

@@ -5,13 +5,13 @@ using Lotus.Factions;
 using Lotus.Managers.History.Events;
 using Lotus.Options;
 using Lotus.Roles.Interactions;
-using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.API;
 using Lotus.API.Stats;
 using Lotus.Extensions;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 
@@ -53,6 +53,8 @@ public class CrewPostor : Engineer
                 .AddOnOffValues()
                 .BindBool(b => refreshTasks = b)
                 .Build()));
+
+    protected override string ForceRoleImageDirectory() => "Lotus.assets.RoleImages.Imposter.crewpostor";
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)

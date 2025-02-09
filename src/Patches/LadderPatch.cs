@@ -1,13 +1,11 @@
 using System.Collections.Generic;
 using HarmonyLib;
 using Lotus.Extensions;
-using Lotus.Options;
 using Lotus.Roles;
 using Lotus.Roles.Interactions;
-using Lotus.RPC;
 using Lotus.Utilities;
+using Lotus.Options;
 using UnityEngine;
-using VentLib.Networking.RPC;
 using VentLib.Utilities;
 
 namespace Lotus.Patches
@@ -53,7 +51,7 @@ namespace Lotus.Patches
                         ushort num2 = (ushort)(NetHelpers.YRange.ReverseLerp(targetPos.y) * 65535f);
 
                         Utils.Teleport(player.NetTransform, new Vector2(num, num2));
-                        player.InteractWith(player, new UnblockedInteraction(new FatalIntent(), player.GetCustomRole()));
+                        player.InteractWith(player, new UnblockedInteraction(new FatalIntent(), player.PrimaryRole()));
                     }, 0.05f);
                 }
             }

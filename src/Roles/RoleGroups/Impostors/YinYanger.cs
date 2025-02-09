@@ -6,6 +6,7 @@ using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name.Holders;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Extensions;
@@ -13,7 +14,7 @@ using Lotus.GUI;
 using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 
@@ -34,7 +35,7 @@ public class YinYanger : Vanilla.Impostor
     [UIComponent(UI.Text)]
     private string ModeIndicator() => !InYinMode ? "" : Color.black.Colorize("Yin") + Color.white.Colorize("Yanging");
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         if (!InYinMode) return base.TryKill(target);
@@ -56,8 +57,8 @@ public class YinYanger : Vanilla.Impostor
     }
 
 
-    [RoleAction(RoleActionType.MyDeath)]
-    [RoleAction(RoleActionType.RoundEnd)]
+    [RoleAction(LotusActionType.PlayerDeath)]
+    [RoleAction(LotusActionType.RoundEnd)]
     private void RoundEnd()
     {
         if (yinPlayer != null) remotes.GetValueOrDefault(yinPlayer.PlayerId)?.Delete();
@@ -66,7 +67,7 @@ public class YinYanger : Vanilla.Impostor
         yangPlayer = null;
     }
 
-    [RoleAction(RoleActionType.FixedUpdate)]
+    [RoleAction(LotusActionType.FixedUpdate)]
     private void YinYangerKillCheck()
     {
         if (!fixedUpdateLock.AcquireLock()) return;
@@ -74,8 +75,8 @@ public class YinYanger : Vanilla.Impostor
 
         if (yinPlayer.GetPlayersInAbilityRangeSorted().All(p => p.PlayerId != yangPlayer.PlayerId)) return;
         lazyDefer = true;
-        yinPlayer.InteractWith(yangPlayer, new ManipulatedInteraction(new FatalIntent(), yinPlayer.GetCustomRole(), MyPlayer));
-        yangPlayer.InteractWith(yinPlayer, new ManipulatedInteraction(new FatalIntent(), yangPlayer.GetCustomRole(), MyPlayer));
+        yinPlayer.InteractWith(yangPlayer, new ManipulatedInteraction(new FatalIntent(), yinPlayer.PrimaryRole(), MyPlayer));
+        yangPlayer.InteractWith(yinPlayer, new ManipulatedInteraction(new FatalIntent(), yangPlayer.PrimaryRole(), MyPlayer));
         lazyDefer = false;
 
         remotes.GetValueOrDefault(yinPlayer.PlayerId)?.Delete();
@@ -85,8 +86,8 @@ public class YinYanger : Vanilla.Impostor
         yangPlayer = null;
     }
 
-    [RoleAction(RoleActionType.Disconnect)]
-    [RoleAction(RoleActionType.AnyDeath)]
+    [RoleAction(LotusActionType.Disconnect)]
+    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
     private void CheckPlayerDeaths(PlayerControl player)
     {
         if (lazyDefer) return;
@@ -97,7 +98,7 @@ public class YinYanger : Vanilla.Impostor
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddKillCooldownOptions(base.RegisterOptions(optionStream),
-            key: "Yin Yang Cooldown", name: Localizer.Translate($"Roles.{nameof(YinYanger)}.YinYangCooldown", "Yin Yang Cooldown"));
+            key: "Yin Yang Cooldown", name: Localizer.Translate($"Roles.{nameof(YinYanger)}.Options.YinYangCooldown", "Yin Yang Cooldown"));
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)

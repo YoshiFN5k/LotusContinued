@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using Lotus.API.Odyssey;
+using Lotus.API.Player;
 using Lotus.GUI.Name.Impl;
 using Lotus.GUI.Name.Interfaces;
 using Lotus.Options;
@@ -17,13 +18,13 @@ public class SimpleComponent : INameModelComponent
 
     protected LiveString MainText;
     private Func<List<PlayerControl>> viewers;
-    private readonly List<PlayerControl> additionalViewers = GeneralOptions.GameplayOptions.GhostsSeeInfo ? Game.GetDeadPlayers().ToList() : new List<PlayerControl>();
+    private readonly List<PlayerControl> additionalViewers = GeneralOptions.GameplayOptions.GhostsSeeInfo ? Players.GetPlayers(PlayerFilter.Dead).ToList() : new List<PlayerControl>();
     private ViewMode viewMode;
     private GameState[] gameStates;
 
     protected Optional<float> size = Optional<float>.Null();
 
-    private SimpleComponent() {}
+    private SimpleComponent() { }
 
     protected SimpleComponent(LiveString mainText, GameState[] gameStates, ViewMode viewMode = Name.ViewMode.Additive, Func<List<PlayerControl>>? viewers = null)
     {
@@ -87,9 +88,9 @@ public class SimpleComponent : INameModelComponent
 
     public void RemoveViewer(byte playerId) => additionalViewers.RemoveAll(v => v.PlayerId == playerId);
 
-    public virtual string GenerateText()
+    public virtual string GenerateText(GameState state)
     {
-        string newString = Prefixes.Join(delimiter: "") + MainText + Suffixes.Join(delimiter: "");
+        string newString = Prefixes.Select(p => p.GetValue(state)).Join(delimiter: "") + MainText.GetValue(state) + Suffixes.Select(s => s.GetValue(state)).Join(delimiter: "");
         size.IfPresent(s => newString = TextUtils.ApplySize(s, newString));
         return newString;
     }

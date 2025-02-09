@@ -2,7 +2,8 @@ using Lotus.Utilities;
 using Lotus.Extensions;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
+using System.Collections.Generic;
 
 namespace Lotus.Options.Roles;
 
@@ -15,23 +16,33 @@ public class SubroleOptions
     public bool EvenlyDistributeModifiers;
     public bool UncappedModifiers => ModifierLimits == -1;
 
+    public List<GameOption> AllOptions = new();
 
     public SubroleOptions()
     {
-        Builder("Maximum Modifiers per Player")
-            .Name(TranslationUtil.Colorize(SubroleOptionTranslations.ModifierMaximumText, ModifierColor))
-            .IsHeader(true)
+        AllOptions.Add(new GameOptionTitleBuilder()
+            .Title(SubroleOptionTranslations.SubroleOptions)
+            // .Tab(DefaultTabs.NeutralTab)
+            .Build());
+
+        AllOptions.Add(new GameOptionBuilder()
             .Value(v => v.Text(SubroleOptionTranslations.NoModifiersText).Color(Color.red).Value(0).Build())
             .Value(v => v.Text(SubroleOptionTranslations.UncappedText).Color(new Color(0.19f, 0.8f, 0f)).Value(-1).Build())
             .AddIntRange(0, 10, 1)
+            .Builder("Maximum Modifiers per Player")
+            .Name(TranslationUtil.Colorize(SubroleOptionTranslations.ModifierMaximumText, ModifierColor))
+            .IsHeader(true)
             .BindInt(i => ModifierLimits = i)
-            .BuildAndRegister();
+            // .Tab(DefaultTabs.MiscTab)
+            .Build());
 
-        Builder("Evenly Distribute Modifiers")
-            .Name(TranslationUtil.Colorize(SubroleOptionTranslations.EvenlyDistributeModifierText, ModifierColor))
+        AllOptions.Add(new GameOptionBuilder()
             .AddOnOffValues()
+            .Builder("Evenly Distribute Modifiers")
+            .Name(TranslationUtil.Colorize(SubroleOptionTranslations.EvenlyDistributeModifierText, ModifierColor))
             .BindBool(b => EvenlyDistributeModifiers = b)
-            .BuildAndRegister();
+            // .Tab(DefaultTabs.MiscTab)
+            .Build());
 
     }
 
@@ -40,6 +51,8 @@ public class SubroleOptions
     [Localized("Subroles")]
     private static class SubroleOptionTranslations
     {
+        [Localized(nameof(SubroleOptions))]
+        public static string SubroleOptions = "Subrole Options";
         [Localized(nameof(UncappedText))]
         public static string UncappedText = "Uncapped";
 

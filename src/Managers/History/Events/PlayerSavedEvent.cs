@@ -9,7 +9,7 @@ namespace Lotus.Managers.History.Events;
 
 public class PlayerSavedEvent : IRecipientEvent
 {
-    private PlayerControl savedPlayer;
+    private FrozenPlayer? savedPlayer;
     private Optional<CustomRole> playerRole;
     private Optional<FrozenPlayer> savior;
     private Optional<CustomRole> saviorRole;
@@ -20,15 +20,15 @@ public class PlayerSavedEvent : IRecipientEvent
 
     public PlayerSavedEvent(PlayerControl savedPlayer, PlayerControl? savior, PlayerControl? killer)
     {
-        this.savedPlayer = savedPlayer;
-        playerRole = Optional<CustomRole>.Of(this.savedPlayer.GetCustomRole());
-        this.savior = Optional<FrozenPlayer>.Of(Game.MatchData.FrozenPlayer(savior));
-        this.saviorRole = this.savior.FlatMap(p => new UnityOptional<PlayerControl>(p.MyPlayer)).Map(p => p.GetCustomRole());
+        this.savedPlayer = Game.MatchData.GetFrozenPlayer(savedPlayer);
+        playerRole = Optional<CustomRole>.Of(savedPlayer.PrimaryRole());
+        this.savior = Optional<FrozenPlayer>.Of(Game.MatchData.GetFrozenPlayer(savior));
+        this.saviorRole = this.savior.FlatMap(p => new UnityOptional<PlayerControl>(p.MyPlayer)).Map(p => p.PrimaryRole());
         this.killer = Optional<PlayerControl>.Of(killer);
-        this.killerRole = this.killer.Map(p => p.GetCustomRole());
+        this.killerRole = this.killer.Map(p => p.PrimaryRole());
     }
 
-    public PlayerControl Player() => savedPlayer;
+    public FrozenPlayer Player() => savedPlayer!;
 
     public Optional<CustomRole> RelatedRole() => playerRole;
 

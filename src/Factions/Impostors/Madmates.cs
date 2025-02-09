@@ -3,13 +3,9 @@ using VentLib.Localization.Attributes;
 
 namespace Lotus.Factions.Impostors;
 
-[Localized("Factions.Madmates")]
 public class Madmates : ImpostorFaction, ISubFaction<ImpostorFaction>
 {
-    [Localized(nameof(Name))]
-    private static string name = "Madmates";
-
-    public override string Name() => name;
+    public override string Name() => FactionTranslations.Madmates.Name;
 
     public Relation MainFactionRelationship() => Relation.SharedWinners;
 

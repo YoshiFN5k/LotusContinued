@@ -8,25 +8,29 @@ using Lotus.Options;
 using Lotus.Roles.Events;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Attributes;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Overrides;
+using Lotus.Roles.RoleGroups.Impostors;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Logging;
 using VentLib.Networking.RPC;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
-public class Chameleon: Engineer
+public class Chameleon : Engineer
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Chameleon));
     private static IAccumulativeStatistic<int> _timesInvisible = Statistic<int>.CreateAccumulative($"Roles.{nameof(Chameleon)}.TimesInvisible", () => Translations.TimesInvisibleStatistic);
     public static readonly List<Statistic> ChameleonStatistics = new() { _timesInvisible };
     public override List<Statistic> Statistics() => ChameleonStatistics;
 
+    private ReturnLocation returnLocation;
     private float invisibilityCooldown;
     private Cooldown invisibleTimer;
 
@@ -35,7 +39,7 @@ public class Chameleon: Engineer
     [UIComponent(UI.Text)]
     public string HiddenTimer() => invisibleTimer.Format(TranslationUtil.Colorize(Translations.HiddenText, RoleColor), autoFormat: true);
 
-    [RoleAction(RoleActionType.MyEnterVent)]
+    [RoleAction(LotusActionType.VentEntered)]
     private void ChameleonEnterVent(Vent vent, ActionHandle handle)
     {
         if (invisibleTimer.NotReady())
@@ -46,17 +50,27 @@ public class Chameleon: Engineer
 
         _timesInvisible.Update(MyPlayer.UniquePlayerId(), i => i + 1);
         initialVent = Optional<Vent>.Of(vent);
-        invisibleTimer.Start();
-        Game.MatchData.GameHistory.AddEvent(new GenericAbilityEvent(MyPlayer, $"{MyPlayer.name} began swooping."));
-        Async.Schedule(() => RpcV3.Immediate(MyPlayer.MyPhysics.NetId, RpcCalls.BootFromVent).WritePacked(vent.Id).Send(MyPlayer.GetClientId()), 0.4f);
-        Async.Schedule(EndInvisibility, invisibleTimer.Duration);
+        invisibleTimer.StartThenRun(EndInvisibility);
+        Game.MatchData.GameHistory.AddEvent(new GenericAbilityEvent(MyPlayer, $"{MyPlayer.name} became invisible as Chameleon."));
+        Async.Schedule(() => RpcV3.Immediate(MyPlayer.MyPhysics.NetId, RpcCalls.BootFromVent).WritePacked(vent.Id).Send(MyPlayer.GetClientId()), NetUtils.DeriveDelay(0.5f));
     }
 
     private void EndInvisibility()
     {
+        if (Game.State is not GameState.Roaming) return;
         int ventId = initialVent.Map(v => v.Id).OrElse(0);
-        VentLogger.Trace($"Ending Swooping (ID: {ventId})");
-        Async.Schedule(() => MyPlayer.MyPhysics.RpcBootFromVent(ventId), 0.4f);
+        log.Trace($"Ending Invisible (ID: {ventId})");
+        switch (returnLocation)
+        {
+            case ReturnLocation.Start:
+                Async.Schedule(() => MyPlayer.MyPhysics.RpcBootFromVent(ventId), 0.4f);
+                break;
+            case ReturnLocation.Current:
+                Vector2 currentLocation = MyPlayer.GetTruePosition();
+                Async.Schedule(() => MyPlayer.MyPhysics.RpcBootFromVent(ventId), 0.4f);
+                Async.Schedule(() => Utils.Teleport(MyPlayer.NetTransform, currentLocation), 0.8f);
+                break;
+        }
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
@@ -68,6 +82,12 @@ public class Chameleon: Engineer
             .SubOption(sub => sub.KeyName("Invisibility Cooldown", Translations.Options.InvisibilityCooldown)
                 .AddFloatRange(0, 120, 2.5f, 4, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(f => invisibilityCooldown = f)
+                .Build())
+            .SubOption(sub => sub
+                .KeyName("Return Location on Invisibility End", Swooper.Translations.Options.ReturnLocation)
+                .Value(v => v.Text(Swooper.Translations.Options.CurrentLocation).Color(Color.cyan).Value(0).Build())
+                .Value(v => v.Text(Swooper.Translations.Options.StartLocation).Color(Color.blue).Value(1).Build())
+                .BindInt(i => returnLocation = (ReturnLocation)i)
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
@@ -78,21 +98,20 @@ public class Chameleon: Engineer
     [Localized(nameof(Chameleon))]
     public static class Translations
     {
-        [Localized(nameof(HiddenText))]
-        public static string HiddenText = "Hidden::0 {0}";
-
-        [Localized(nameof(TimesInvisibleStatistic))]
-        public static string TimesInvisibleStatistic = "Times Invisible";
+        [Localized(nameof(TimesInvisibleStatistic))] public static string TimesInvisibleStatistic = "Times Invisible";
+        [Localized(nameof(HiddenText))] public static string HiddenText = "Hidden::0 {0}";
 
         [Localized(ModConstants.Options)]
         public static class Options
         {
-            [Localized(nameof(InvisibilityDuration))]
-            public static string InvisibilityDuration = "Invisibility Duration";
-
-            [Localized(nameof(InvisibilityCooldown))]
-            public static string InvisibilityCooldown = "Invisibility Cooldown";
+            [Localized(nameof(InvisibilityDuration))] public static string InvisibilityDuration = "Invisibility Duration";
+            [Localized(nameof(InvisibilityCooldown))] public static string InvisibilityCooldown = "Invisibility Cooldown";
         }
     }
 
+    private enum ReturnLocation
+    {
+        Current,
+        Start
+    }
 }

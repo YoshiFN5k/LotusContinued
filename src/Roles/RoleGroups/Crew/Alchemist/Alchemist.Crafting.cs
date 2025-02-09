@@ -4,6 +4,7 @@ using HarmonyLib;
 using Lotus.API.Odyssey;
 using Lotus.GUI;
 using Lotus.GUI.Name;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Crew.Ingredients;
 using Lotus.Roles.RoleGroups.Crew.Potions;
@@ -64,12 +65,12 @@ public partial class Alchemist
     private bool CanCraft(ICraftable craftable)
     {
         bool eligible = craftable.Ingredients().Entries().All(ev => heldIngredients.GetValueOrDefault(ev.Key) >= ev.Value);
-        VentLogger.Trace($"Checking Crafting Eligibility of {craftable.Name()} => {eligible}");
+        log.Trace($"Checking Crafting Eligibility of {craftable.Name()} => {eligible}");
         return eligible;
     }
 
     // Switches the crafting page after being held down twice (0.8 seconds)
-    [RoleAction(RoleActionType.OnHoldPet)]
+    [RoleAction(LotusActionType.OnHoldPet)]
     private void SwitchCraftingPage(int times)
     {
         if (waitForReleaseFlag) return;
@@ -93,7 +94,7 @@ public partial class Alchemist
             case 2:
                 ToggleCrafting();
                 if (currentlyCrafting != null) progressBar = RoleUtils.ProgressBar(times - 2, 3, RoleColor);
-                if (currentlyCrafting != null) VentLogger.Trace($"{MyPlayer.GetNameWithRole()} => Currently Crafting: {currentlyCrafting.Name()}");
+                if (currentlyCrafting != null) log.Trace($"{MyPlayer.GetNameWithRole()} => Currently Crafting: {currentlyCrafting.Name()}");
                 advancePage = false;
                 break;
             case 6:
@@ -114,7 +115,7 @@ public partial class Alchemist
     // Finalizes crafting after being held down 6 times (2.4 seconds)
     private void FinalizeCrafting()
     {
-        VentLogger.Trace($"{MyPlayer.GetNameWithRole()} => Finalize Crafting: {currentlyCrafting?.Name()}");
+        log.Trace($"{MyPlayer.GetNameWithRole()} => Finalize Crafting: {currentlyCrafting?.Name()}");
         HeldCraftable = currentlyCrafting;
         currentlyCrafting = null;
         HeldCraftable?.Ingredients().Entries().ForEach(i => heldIngredients[i.Key] -= i.Value);
@@ -122,12 +123,12 @@ public partial class Alchemist
         waitForReleaseFlag = true;
     }
 
-    [RoleAction(RoleActionType.OnPetRelease)]
+    [RoleAction(LotusActionType.OnPetRelease)]
     private void CancelCrafting()
     {
         if (advancePage) craftingPage++;
         if (craftingPage >= Craftables.Count) craftingPage = 0;
-        VentLogger.Trace($"{MyPlayer.GetNameWithRole()} => Cancel Crafting");
+        log.Trace($"{MyPlayer.GetNameWithRole()} => Cancel Crafting");
         currentlyCrafting = null;
         progressBar = "";
         waitForReleaseFlag = false;

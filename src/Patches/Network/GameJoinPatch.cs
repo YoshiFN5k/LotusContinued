@@ -2,43 +2,54 @@ using System.Linq;
 using AmongUs.Data;
 using HarmonyLib;
 using Lotus.Addons;
-using Lotus.API;
 using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
-using Lotus.GUI;
-using Lotus.GUI.Patches;
 using Lotus.Managers;
-using VentLib.Logging;
+using Lotus.Options;
+using Lotus.Options.General;
 using VentLib.Utilities;
-using static Lotus.Options.GeneralOptions;
 
 namespace Lotus.Patches.Network;
 
 [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnGameJoined))]
 class GameJoinPatch
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(GameJoinPatch));
     private static int _lastGameId;
 
     public static void Postfix(AmongUsClient __instance)
     {
-        /*Async.Schedule(FriendsListButtonPatch.FixFriendListPosition, 0.1f);*/
-
-        VentLogger.High($"Joining Lobby (GameID={__instance.GameId})", "GameJoin");
+        log.High($"Joining Lobby (GameID={__instance.GameId})", "GameJoin");
         SoundManager.Instance.ChangeMusicVolume(DataManager.Settings.Audio.MusicVolume);
+        AddonManager.PlayerAddons = new();
 
-        GameStates.InGame = false;
-
-        Hooks.NetworkHooks.GameJoinHook.Propagate(new GameJoinHookEvent(_lastGameId != __instance.GameId));
+        GameJoinHookEvent gameJoinHookEvent = new(_lastGameId != __instance.GameId || ServerAuthPatch.IsLocal);
+        Hooks.NetworkHooks.GameJoinHook.Propagate(gameJoinHookEvent);
         _lastGameId = __instance.GameId;
-        Async.WaitUntil(() => PlayerControl.LocalPlayer, p => p != null, p => PluginDataManager.TitleManager.ApplyTitleWithChatFix(p), 0.1f, 20);
-        Async.Schedule(() => AddonManager.VerifyClientAddons(AddonManager.Addons.Select(AddonInfo.From).ToList()), NetUtils.DeriveDelay(0.5f));
 
-        if (AdminOptions.AutoStartMaxTime != -1)
+        Async.WaitUntil(() => PlayerControl.LocalPlayer, p => p != null, p =>
         {
-            AdminOptions.AutoCooldown.SetDuration(AdminOptions.AutoStartMaxTime);
-            AdminOptions.AutoCooldown.Start();
+            gameJoinHookEvent.Loaded = true;
+            AddonManager.SendAddonsToHost();
+            PluginDataManager.TitleManager.ApplyTitleWithChatFix(p);
+        }, 0.1f, 20);
+        if (!AmongUsClient.Instance.AmHost) return;
+
+        if (GeneralOptions.AdminOptions.AutoStartMaxTime != -1 && GeneralOptions.AdminOptions.AutoStartEnabled)
+        {
+            GeneralOptions.AdminOptions.AutoCooldown.SetDuration(GeneralOptions.AdminOptions.AutoStartMaxTime);
+            GeneralOptions.AdminOptions.AutoCooldown.Start();
         }
 
-        Async.Schedule(PlayerJoinPatch.CheckAutostart, 1f);
+        Async.Schedule(() =>
+        {
+            if (GeneralOptions.AdminOptions.AutoStartMaxTime != -1 && GeneralOptions.AdminOptions.AutoStartEnabled && GameStartManager.Instance.countDownTimer <= 0)
+            {
+                GameStartManager.Instance.BeginGame();
+                float timeRemaining = GeneralOptions.AdminOptions.AutoCooldown.TimeRemaining();
+                GameStartManager.Instance.countDownTimer = timeRemaining;
+            }
+            PlayerJoinPatch.CheckAutostart();
+        }, 1f);
     }
 }

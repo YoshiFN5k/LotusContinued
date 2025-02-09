@@ -20,6 +20,7 @@ using Lotus.Roles.Events;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Interactions.Interfaces;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Roles.RoleGroups.Vanilla;
@@ -31,16 +32,18 @@ using Lotus.Victory.Conditions;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Logging;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
+using Lotus.GameModes.Standard;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
-public class Charmer: Crewmate
+public class Charmer : Crewmate
 {
-    public static HashSet<Type> CharmerBannedModifiers = new() { typeof(Bloodlust) };
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Charmer));
+    public static HashSet<Type> CharmerBannedModifiers = new() { typeof(Rogue) };
     public override HashSet<Type> BannedModifiers() => CharmerBannedModifiers;
 
     private static IAccumulativeStatistic<int> _charmedPlayers = Statistic<int>.CreateAccumulative($"Roles.{nameof(Charmer)}.CharmedPlayers", () => Translations.CharmedStatistic);
@@ -72,7 +75,7 @@ public class Charmer: Crewmate
         if (charmedPlayersWinWithCrew) Game.GetWinDelegate().AddSubscriber(CharmedWinWithCrew);
         if (TasksPerUsage == 0) return;
         LiveString taskCounter = new(() => RoleUtils.Counter(taskAbilityCount, TasksPerUsage, RoleColor), Color.white);
-        MyPlayer.NameModel().GCH<CounterHolder>().Add(new CounterComponent(taskCounter, Game.IgnStates, ViewMode.Additive, MyPlayer));
+        MyPlayer.NameModel().GCH<CounterHolder>().Add(new CounterComponent(taskCounter, Game.InGameStates, ViewMode.Additive, MyPlayer));
     }
 
     public void CharmedWinWithCrew(WinDelegate winDelegate)
@@ -82,10 +85,10 @@ public class Charmer: Crewmate
         charmedPlayers.Keys.Filter(Players.PlayerById).ForEach(winDelegate.AddAdditionalWinner);
     }
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public bool CharmPlayer(PlayerControl player)
     {
-        VentLogger.Trace($"Charmer - Charming Player: {player.name} | {taskAbilityCount} < {TasksPerUsage} | {charmedPlayers.Count}", "CharmPlayer");
+        log.Trace($"Charmer - Charming Player: {player.name} | {taskAbilityCount} < {TasksPerUsage} | {charmedPlayers.Count}", "CharmPlayer");
         if (taskAbilityCount < TasksPerUsage) return false;
         if (maxCharmedPlayers > 0 && charmedPlayers.Count >= maxCharmedPlayers) return false;
         if (charmedPlayers.ContainsKey(player.PlayerId)) return false;
@@ -102,18 +105,18 @@ public class Charmer: Crewmate
         if (MyPlayer.InteractWith(player, LotusInteraction.HostileInteraction.Create(this)) is InteractionResult.Halt) return true;
 
         LiveString charmString = new(Translations.CharmedText, _charmedColor);
-        NameComponent component = new(charmString, GameStates.IgnStates, ViewMode.Additive, MyPlayer, player);
+        NameComponent component = new(charmString, Game.InGameStates, ViewMode.Additive, MyPlayer, player);
 
-        CustomRole playerRole = player.GetCustomRole();
-        IStatus status = CustomStatus.Of(Translations.CharmedText).Description(Translations.CharmedDescription).Color(_charmedColor).Build();
-        charmedPlayers[player.PlayerId] = (player.NameModel().GCH<NameHolder>().Insert(0, component), MatchData.AddStatus(player, status, MyPlayer), playerRole.Faction);
+        CustomRole playerRole = player.PrimaryRole();
+        IStatus status = CustomStatus.Of(Translations.CharmedText).Description(Translations.CharmedDescription).Color(_charmedColor).StatusFlags(StatusFlag.Hidden).Build();
+        charmedPlayers[player.PlayerId] = (player.NameModel().GCH<NameHolder>().Insert(0, component), Game.MatchData.AddStatus(player, status, MyPlayer), playerRole.Faction);
         playerRole.Faction = _charmedFaction;
         _charmedPlayers.Increment(MyPlayer.UniquePlayerId());
 
         return true;
     }
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     public void CharmPlayerPet()
     {
         if (usesKillButton) return;
@@ -124,8 +127,8 @@ public class Charmer: Crewmate
         if (CharmPlayer(closestPlayer)) charmingCooldown.Start();
     }
 
-    [RoleAction(RoleActionType.AnyInteraction, triggerAfterDeath: true)]
-    public void PreventCrewmateInteractions(PlayerControl actor, PlayerControl target, Interaction interaction, ActionHandle handle)
+    [RoleAction(LotusActionType.Interaction, ActionFlag.WorksAfterDeath | ActionFlag.GlobalDetector)]
+    public void PreventCrewmateInteractions(PlayerControl target, PlayerControl actor, Interaction interaction, ActionHandle handle)
     {
         if (breakCharmOnDeath && !MyPlayer.IsAlive()) return;
         if (!charmedPlayers.ContainsKey(actor.PlayerId)) return;
@@ -134,21 +137,21 @@ public class Charmer: Crewmate
         handle.Cancel();
     }
 
-    [RoleAction(RoleActionType.MyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath)]
     public override void HandleDisconnect()
     {
         if (!breakCharmOnDeath) return;
         charmedPlayers.Keys.ToArray().Filter(Players.PlayerById).ForEach(UncharmPlayer);
     }
 
-    [RoleAction(RoleActionType.AnyDeath)]
-    [RoleAction(RoleActionType.Disconnect)]
+    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
+    [RoleAction(LotusActionType.Disconnect)]
     public void UncharmPlayer(PlayerControl player)
     {
         if (!charmedPlayers.Remove(player.PlayerId, out (Remote<NameComponent>, Remote<IStatus>?, IFaction) tuple)) return;
         tuple.Item1.Delete();
         tuple.Item2?.Delete();
-        player.GetCustomRole().Faction = tuple.Item3;
+        player.PrimaryRole().Faction = tuple.Item3;
     }
 
 
@@ -183,14 +186,14 @@ public class Charmer: Crewmate
             .SubOption(sub => sub.KeyName("Max Charmed Players", Translations.Options.MaxCharmedPlayers)
                 .BindInt(i => maxCharmedPlayers = i)
                 .Value(v => v.Text(ModConstants.Infinity).Color(ModConstants.Palette.InfinityColor).Value(0).Build())
-                .AddIntRange(1, 15, 1, 0)
+                .AddIntRange(1, ModConstants.MaxPlayers, 1, 0)
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(0.71f, 0.67f, 0.9f))
             .DesyncRole(usesKillButton ? RoleTypes.Impostor : RoleTypes.Crewmate)
-            .RoleAbilityFlags(RoleAbilityFlag.CannotVent | RoleAbilityFlag.CannotSabotage)
+            .RoleAbilityFlags(RoleAbilityFlag.CannotVent | RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.UsesPet)
             .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod())
             .OptionOverride(new IndirectKillCooldown(() => charmingCooldown.Duration <= -1 ? AUSettings.KillCooldown() : charmingCooldown.Duration));
 

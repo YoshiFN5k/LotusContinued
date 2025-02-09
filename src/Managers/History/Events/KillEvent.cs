@@ -1,6 +1,6 @@
 using Lotus.API.Odyssey;
+using Lotus.API.Player;
 using Lotus.Roles;
-using Lotus.API;
 using Lotus.Extensions;
 using VentLib.Utilities.Optionals;
 
@@ -8,10 +8,10 @@ namespace Lotus.Managers.History.Events;
 
 public class KillEvent : IKillEvent
 {
-    private PlayerControl killer;
+    private FrozenPlayer? killer;
     private Optional<CustomRole> killerRole;
 
-    private PlayerControl victim;
+    private FrozenPlayer? victim;
     private Optional<CustomRole> victimRole;
 
     private bool successful;
@@ -19,14 +19,14 @@ public class KillEvent : IKillEvent
 
     public KillEvent(PlayerControl killer, PlayerControl victim, bool successful = true)
     {
-        this.killer = killer;
-        killerRole = Optional<CustomRole>.Of(killer.GetCustomRole());
-        this.victim = victim;
-        victimRole = Optional<CustomRole>.Of(victim.GetCustomRole());
+        this.killer = Game.MatchData.GetFrozenPlayer(killer);
+        killerRole = Optional<CustomRole>.Of(killer.PrimaryRole());
+        this.victim = Game.MatchData.GetFrozenPlayer(victim);
+        victimRole = Optional<CustomRole>.Of(victim.PrimaryRole());
         this.successful = successful;
     }
 
-    public PlayerControl Player() => this.killer;
+    public FrozenPlayer Player() => this.killer;
 
     public Optional<CustomRole> RelatedRole() => this.killerRole;
 
@@ -36,7 +36,7 @@ public class KillEvent : IKillEvent
 
     public virtual string Message() => $"{Game.GetName(killer)} killed {Game.GetName(victim)}.";
 
-    public PlayerControl Target() => victim;
+    public FrozenPlayer Target() => victim;
 
     public Optional<CustomRole> TargetRole() => victimRole;
 }

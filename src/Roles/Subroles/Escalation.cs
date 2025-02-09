@@ -1,11 +1,12 @@
 ﻿using Lotus.API.Odyssey;
 using Lotus.Extensions;
 using Lotus.Managers.History.Events;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Collections;
 
 namespace Lotus.Roles.Subroles;
@@ -25,7 +26,7 @@ public class Escalation : Subrole
         remote = Game.MatchData.Roles.AddOverride(MyPlayer.PlayerId, additiveOverride);
     }
 
-    [RoleAction(RoleActionType.AnyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
     public void CheckPlayerDeath(PlayerControl target, PlayerControl killer, IDeathEvent deathEvent)
     {
         if (target.PlayerId == MyPlayer.PlayerId) remote?.Delete();
@@ -33,12 +34,12 @@ public class Escalation : Subrole
         if (killer.PlayerId != MyPlayer.PlayerId) return;
 
         kills++;
-        killer.GetCustomRole().SyncOptions();
+        killer.PrimaryRole().SyncOptions();
     }
 
     public override bool IsAssignableTo(PlayerControl player)
     {
-        return player.GetCustomRole().RoleAbilityFlags.HasFlag(RoleAbilityFlag.IsAbleToKill) && base.IsAssignableTo(player);
+        return player.PrimaryRole().RoleAbilityFlags.HasFlag(RoleAbilityFlag.IsAbleToKill) && base.IsAssignableTo(player);
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
@@ -48,19 +49,20 @@ public class Escalation : Subrole
                 .BindFloat(f => speedGainPerKill = f)
                 .Build());
 
+    protected override RoleType GetRoleType() => RoleType.Variation;
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleFlags(RoleFlag.VariationRole)
             .RoleColor(new Color(0.78f, 0.62f, 0.04f));
 
     [Localized(nameof(Escalation))]
-    private static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options
         {
-            [Localized(nameof(SpeedGainPerKill))]
-            public static string SpeedGainPerKill = "Additional Speed per Kill";
+            [Localized(nameof(SpeedGainPerKill))] public static string SpeedGainPerKill = "Additional Speed per Kill";
         }
     }
 }

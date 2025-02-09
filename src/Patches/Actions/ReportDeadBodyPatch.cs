@@ -1,29 +1,37 @@
 using HarmonyLib;
 using Lotus.API.Odyssey;
 using Lotus.API.Vanilla.Meetings;
-using Lotus.Gamemodes;
 using Lotus.Roles.Internals;
-using Lotus.Roles.Internals.Attributes;
 using Lotus.Extensions;
-using Lotus.Options;
+using Lotus.Roles.Internals.Enums;
+using Lotus.Roles.Operations;
 using Lotus.Utilities;
-using VentLib.Logging;
+using UnityEngine;
+using System.Linq;
+using VentLib.Utilities.Optionals;
 
 namespace Lotus.Patches.Actions;
 
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.ReportDeadBody))]
 public class ReportDeadBodyPatch
 {
-    public static bool Prefix(PlayerControl __instance, [HarmonyArgument(0)] GameData.PlayerInfo? target)
-    {
-        VentLogger.Trace($"{__instance.GetNameWithRole()} => {target?.GetNameWithRole() ?? "null"}", "ReportDeadBody");
-        if (!AmongUsClient.Instance.AmHost) return true;
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(ReportDeadBodyPatch));
 
-        if (Game.CurrentGamemode.IgnoredActions().HasFlag(GameAction.ReportBody) && target != null) return false;
-        if (target == null)
+    public static bool Prefix(PlayerControl __instance, [HarmonyArgument(0)] NetworkedPlayerInfo? target)
+    {
+        log.Trace($"{__instance.GetNameWithRole()} => {target?.GetNameWithRole() ?? "(Meeting)"}", "ReportDeadBody");
+        if (!AmongUsClient.Instance.AmHost) return true;
+        if (__instance.Data.IsDead) return false;
+        if (Game.State != GameState.Roaming) return false;
+        if (AmongUsClient.Instance.IsGameOver) return false;
+        if (target == null && Enumerable.Any<PlayerTask>(PlayerControl.LocalPlayer.myTasks.ToArray(), new System.Func<PlayerTask, bool>(PlayerTask.TaskIsEmergency))) // stops meetings with sabotage
         {
-            if (Game.CurrentGamemode.IgnoredActions().HasFlag(GameAction.CallMeeting)) return false;
-            if (GeneralOptions.MeetingOptions.SyncMeetingButtons && Game.MatchData.EmergencyButtonsUsed++ >= GeneralOptions.MeetingOptions.MeetingButtonPool) return false;
+            return false;
+        }
+        // MeetingRoomManager.Instance.AssignSelf(__instance, target);
+        if (GameManager.Instance.CheckTaskCompletion())
+        {
+            return false;
         }
 
         ActionHandle handle = ActionHandle.NoInit();
@@ -32,24 +40,32 @@ public class ReportDeadBodyPatch
         {
             if (__instance.PlayerId == target.PlayerId) return false;
             if (Game.MatchData.UnreportableBodies.Contains(target.PlayerId)) return false;
+            if (!Object.FindObjectsOfType<DeadBody>().Any(db => db.ParentId == target.PlayerId)) return false; // trying to report a local or non-existent body.
+            if (Game.CurrentGameMode.BlockedActions().HasFlag(GameModes.BlockableGameAction.ReportBody)) return false;
 
-            Game.TriggerForAll(RoleActionType.AnyReportedBody, ref handle, __instance, target);
+            log.Trace($"Triggering ReportBody with parameters: {__instance}, {handle}, {target}");
+            RoleOperations.Current.Trigger(LotusActionType.ReportBody, __instance, handle, Optional<NetworkedPlayerInfo>.NonNull(target));
             if (handle.IsCanceled)
             {
-                VentLogger.Trace("Not Reporting Body - Cancelled by Any Report Action", "ReportDeadBody");
+                log.Trace("Not Reporting Body - Cancelled by Any Report Action", "ReportDeadBody");
                 return false;
             }
-
-            __instance.Trigger(RoleActionType.SelfReportBody, ref handle, target);
+        }
+        else
+        {
+            if (Game.MatchData.UnreportableBodies.Contains(255)) return false; // meeting ID
+            if (Game.CurrentGameMode.BlockedActions().HasFlag(GameModes.BlockableGameAction.CallMeeting)) return false;
+            log.Trace($"Triggering ReportBody (meeting) with parameters: {__instance}, {handle}");
+            RoleOperations.Current.Trigger(LotusActionType.ReportBody, __instance, handle, Optional<NetworkedPlayerInfo>.Null());
             if (handle.IsCanceled)
             {
-                VentLogger.Trace("Not Reporting Body - Cancelled by Self Report Action", "ReportDeadBody");
+                log.Trace("Not Calling meeting - Cancelled by Any Report Action", "ReportDeadBody");
                 return false;
             }
         }
 
         MeetingPrep.Reported = target;
-        MeetingPrep.PrepMeeting(__instance, target);
+        MeetingPrep.PrepMeeting(__instance, target, checkReportBodyCancel: false);
         return false;
     }
 }

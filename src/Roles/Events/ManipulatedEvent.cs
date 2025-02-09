@@ -2,6 +2,7 @@ using Lotus.API.Odyssey;
 using Lotus.Managers.History.Events;
 using Lotus.API;
 using VentLib.Utilities.Optionals;
+using Lotus.Roles.RoleGroups.Impostors;
 
 namespace Lotus.Roles.Events;
 
@@ -40,4 +41,6 @@ public class ManipulatedPlayerDeathEvent : DeathEvent
     public ManipulatedPlayerDeathEvent(PlayerControl victim, PlayerControl killer) : base(victim, killer)
     {
     }
+
+    public override string SimpleName() => Mastermind.MastermindTranslations.ManipulatedText;
 }

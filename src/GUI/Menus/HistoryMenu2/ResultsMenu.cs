@@ -17,7 +17,7 @@ namespace Lotus.GUI.Menus.HistoryMenu2;
 
 [Localized("GUI.HistoryMenu.ResultsMenu")]
 [RegisterInIl2Cpp]
-public class ResultsMenu: MonoBehaviour, IHistoryMenuChild
+public class ResultsMenu : MonoBehaviour, IHistoryMenuChild
 {
     public static List<Statistic> EligibleEndgameStats = DisplayEligibleStats();
     private PoolablePlayer playerPrefab = null!;
@@ -48,7 +48,7 @@ public class ResultsMenu: MonoBehaviour, IHistoryMenuChild
     {
         tabButton = Instantiate(prefab, tabIconObject.transform);
         tabButtonRenderer = tabButton.GetComponentsInChildren<SpriteRenderer>().Last();
-        tabButtonRenderer.sprite = AssetLoader.LoadSprite("HistoryMenu.ResultsIcon.png", 100, true);
+        tabButtonRenderer.sprite = AssetLoader.LoadLotusSprite("HistoryMenu.ResultsIcon.png", 100, true);
         tabButton.transform.localPosition += new Vector3(-6.9f, 4.102f);
         return tabButton;
     }
@@ -81,7 +81,7 @@ public class ResultsMenu: MonoBehaviour, IHistoryMenuChild
         for (int index = 0; index < allPlayers.Count; index++)
         {
             PlayerHistory playerHistory = allPlayers[index];
-            CustomRole role = playerHistory.Role;
+            CustomRole role = playerHistory.MainRole;
             PoolablePlayer newPlayer = Instantiate(playerPrefab, anchor.transform);
             newPlayer.enabled = true;
             newPlayer.cosmetics.initialized = false;
@@ -92,7 +92,7 @@ public class ResultsMenu: MonoBehaviour, IHistoryMenuChild
             newPlayer.transform.localPosition += new Vector3(1.65f * (index - (row * 5)), -row * 1.35f, 0);
 
 
-            string statText = playerHistory.Role.Statistics().FirstOrOptional().Map(t => $" <size=1.5>[{t.Name()}: {t.GetGenericValue(playerHistory.UniquePlayerId)}]</size>").OrElse("");
+            string statText = playerHistory.MainRole.Statistics().FirstOrOptional().Map(t => $" <size=1.5>[{t.Name()}: {t.GetGenericValue(playerHistory.UniquePlayerId)}]</size>").OrElse("");
 
             string historyName = $"{playerHistory.Name}\n{role.RoleColor.Colorize(role.RoleName)}\n<size=1.4>{statText}</size>";
             newPlayer.SetName(historyName);

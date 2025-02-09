@@ -1,38 +1,44 @@
 using Lotus.API.Odyssey;
 using Lotus.API.Vanilla;
 using Lotus.API.Vanilla.Meetings;
-using Lotus.Chat.Commands;
 using Lotus.Roles.Interactions;
 using Lotus.Extensions;
-using Lotus.Options;
-using Lotus.Patches.Client;
+using Lotus.GUI.Menus.OptionsMenu.Patches;
+using Lotus.Logging;
 using Lotus.Roles;
+using Lotus.Options;
 using UnityEngine;
-using VentLib.Localization;
-using VentLib.Logging;
 using VentLib.Options;
 using VentLib.Utilities.Attributes;
 using VentLib.Utilities.Debug.Profiling;
 using static Lotus.Managers.Hotkeys.HotkeyManager;
+using Lotus.API.Player;
+using VentLib.Utilities.Extensions;
+using System.Linq;
+using Lotus.GUI.Menus.HistoryMenu2;
+using VentLib.Localization;
 
 namespace Lotus.Managers.Hotkeys;
 
 [LoadStatic]
 public class ModKeybindings
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(ModKeybindings));
+
     private static bool hudActive = true;
 
     static ModKeybindings()
     {
         // Dump Log
-        Bind(KeyCode.F1, KeyCode.LeftControl).Do(DumpLog);
+        // Bind(KeyCode.F, KeyCode.LeftControl, KeyCode.Return).Do(DumpLog);  // crashes the game and ultimately causes some issues.
+        Bind(KeyCode.D, KeyCode.LeftControl, KeyCode.Return).Do(() => LogManager.WriteSessionLog(""));
 
         // Profile All
         Bind(KeyCode.F2).Do(ProfileAll);
 
         // Kill Player (Suicide)
         Bind(KeyCode.LeftShift, KeyCode.D, KeyCode.Return)
-            .If(p => p.HostOnly().State(Game.IgnStates))
+            .If(p => p.HostOnly().State(Game.InGameStates))
             .Do(Suicide);
 
         // Close Meeting
@@ -42,21 +48,25 @@ public class ModKeybindings
 
         // Instant begin game
         Bind(KeyCode.LeftShift)
-            .If(p => p.HostOnly().Predicate(() => MatchState.IsCountDown && !HudManager.Instance.Chat.IsOpen))
-            .Do(() => GameStartManager.Instance.countDownTimer = 0);
+            .If(p => p.HostOnly().Predicate(() => MatchState.IsCountDown && !HudManager.Instance.Chat.IsOpenOrOpening))
+            .Do(() =>
+            {
+                SoundManager.Instance.StopSound(GameStartManager.Instance.gameStartSound);
+                GameStartManager.Instance.countDownTimer = 0;
+            });
 
         // Restart countdown timer
         Bind(KeyCode.C)
-            .If(p => p.HostOnly().Predicate(() => MatchState.IsCountDown))
+            .If(p => p.HostOnly().Predicate(() => MatchState.IsCountDown && !HudManager.Instance.Chat.IsOpenOrOpening))
             .Do(() =>
             {
                 GeneralOptions.AdminOptions.AutoStartMaxTime = -1;
                 GameStartManager.Instance.ResetStartState();
             });
 
-        Bind(KeyCode.C)
-            .If(p => p.HostOnly().Predicate(() => EndGameManagerPatch.IsRestarting))
-            .Do(EndGameManagerPatch.CancelPlayAgain);
+        // Bind(KeyCode.C)
+        //     .If(p => p.HostOnly().Predicate(() => EndGameManagerPatch.IsRestarting))
+        //     .Do(EndGameManagerPatch.CancelPlayAgain);
 
         // Reset Game Options
         Bind(KeyCode.LeftControl, KeyCode.Delete)
@@ -66,25 +76,46 @@ public class ModKeybindings
         // Instant call meeting
         Bind(KeyCode.RightShift, KeyCode.M, KeyCode.Return)
             .If(p => p.HostOnly().State(GameState.Roaming))
-            .Do(() => MeetingPrep.PrepMeeting(PlayerControl.LocalPlayer));
+            .Do(() => MeetingPrep.PrepMeeting(PlayerControl.LocalPlayer))
+            .DevOnly();
 
         // Sets kill cooldown to 0
         Bind(KeyCode.X)
             .If(p => p.HostOnly().State(GameState.Roaming))
-            .Do(InstantReduceTimer);
+            .Do(InstantReduceTimer)
+            .DevOnly();
 
+        // Reload All Files in LOTUS_DATA
         Bind(KeyCode.LeftControl, KeyCode.T)
             .If(p => p.State(GameState.InLobby))
-            .Do(ReloadTranslations);
+            .Do(ReloadAllFiles);
 
+        // Change Hud Active
         Bind(KeyCode.F7)
             .If(p => p.State(GameState.InLobby, GameState.Roaming).Predicate(() => MeetingHud.Instance == null))
             .Do(() => HudManager.Instance.gameObject.SetActive(hudActive = !hudActive));
+
+        // Close Options I think.
+        Bind(KeyCode.Escape)
+            .If(p => p.Predicate(() => GameOptionMenuOpenPatch.MenuBehaviour != null && GameOptionMenuOpenPatch.MenuBehaviour.IsOpen))
+            .Do(() => GameOptionMenuOpenPatch.MenuBehaviour.Close());
+
+        // Unblackscreen Everyone
+        Bind(KeyCode.LeftShift, KeyCode.Z, KeyCode.Return)
+            .If(p => p.HostOnly().State(GameState.Roaming))
+            .If(() => ProjectLotus.AdvancedRoleAssignment)
+            .Do(() => Players.GetPlayers().Where(player => !player.IsModded() && !player.IsHost()).ForEach(player => player.ResetPlayerCam()));
+
+        // Toggle History Menu
+        Bind(KeyCode.H)
+            .If(p => p.State(GameState.InLobby))
+            .Do(ToggleHistoryButton);
     }
 
     private static void DumpLog()
     {
-        BasicCommands.Dump(PlayerControl.LocalPlayer);
+        LogManager.OpenLogUI();
+        /*BasicCommands.Dump(PlayerControl.LocalPlayer);*/
     }
 
     private static void ProfileAll()
@@ -103,7 +134,7 @@ public class ModKeybindings
 
     private static void ResetGameOptions()
     {
-        VentLogger.High("Resetting Game Options", "ResetOptions");
+        log.High("Resetting Game Options", "ResetOptions");
         OptionManager.GetAllManagers().ForEach(m =>
         {
             m.GetOptions().ForEach(o =>
@@ -113,7 +144,7 @@ public class ModKeybindings
             });
             m.DelaySave(0);
         });
-        VentLogger.SendInGame("All options have been reset!");
+        LogManager.SendInGame("All options have been reset!");
     }
 
     private static void InstantReduceTimer()
@@ -121,10 +152,31 @@ public class ModKeybindings
         PlayerControl.LocalPlayer.SetKillCooldown(0f);
     }
 
-    private static void ReloadTranslations()
+    private static void ReloadAllFiles()
     {
-        VentLogger.Trace("Reload Custom Translation File", "KeyCommand");
-        Localizer.Reload();
-        VentLogger.SendInGame("Reloaded Custom Translation File");
+        log.Trace("Reloading every file into memory...");
+        PluginDataManager.ReloadAll(errorInfo =>
+        {
+            log.Exception(errorInfo.ex);
+            LogManager.SendInGame($"Error occured while reloading {errorInfo.erorrStuff}. Check log for more details.");
+        });
+        try
+        {
+            Localizer.Reload();
+        }
+        catch (System.Exception ex)
+        {
+            log.Exception(ex);
+            LogManager.SendInGame("Error occured while reloading Translations. Check log for more details.");
+        }
+        LogManager.SendInGame("Reloaded Every file in LOTUS_DATA!");
+    }
+
+    private static void ToggleHistoryButton()
+    {
+        if (!DestroyableSingleton<HudManager>.InstanceExists) return;
+        if (DestroyableSingleton<HudManager>.Instance.Chat.IsOpenOrOpening) return;
+        HM2 historyMenu = DestroyableSingleton<HudManager>.Instance.GetComponent<HM2>();
+        if (historyMenu != null) historyMenu.ToggleMenu();
     }
 }

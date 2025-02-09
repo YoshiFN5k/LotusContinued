@@ -3,6 +3,7 @@ using HarmonyLib;
 using Lotus.API;
 using Lotus.API.Odyssey;
 using Lotus.API.Player;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Extensions;
@@ -12,14 +13,16 @@ using Lotus.Options;
 using Lotus.Roles.Internals;
 using UnityEngine;
 using VentLib.Logging;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
 public class TimeThief : Vanilla.Impostor
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Vampiress));
     private int kills;
     private int meetingTimeSubtractor;
     private int minimumVotingTime;
@@ -31,7 +34,7 @@ public class TimeThief : Vanilla.Impostor
     [UIComponent(UI.Counter)]
     public string TimeStolenCounter() => RoleUtils.Counter(kills * meetingTimeSubtractor + "s", color: RoleColor);
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         var flag = base.TryKill(target);
@@ -40,7 +43,7 @@ public class TimeThief : Vanilla.Impostor
         return flag;
     }
 
-    [RoleAction(RoleActionType.MeetingCalled, triggerAfterDeath: true)]
+    [RoleAction(LotusActionType.ReportBody, ActionFlag.WorksAfterDeath | ActionFlag.GlobalDetector, priority: API.Priority.Low)]
     private void TimeThiefSubtractMeetingTime()
     {
         discussionRemote?.ForEach(d => d.Delete());
@@ -62,7 +65,7 @@ public class TimeThief : Vanilla.Impostor
 
         int modifiedVotingTime = Mathf.Clamp(votingTime - totalStolenTime, minimumVotingTime, votingTime);
 
-        VentLogger.Debug($"{MyPlayer.name} | Time Thief | Meeting Time: {modifiedDiscussionTime} | Voting Time: {modifiedVotingTime}", "TimeThiefStolen");
+        log.Debug($"{MyPlayer.name} | Time Thief | Meeting Time: {modifiedDiscussionTime} | Voting Time: {modifiedVotingTime}", "TimeThiefStolen");
 
         discussionRemote = new List<IRemote>();
         votingRemote = new List<IRemote>();
@@ -77,18 +80,35 @@ public class TimeThief : Vanilla.Impostor
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub
-                .Name("Meeting Time Stolen")
+                .KeyName("Meeting Time Stolen", Translations.Options.MeetingTimeStolen)
                 .Bind(v => meetingTimeSubtractor = (int)v)
                 .AddIntRange(5, 120, 5, 4, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
-                .Name("Minimum Voting Time")
+                .KeyName("Minimum Voting Time", Translations.Options.MinVotingTime)
                 .Bind(v => minimumVotingTime = (int)v)
                 .AddIntRange(5, 120, 5, 1, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
             .SubOption(sub => sub
-                .Name("Return Stolen Time After Death")
+                .KeyName("Return Stolen Time After Death", Translations.Options.ReturnTimeAfterDeath)
                 .Bind(v => returnTimeAfterDeath = (bool)v)
-                .AddOnOffValues()
+                .AddBoolean()
                 .Build());
+
+    [Localized(nameof(TimeThief))]
+    public static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(MeetingTimeStolen))]
+            public static string MeetingTimeStolen = "Meeting Time Stolen";
+
+            [Localized(nameof(MinVotingTime))]
+            public static string MinVotingTime = "Minimum Voting Time";
+
+            [Localized(nameof(ReturnTimeAfterDeath))]
+            public static string ReturnTimeAfterDeath = "Return Stolen Time After Death";
+        }
+    }
 }

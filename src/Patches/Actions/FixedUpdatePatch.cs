@@ -1,24 +1,28 @@
 using HarmonyLib;
 using Lotus.API.Odyssey;
-using Lotus.Options;
 using Lotus.Roles.Internals;
-using Lotus.Roles.Internals.Attributes;
-using Lotus.API;
 using Lotus.Extensions;
-using VentLib.Logging;
+using Lotus.Roles.Internals.Enums;
+using Lotus.Roles.Operations;
+using Lotus.Options;
 using VentLib.Utilities;
 using VentLib.Utilities.Debug.Profiling;
 using VentLib.Utilities.Extensions;
+using Lotus.RPC.CustomObjects;
+using System.Linq;
 
 namespace Lotus.Patches.Actions;
 
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.FixedUpdate))]
 static class FixedUpdatePatch
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(FixedUpdatePatch));
+    private static readonly ActionHandle FixedUpdateHandle = ActionHandle.NoInit();
     private static void Postfix(PlayerControl __instance)
     {
+        if (__instance.PlayerId == 255 && __instance.notRealPlayer) return;
         Game.RecursiveCallCheck = 0;
-        DisplayModVersion(__instance);
+        // DisplayModVersion(__instance);
 
         if (!AmongUsClient.Instance.AmHost) return;
 
@@ -26,13 +30,23 @@ static class FixedUpdatePatch
             AmongUsClient.Instance.KickPlayer(__instance.GetClientId(), false);
 
         if (Game.State is not GameState.Roaming) return;
+        bool isLocalPlayer = __instance.PlayerId == PlayerControl.LocalPlayer.PlayerId;
         uint id = Profilers.Global.Sampler.Start("Fixed Update Patch");
 
-        var player = __instance;
-        ActionHandle handle = null;
-        __instance.Trigger(RoleActionType.FixedUpdate, ref handle);
+        if (isLocalPlayer)
+        {
+            try
+            {
+                RoleOperations.Current.Trigger(LotusActionType.FixedUpdate, null, FixedUpdateHandle);
+                CustomNetObject.FixedUpdate();
+            }
+            catch (System.Exception ex)
+            {
+                log.Exception(ex);
+            }
+        }
 
-        if (player.IsAlive() && GeneralOptions.GameplayOptions.EnableLadderDeath) FallFromLadder.FixedUpdate(player);
+        if (__instance.IsAlive() && GeneralOptions.GameplayOptions.EnableLadderDeath) FallFromLadder.FixedUpdate(__instance);
         Profilers.Global.Sampler.Stop(id);
         /*if (player.PlayerId == PlayerControl.LocalPlayer.PlayerId) DisableDevice.FixedUpdate();*/
         /*EnterVentPatch.CheckVentSwap(__instance);*/

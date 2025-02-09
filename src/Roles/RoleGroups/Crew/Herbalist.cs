@@ -11,18 +11,19 @@ using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name.Holders;
 using Lotus.GUI.Name.Interfaces;
 using Lotus.Options;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Networking.RPC;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
-public class Herbalist: Crewmate
+public class Herbalist : Crewmate
 {
     private static IAccumulativeStatistic<int> _bloomsGrown = Statistic<int>.CreateAccumulative($"Roles.{nameof(Herbalist)}.BloomsGrown", () => Translations.BloomsGrownStatistic);
     private static IAccumulativeStatistic<int> _rolesRevealed = Statistic<int>.CreateAccumulative($"Roles.{nameof(Herbalist)}.RolesRevealed", () => Translations.RolesRevealedStatistic);
@@ -42,7 +43,7 @@ public class Herbalist: Crewmate
     [UIComponent(UI.Cooldown)]
     private Cooldown bloomCooldown;
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     public void PutBloomOnPlayer()
     {
         if (bloomCooldown.NotReady()) return;
@@ -83,14 +84,14 @@ public class Herbalist: Crewmate
         _bloomsGrown.Update(MyPlayer.UniquePlayerId(), i => i + 1);
         int count = bloomCounts.Compose(playerId, i => i + 1, () =>
         {
-            LiveString ls = new(() =>
+            LiveString ls = new(_ =>
             {
                 int count = bloomCounts.GetValueOrDefault(playerId);
                 if (count < bloomsBeforeReveal) return RoleUtils.Counter(count, bloomsBeforeReveal, RoleColor);
                 return _bloomColor.Colorize("✿");
             });
 
-            player.NameModel().GCH<CounterHolder>().Add(new CounterComponent(ls, Game.IgnStates, ViewMode.Additive, MyPlayer));
+            player.NameModel().GCH<CounterHolder>().Add(new CounterComponent(ls, Game.InGameStates, ViewMode.Additive, MyPlayer));
             return 1;
         });
 
@@ -121,7 +122,7 @@ public class Herbalist: Crewmate
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
-            .RoleColor(new Color(0.18f, 0.84f, 0.13f));
+            .RoleColor(new Color(0.18f, 0.84f, 0.13f)).RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
     [Localized(nameof(Herbalist))]
     private static class Translations

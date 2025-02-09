@@ -6,7 +6,7 @@ using VentLib.Utilities.Attributes;
 namespace Lotus.GUI.Menus.OptionsMenu.Components;
 
 [RegisterInIl2Cpp]
-public class SimpleDropdownButton: MonoBehaviour
+public class SimpleDropdownButton : MonoBehaviour
 {
     private GameObject anchorObject;
     private Dropdown dropdown;

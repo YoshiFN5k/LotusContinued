@@ -1,5 +1,5 @@
 using Lotus.API.Odyssey;
-using Lotus.Logging;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Extensions;
@@ -9,28 +9,28 @@ using Lotus.GUI.Name.Holders;
 using Lotus.Statuses;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 
 namespace Lotus.Roles.Subroles;
 
-public class Diseased: Subrole
+public class Diseased : Subrole
 {
     private int cooldownIncrease;
 
     public override string Identifier() => "§";
 
-    [RoleAction(RoleActionType.MyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath)]
     private void DiseasedDies(PlayerControl killer)
     {
         float multiplier = (cooldownIncrease / 100f) + 1f;
         Game.MatchData.Roles.AddOverride(killer.PlayerId, new MultiplicativeOverride(Override.KillCooldown, multiplier));
-        killer.GetCustomRole().SyncOptions();
+        killer.PrimaryRole().SyncOptions();
         string name = killer.name;
         killer.NameModel().GCH<IndicatorHolder>().Add(new SimpleIndicatorComponent(Identifier(), RoleColor, GameState.Roaming, killer));
 
         CustomStatus status = CustomStatus.Of(RoleName).Description(Translations.DiseasedAffectDescription).Color(RoleColor).Build();
-        MatchData.AddStatus(killer, status, MyPlayer);
+        Game.MatchData.AddStatus(killer, status, MyPlayer);
     }
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>

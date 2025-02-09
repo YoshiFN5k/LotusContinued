@@ -4,7 +4,6 @@ using Hazel;
 using Lotus.Managers.Hotkeys;
 using UnityEngine;
 using VentLib.Networking.RPC;
-using VentLib.Utilities.Collections;
 using VentLib.Utilities.Harmony.Attributes;
 
 namespace Lotus.Chat.Patches;
@@ -22,18 +21,18 @@ internal class RpcSendChatPatch
             {
                 if (_index + 1 >= ChatHistory.Count) return false;
                 if (HudManager.Instance == null || HudManager.Instance.Chat == null) return false;
-                return HudManager.Instance.Chat.TextArea.hasFocus;
+                return HudManager.Instance.Chat.freeChatField.textArea.hasFocus;
             })).Do(BackInChatHistory);
         HotkeyManager.Bind(KeyCode.DownArrow)
             .If(b => b.Predicate(() =>
             {
                 if (ChatHistory.Count == 0) return false;
                 if (HudManager.Instance == null || HudManager.Instance.Chat == null) return false;
-                return HudManager.Instance.Chat.TextArea.hasFocus;
+                return HudManager.Instance.Chat.freeChatField.textArea.hasFocus;
             })).Do(ForwardInChatHistory);
     }
 
-    private static void BackInChatHistory() => HudManager.Instance.Chat.TextArea.SetText(_index + 1 >= ChatHistory.Count ? ChatHistory[_index] : ChatHistory[++_index]);
+    private static void BackInChatHistory() => HudManager.Instance.Chat.freeChatField.textArea.SetText(_index + 1 >= ChatHistory.Count ? ChatHistory[_index] : ChatHistory[++_index]);
 
     private static void ForwardInChatHistory()
     {
@@ -46,7 +45,7 @@ internal class RpcSendChatPatch
         }
         else text = ChatHistory[--_index];
 
-        HudManager.Instance.Chat.TextArea.SetText(text);
+        HudManager.Instance.Chat.freeChatField.textArea.SetText(text);
     }
 
     internal static bool EatCommand;

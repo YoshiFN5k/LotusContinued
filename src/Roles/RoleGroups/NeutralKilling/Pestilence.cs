@@ -10,20 +10,22 @@ using Lotus.Options;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Interactions.Interfaces;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Extensions;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
 using static Lotus.Roles.RoleGroups.NeutralKilling.Pestilence.Translations.Options;
+using Lotus.API.Player;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 
-public class Pestilence: NeutralKillingBase
+public class Pestilence : NeutralKillingBase
 {
     /// <summary>
-    /// A list of roles that the pestilence is immune against, this should only be populated by external addons if they want to add an immunity to pestilence lazily
+    /// A list of roles that the Pestilence is immune against, this should only be populated by external addons if they want to add an immunity to pestilence lazily
     /// </summary>
     public static List<Type> ImmuneRoles = new();
 
@@ -42,10 +44,10 @@ public class Pestilence: NeutralKillingBase
     protected override void PostSetup()
     {
         RoleComponent rc = MyPlayer.NameModel().GetComponentHolder<RoleHolder>()[0];
-        Game.GetAllPlayers().Where(p => !p.IsAlive() || Relationship(p) is Relation.FullAllies).ForEach(p => rc.AddViewer(p));
+        Players.GetAllPlayers().Where(p => !p.IsAlive() || Relationship(p) is Relation.FullAllies).ForEach(p => rc.AddViewer(p));
     }
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         if (!unblockableAttacks) return base.TryKill(target);
@@ -54,7 +56,7 @@ public class Pestilence: NeutralKillingBase
         return true;
     }
 
-    [RoleAction(RoleActionType.Interaction)]
+    [RoleAction(LotusActionType.Interaction)]
     private void PestilenceAttacked(PlayerControl actor, Interaction interaction, ActionHandle handle)
     {
         Intent intent = interaction.Intent;
@@ -80,7 +82,7 @@ public class Pestilence: NeutralKillingBase
                 break;
         }
 
-        if (ImmuneRoles.Contains(actor.GetCustomRole().GetType())) canceled = true;
+        if (ImmuneRoles.Contains(actor.PrimaryRole().GetType())) canceled = true;
         if (canceled) handle.Cancel();
     }
 
@@ -97,7 +99,7 @@ public class Pestilence: NeutralKillingBase
                 .Value(v => v.Text(GeneralOptionTranslations.DefaultText).Value(false).Color(Color.cyan).Build())
                 .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(true).Color(new Color(0.45f, 0.31f, 0.72f)).Build())
                 .ShowSubOptionPredicate(o => (bool)o)
-                .SubOption(sub3 =>  sub3
+                .SubOption(sub3 => sub3
                     .KeyName("Immune to Manipulated Attackers", ImmuneManipulatorAttackers)
                     .AddOnOffValues(false)
                     .BindBool(b => immuneToManipulated = b)
@@ -118,6 +120,8 @@ public class Pestilence: NeutralKillingBase
                     .BindBool(b => immuneToArsonist = b)
                     .Build())
                 .Build());
+
+    protected override RoleType GetRoleType() => RoleType.Transformation;
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)

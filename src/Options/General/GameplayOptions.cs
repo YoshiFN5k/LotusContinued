@@ -5,7 +5,7 @@ using Lotus.Extensions;
 using Lotus.Roles.Overrides;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Options.General;
 
@@ -36,7 +36,7 @@ public class GameplayOptions
         {
             FirstKillCooldown.SetCooldown => setCooldown,
             FirstKillCooldown.GlobalCooldown => AUSettings.KillCooldown(),
-            FirstKillCooldown.RoleCooldown => player.GetCustomRole().GetOverride(Override.KillCooldown)?.GetValue() as float? ?? AUSettings.KillCooldown(),
+            FirstKillCooldown.RoleCooldown => player.PrimaryRole().GetOverride(Override.KillCooldown)?.GetValue() as float? ?? AUSettings.KillCooldown(),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
@@ -48,110 +48,106 @@ public class GameplayOptions
         AllOptions.Add(new GameOptionTitleBuilder()
             .Title(GameplayOptionTranslations.GameplayOptionTitle)
             .Color(_optionColor)
-            .Tab(DefaultTabs.GeneralTab)
             .Build());
 
-        AllOptions.Add(Builder("Optimize Role Counts for Playability")
+        AllOptions.Add(new GameOptionBuilder()
+            .AddBoolean(true)
+            .Builder("Optimize Role Counts for Playability", _optionColor)
             .Name(GameplayOptionTranslations.OptimizeRoleAmounts)
-            .AddOnOffValues()
             .BindBool(b => OptimizeRoleAssignment = b)
             .IsHeader(true)
-            .BuildAndRegister());
+            .Build());
 
-        AllOptions.Add(Builder("First Kill Cooldown")
-            .Name(GameplayOptionTranslations.FirstKillCooldown)
+        AllOptions.Add(new GameOptionBuilder()
             .Value(v => v.Text(GameplayOptionTranslations.GlobalCooldown).Color(ModConstants.Palette.GlobalColor).Value(0).Build())
             .Value(v => v.Text(GameplayOptionTranslations.SetCooldown).Color(Color.green).Value(1).Build())
             .Value(v => v.Text(GameplayOptionTranslations.RoleCooldown).Color(ModConstants.Palette.InfinityColor).Value(2).Build())
+            .Builder("First Kill Cooldown", _optionColor)
+            .Name(GameplayOptionTranslations.FirstKillCooldown)
             .BindInt(b => FirstKillCooldownMode = (FirstKillCooldown)b)
             .ShowSubOptionPredicate(i => (int)i == 1)
-            .SubOption(sub => sub.Key("Set Cooldown Value").Name(GameplayOptionTranslations.SetCooldownValue)
+            .SubOption(sub => sub
                 .AddFloatRange(0, 120, 2.5f, 4, GeneralOptionTranslations.SecondsSuffix)
+                .KeyName("Set Cooldown Value", GameplayOptionTranslations.SetCooldownValue)
                 .BindFloat(f => setCooldown = f)
                 .Build())
-            .BuildAndRegister());
+            .Build());
 
-        AllOptions.Add(Builder("Disable Tasks")
+        AllOptions.Add(new GameOptionBuilder()
+            .Builder("Disable Tasks", _optionColor)
             .Name(GameplayOptionTranslations.DisableTaskText)
-            .AddOnOffValues(false)
+            .AddBoolean(false)
             .ShowSubOptionPredicate(b => (bool)b)
             .SubOption(sub => sub
-                .Key("Disable Card Swipe")
-                .Name(GameplayOptionTranslations.DisableCardSwipe)
+                .KeyName("Disable Card Swipe", GameplayOptionTranslations.DisableCardSwipe)
                 .BindBool(FlagSetter(DisabledTask.CardSwipe))
-                .AddOnOffValues()
+                .AddBoolean()
                 .Build())
             .SubOption(sub => sub
-                .Key("Disable Med Scan")
-                .Name(GameplayOptionTranslations.DisableMedScan)
+                .KeyName("Disable Med Scan", GameplayOptionTranslations.DisableMedScan)
                 .BindBool(FlagSetter(DisabledTask.MedScan))
-                .AddOnOffValues()
+                .AddBoolean()
                 .Build())
             .SubOption(sub => sub
-                .Key("Disable Unlock Safe")
-                .Name(GameplayOptionTranslations.DisableUnlockSafe)
+                .KeyName("Disable Unlock Safe", GameplayOptionTranslations.DisableUnlockSafe)
                 .BindBool(FlagSetter(DisabledTask.UnlockSafe))
-                .AddOnOffValues()
+                .AddBoolean()
                 .Build())
             .SubOption(sub => sub
-                .Key("Disable Upload Data")
-                .Name(GameplayOptionTranslations.DisableUploadData)
+                .KeyName("Disable Upload Data", GameplayOptionTranslations.DisableUploadData)
                 .BindBool(FlagSetter(DisabledTask.UploadData))
-                .AddOnOffValues()
+                .AddBoolean()
                 .Build())
             .SubOption(sub => sub
-                .Key("Disable Start Reactor")
-                .Name(GameplayOptionTranslations.DisableStartReactor)
+                .KeyName("Disable Start Reactor", GameplayOptionTranslations.DisableStartReactor)
                 .BindBool(FlagSetter(DisabledTask.StartReactor))
-                .AddOnOffValues()
+                .AddBoolean()
                 .Build())
             .SubOption(sub => sub
-                .Key("Disable Reset Breaker")
-                .Name(GameplayOptionTranslations.DisableResetBreaker)
+                .KeyName("Disable Reset Breaker", GameplayOptionTranslations.DisableResetBreaker)
                 .BindBool(FlagSetter(DisabledTask.ResetBreaker))
-                .AddOnOffValues()
+                .AddBoolean()
                 .Build())
             .SubOption(sub => sub
-                .Key("Disable Fix Wiring")
-                .Name(GameplayOptionTranslations.DisableFixWiring)
+                .KeyName("Disable Fix Wiring", GameplayOptionTranslations.DisableFixWiring)
+                .AddBoolean()
                 .BindBool(FlagSetter(DisabledTask.FixWiring))
-                .AddOnOffValues()
                 .Build())
             .BindBool(b => DisableTasks = b)
-            .BuildAndRegister());
+            .Build());
 
-        AllOptions.Add(Builder("Disable Task Win")
+        AllOptions.Add(new GameOptionBuilder()
+            .Builder("Disable Task Win", _optionColor)
             .Name(GameplayOptionTranslations.DisableTaskWinText)
-            .AddOnOffValues(false)
+            .AddBoolean(false)
             .BindBool(b => DisableTaskWin = b)
-            .BuildAndRegister());
+            .Build());
 
-        AllOptions.Add(Builder("Ghosts See Info")
+        AllOptions.Add(new GameOptionBuilder()
+            .Builder("Ghosts See Info", _optionColor)
             .Name(GameplayOptionTranslations.GhostSeeInfo)
-            .AddOnOffValues()
+            .AddBoolean()
             .BindBool(b => GhostsSeeInfo = b)
-            .BuildAndRegister());
+            .Build());
 
-        AllOptions.Add(Builder("Ladder Death")
+        AllOptions.Add(new GameOptionBuilder()
+            .Builder("Ladder Death", _optionColor)
             .Name(GameplayOptionTranslations.LadderDeathText)
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(-1).Color(Color.red).Build())
             .AddIntRange(10, 100, 5, suffix: "%")
             .BindInt(i => LadderDeathChance = i)
-            .BuildAndRegister());
+            .Build());
 
-        AllOptions.Add(Builder("Modifier Text Mode")
+        AllOptions.Add(new GameOptionBuilder()
+            .Builder("Modifier Text Mode", _optionColor)
             .Name(GameplayOptionTranslations.ModifierTextMode)
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(1).Color(Color.red).Build())
             .Value(v => v.Text(GameplayOptionTranslations.FirstValue).Value(0).Color(ModConstants.Palette.InfinityColor).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(2).Color(Color.green).Build())
             .BindInt(i => ModifierTextMode = (ModifierTextMode)i)
-            .BuildAndRegister());
+            .Build());
 
-        additionalOptions.ForEach(o =>
-        {
-            o.Register();
-            AllOptions.Add(o);
-        });
+        AllOptions.AddRange(additionalOptions);
     }
 
     /// <summary>
@@ -173,7 +169,7 @@ public class GameplayOptions
         };
     }
 
-    private GameOptionBuilder Builder(string key) => new GameOptionBuilder().Key(key).Tab(DefaultTabs.GeneralTab).Color(_optionColor);
+    private GameOptionBuilder Builder(string key) => new GameOptionBuilder().Key(key).Color(_optionColor);
 
     [Localized("Gameplay")]
     private static class GameplayOptionTranslations

@@ -3,15 +3,17 @@ using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
 using Lotus.Patches.Systems;
 using Lotus.Roles.Internals;
-using Lotus.Roles.Internals.Attributes;
 using Lotus.Extensions;
-using VentLib.Logging;
+using Lotus.Roles.Internals.Enums;
+using Lotus.Roles.Operations;
 using VentLib.Utilities.Optionals;
 
 namespace Lotus.API.Vanilla.Sabotages;
 
 public class OxygenSabotage : ISabotage
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(OxygenSabotage));
+
     private UnityOptional<PlayerControl> caller;
 
     public OxygenSabotage(PlayerControl? player = null)
@@ -24,14 +26,14 @@ public class OxygenSabotage : ISabotage
     public bool Fix(PlayerControl? fixer = null)
     {
         ActionHandle handle = ActionHandle.NoInit();
-        Game.TriggerForAll(RoleActionType.SabotageFixed, ref handle, this, fixer == null ? PlayerControl.LocalPlayer : fixer);
+        RoleOperations.Current.TriggerForAll(LotusActionType.SabotageFixed, fixer == null ? PlayerControl.LocalPlayer : fixer, handle, this);
         if (handle.IsCanceled) return false;
 
         if (!ShipStatus.Instance.TryGetSystem(SabotageType().ToSystemType(), out ISystemType? systemInstance)) return false;
         LifeSuppSystemType? oxygen = systemInstance!.TryCast<LifeSuppSystemType>();
         if (oxygen == null)
         {
-            VentLogger.Warn($"Error Fixing Oxygen Sabotage. Invalid System Cast from {SabotageType()}.");
+            log.Warn($"Error Fixing Oxygen Sabotage. Invalid System Cast from {SabotageType()}.");
             return false;
         }
 
@@ -46,10 +48,10 @@ public class OxygenSabotage : ISabotage
     public void CallSabotage(PlayerControl sabotageCaller)
     {
         ActionHandle handle = ActionHandle.NoInit();
-        Game.TriggerForAll(RoleActionType.SabotageStarted, ref handle, this, sabotageCaller);
+        RoleOperations.Current.TriggerForAll(LotusActionType.SabotageStarted, sabotageCaller, handle, this);
         if (handle.IsCanceled) return;
 
-        ShipStatus.Instance.RepairSystem(SabotageType().ToSystemType(), sabotageCaller, 128);
+        ShipStatus.Instance.UpdateSystem(SabotageType().ToSystemType(), sabotageCaller, 128);
         caller.OrElseSet(() => sabotageCaller);
         SabotagePatch.CurrentSabotage = this;
     }

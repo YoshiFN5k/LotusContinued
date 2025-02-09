@@ -8,18 +8,20 @@ using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Extensions;
 using Lotus.Logging;
 using Lotus.Options;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Interfaces;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Logging;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
-
-public partial class SerialKiller : Impostor, IModdable
+// IModdable
+public class SerialKiller : Impostor
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(SerialKiller));
     private bool paused = true;
     public Cooldown DeathTimer = null!;
     private bool beginsAfterFirstKill;
@@ -29,7 +31,7 @@ public partial class SerialKiller : Impostor, IModdable
     [UIComponent(UI.Counter)]
     private string CustomCooldown() => (!MyPlayer.IsAlive() || DeathTimer.IsReady()) ? "" : Color.white.Colorize(DeathTimer + "s");
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         bool success = base.TryKill(target);
@@ -41,7 +43,7 @@ public partial class SerialKiller : Impostor, IModdable
         return success;
     }
 
-    [RoleAction(RoleActionType.FixedUpdate)]
+    [RoleAction(LotusActionType.FixedUpdate)]
     private void CheckForSuicide()
     {
         if (MyPlayer == null) return;
@@ -53,24 +55,24 @@ public partial class SerialKiller : Impostor, IModdable
             return;
         }
 
-        VentLogger.Trace($"Serial Killer ({MyPlayer.name}) Commiting Suicide", "SerialKiller::CheckForSuicide");
+        log.Trace($"Serial Killer ({MyPlayer.name}) Commiting Suicide", "SerialKiller::CheckForSuicide");
 
         MyPlayer.InteractWith(MyPlayer, new UnblockedInteraction(new FatalIntent(), this));
         Game.MatchData.GameHistory.AddEvent(new SuicideEvent(MyPlayer));
     }
 
-    [RoleAction(RoleActionType.RoundStart)]
-    private void SetupSuicideTimer()
+    [RoleAction(LotusActionType.RoundStart)]
+    private void SetupSuicideTimer(bool gameStart)
     {
         paused = beginsAfterFirstKill && !hasKilled;
         if (!paused)
         {
             DevLogger.Log("Restarting Timer");
-            DeathTimer.Start();
+            DeathTimer.Start(gameStart ? GeneralOptions.GameplayOptions.GetFirstKillCooldown(MyPlayer) + DeathTimer.Duration : float.MinValue);
         }
     }
 
-    [RoleAction(RoleActionType.RoundEnd)]
+    [RoleAction(LotusActionType.RoundEnd)]
     private void StopDeathTimer() => paused = true;
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>

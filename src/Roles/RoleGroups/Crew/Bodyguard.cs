@@ -4,6 +4,7 @@ using Lotus.Managers.History.Events;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Interactions.Interfaces;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.API.Player;
@@ -14,17 +15,20 @@ using Lotus.GUI.Name.Holders;
 using Lotus.Options;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using static Lotus.Roles.RoleGroups.Crew.Medic.MedicTranslations;
 using static Lotus.Roles.RoleGroups.Crew.Medic.MedicTranslations.MedicOptionTranslations;
 using static Lotus.Utilities.TranslationUtil;
+using Lotus.API.Vanilla.Meetings;
+using System.Linq;
+using Lotus.Roles.Interfaces;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
-public class Bodyguard: Crewmate
+public class Bodyguard : Crewmate, IInfoResender
 {
     private static readonly Color CrossColor = new(0.74f, 0.58f, 0f);
     private bool protectAgainstHelpfulInteraction;
@@ -40,17 +44,22 @@ public class Bodyguard: Crewmate
 
     private const string StarText = "<size=1.2><b>★</b></size>";
 
-    [RoleAction(RoleActionType.RoundEnd)]
+    [RoleAction(LotusActionType.RoundEnd)]
     private void RoundEndMessage()
     {
         confirmedVote = false;
+        ResendMessages();
+    }
+
+    public void ResendMessages()
+    {
         if (guardedPlayer == byte.MaxValue) CHandler(Translations.BodyguardHelpMessage).Send(MyPlayer);
         else if (mode is GuardMode.AnyMeeting) CHandler(ProtectingMessage.Formatted(Players.FindPlayerById(guardedPlayer)?.name)).Send(MyPlayer);
     }
 
     [SuppressMessage("ReSharper", "AssignmentInConditionalExpression")]
-    [RoleAction(RoleActionType.MyVote)]
-    private void HandleMedicVote(Optional<PlayerControl> votedPlayer, ActionHandle handle)
+    [RoleAction(LotusActionType.Vote)]
+    private void HandleMedicVote(Optional<PlayerControl> votedPlayer, MeetingDelegate _, ActionHandle handle)
     {
         if (confirmedVote) return;
         // If guarded player is selected, and mode is any meeting then skip
@@ -79,19 +88,19 @@ public class Bodyguard: Crewmate
 
         protectedIndicator?.Delete();
         guardedPlayer = player;
-        protectedIndicator = voted.NameModel().GCH<IndicatorHolder>().Add(new SimpleIndicatorComponent("<b>+</b>", CrossColor, Game.IgnStates, MyPlayer));
-        Game.GetDeadPlayers().ForEach(p => protectedIndicator?.Get().AddViewer(p));
+        protectedIndicator = voted.NameModel().GCH<IndicatorHolder>().Add(new SimpleIndicatorComponent("<b>+</b>", CrossColor, Game.InGameStates, MyPlayer));
+        Players.GetDeadPlayers().ForEach(p => protectedIndicator?.Get().AddViewer(p));
 
         CHandler(SelectedPlayerMessage.Formatted(Players.FindPlayerById(guardedPlayer)?.name)).Send(MyPlayer);
     }
 
-    [RoleAction(RoleActionType.Disconnect)]
-    [RoleAction(RoleActionType.AnyDeath)]
+    [RoleAction(LotusActionType.Disconnect)]
+    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
     private void CheckForDisconnectAndDeath(PlayerControl player, ActionHandle handle)
     {
         if (player.PlayerId != guardedPlayer) return;
-        bool resetGuard = handle.ActionType is RoleActionType.Disconnect;
-        resetGuard = resetGuard || handle.ActionType is RoleActionType.AnyDeath or RoleActionType.AnyExiled && mode is GuardMode.OnDeath;
+        bool resetGuard = handle.ActionType is LotusActionType.Disconnect;
+        resetGuard = resetGuard || handle.ActionType is LotusActionType.PlayerDeath or LotusActionType.Exiled && mode is GuardMode.OnDeath;
 
         protectedIndicator?.Delete();
         if (!resetGuard) return;
@@ -100,13 +109,13 @@ public class Bodyguard: Crewmate
         guardedPlayer = byte.MaxValue;
     }
 
-    [RoleAction(RoleActionType.AnyExiled)]
-    private void CheckForExiledPlayer(GameData.PlayerInfo exiled, ActionHandle handle)
+    [RoleAction(LotusActionType.Exiled, ActionFlag.GlobalDetector)]
+    private void CheckForExiledPlayer(PlayerControl exiled, ActionHandle handle)
     {
-        if (exiled.Object != null) CheckForDisconnectAndDeath(exiled.Object, handle);
+        if (exiled != null) CheckForDisconnectAndDeath(exiled, handle);
     }
 
-    [RoleAction(RoleActionType.MyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath)]
     private void HandleMyDeath()
     {
         protectedIndicator?.Delete();
@@ -114,11 +123,11 @@ public class Bodyguard: Crewmate
     }
 
 
-    [RoleAction(RoleActionType.AnyInteraction)]
-    private void AnyPlayerInteraction(PlayerControl actor, PlayerControl target, Interaction interaction, ActionHandle handle)
+    [RoleAction(LotusActionType.Interaction, ActionFlag.GlobalDetector)]
+    private void AnyPlayerInteraction(PlayerControl target, PlayerControl interactor, Interaction interaction, ActionHandle handle)
     {
         Intent intent = interaction.Intent;
-        if (actor.PlayerId == MyPlayer.PlayerId) return;
+        if (interactor.PlayerId == MyPlayer.PlayerId) return;
         if (Game.State is not GameState.Roaming) return;
         if (guardedPlayer != target.PlayerId) return;
 
@@ -133,21 +142,17 @@ public class Bodyguard: Crewmate
         handle.Cancel();
 
         RoleUtils.SwapPositions(target, MyPlayer);
-        Game.MatchData.GameHistory.AddEvent(new PlayerSavedEvent(target, MyPlayer, actor));
-        LotusInteraction lotusInteraction = new(new FatalIntent(false, () => new CustomDeathEvent(MyPlayer, actor, ModConstants.DeathNames.Parried)), this);
-        InteractionResult result = MyPlayer.InteractWith(actor, lotusInteraction);
+        Game.MatchData.GameHistory.AddEvent(new PlayerSavedEvent(target, MyPlayer, interactor));
+        LotusInteraction lotusInteraction = new(new FatalIntent(false, () => new CustomDeathEvent(MyPlayer, interactor, ModConstants.DeathNames.Parried)), this);
+        InteractionResult result = MyPlayer.InteractWith(interactor, lotusInteraction);
 
-        if (result is InteractionResult.Proceed) Game.MatchData.GameHistory.AddEvent(new KillEvent(MyPlayer, actor));
+        if (result is InteractionResult.Proceed) Game.MatchData.GameHistory.AddEvent(new KillEvent(MyPlayer, interactor));
 
-
-        actor.GetCustomRole().GetActions(RoleActionType.Attack)
-            .FirstOrOptional()
-            .Handle(t => t.Item1.Execute(t.Item2, new object[] { MyPlayer} ),
-            () =>
-            {
-                if (actor.InteractWith(MyPlayer, LotusInteraction.FatalInteraction.Create(this)) is InteractionResult.Proceed)
-                    Game.MatchData.GameHistory.AddEvent(new KillEvent(actor, MyPlayer));
-            });
+        if (interactor.PrimaryRole().GetActions(LotusActionType.Attack).Any() || interactor.GetSubroles().Any(r => r.GetActions(LotusActionType.Attack).Any()))
+        {
+            if (interactor.InteractWith(MyPlayer, LotusInteraction.FatalInteraction.Create(this)) is InteractionResult.Proceed)
+                Game.MatchData.GameHistory.AddEvent(new KillEvent(interactor, MyPlayer));
+        }
     }
 
     private ChatHandler CHandler(string message) => new ChatHandler()

@@ -7,66 +7,74 @@ using Lotus.GUI.Name;
 using Lotus.Options;
 using Lotus.Roles.Events;
 using Lotus.Roles.Interactions;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
+using Lotus.Roles.Internals;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
-public class FireWorks: Shapeshifter
+public class FireWorks : Shapeshifter
 {
     [NewOnSetup] private List<Vector2> fireWorkLocations = null!;
+    private int maxFireworks;
     private int totalFireworks;
-    private bool canDetonateAnytime;
+    private int plantedFireworks;
+    private bool detonateWhenLastImp;
 
     private FixedUpdateLock fixedUpdateLock = new(0.25f);
 
     private int impostorCount;
 
     [UIComponent(UI.Counter)]
-    public string FireworkCounter() => totalFireworks >= 0 ? RoleUtils.Counter(totalFireworks, color: ModConstants.Palette.MadmateColor) : "";
+    public string FireworkCounter() => totalFireworks >= 0 ? RoleUtils.Counter(totalFireworks, maxFireworks, ModConstants.Palette.MadmateColor) : RoleUtils.Counter(plantedFireworks, color: ModConstants.Palette.MadmateColor);
 
     [UIComponent(UI.Text)]
-    public string DetonateText() => !canDetonateAnytime && impostorCount == 1 ? Translations.AbleToDetonateText : "";
+    public string DetonateText() => detonateWhenLastImp && impostorCount == 1 && plantedFireworks != 0 ? Translations.AbleToDetonateText : "";
 
     protected override void PostSetup()
     {
         ShapeshiftDuration = 5f;
+        maxFireworks = totalFireworks;
     }
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target) => base.TryKill(target);
 
-    [RoleAction(RoleActionType.FixedUpdate)]
+    [RoleAction(LotusActionType.FixedUpdate)]
     public void FireworkImpostorCounter()
     {
-        if (!fixedUpdateLock.AcquireLock() || canDetonateAnytime) return;
+        if (!fixedUpdateLock.AcquireLock() || !detonateWhenLastImp) return;
         impostorCount = GetAliveImpostors();
     }
 
-    [RoleAction(RoleActionType.Shapeshift)]
-    public void DoFireworkAbility()
+    [RoleAction(LotusActionType.Unshapeshift)]
+    public void DoFireworkAbility(ActionHandle handle)
     {
-        if (GetAliveImpostors() == 1) DetonateFireworks();
+        // handle.Cancel();
+        if (impostorCount == 1 && plantedFireworks != 0 && detonateWhenLastImp) DetonateFireworks();
         else if (totalFireworks is -1 or >= 1)
         {
             fireWorkLocations.Add(MyPlayer.GetTruePosition());
+            plantedFireworks++;
             if (totalFireworks != -1) totalFireworks--;
         }
     }
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     public void DetonateFromPet()
     {
-        if (canDetonateAnytime) DetonateFireworks();
+        if (!detonateWhenLastImp) DetonateFireworks();
     }
 
     public void DetonateFireworks()
     {
+        plantedFireworks = 0;
         fireWorkLocations.SelectMany(fl => RoleUtils.GetPlayersWithinDistance(fl, 1.8f)).DistinctBy(p => p.PlayerId).ForEach(p =>
         {
             BombedEvent bombedEvent = new(p, MyPlayer);
@@ -88,9 +96,13 @@ public class FireWorks: Shapeshifter
                 .BindInt(i => totalFireworks = i)
                 .Build())
             .SubOption(sub => sub.KeyName("Detonate Only When Last Impostor", TranslationUtil.Colorize(Translations.Options.AbleToDetonateEarly, RoleColor))
-                .BindBool(b => canDetonateAnytime = b)
-                .AddOnOffValues(false)
+                .BindBool(b => detonateWhenLastImp = b)
+                .AddOnOffValues()
                 .Build());
+
+    protected override RoleModifier Modify(RoleModifier roleModifier) =>
+        base.Modify(roleModifier)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet | RoleAbilityFlag.UsesUnshiftTrigger);
 
     [Localized(nameof(FireWorks))]
     private static class Translations
@@ -107,7 +119,7 @@ public class FireWorks: Shapeshifter
             [Localized(nameof(TotalFireworks))]
             public static string TotalFireworks = "Total Firework Charges";
 
-            [Localized(nameof(AbleToDetonateText))]
+            [Localized(nameof(AbleToDetonateEarly))]
             public static string AbleToDetonateEarly = "Detonate Only When Last Impostor::0";
         }
     }

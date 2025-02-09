@@ -11,9 +11,10 @@ using Lotus.GUI.Name;
 using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name.Holders;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
@@ -26,7 +27,7 @@ public class Demolitionist : Crewmate
     private Cooldown demoTime;
     private byte killerId = byte.MaxValue;
 
-    [RoleAction(RoleActionType.MyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath)]
     private void DemoDeath(PlayerControl killer, Optional<FrozenPlayer> realKiller)
     {
         killer = realKiller.FlatMap(k => new UnityOptional<PlayerControl>(k.MyPlayer)).OrElse(killer);
@@ -42,11 +43,11 @@ public class Demolitionist : Crewmate
         Async.Schedule(() => DelayedDeath(killer, remote), demoTime.Duration);
     }
 
-    [RoleAction(RoleActionType.AnyReportedBody, triggerAfterDeath: true)]
-    public void DieOnBodyReport(PlayerControl reporter, GameData.PlayerInfo body, ActionHandle handle)
+    [RoleAction(LotusActionType.ReportBody, ActionFlag.WorksAfterDeath | ActionFlag.GlobalDetector)]
+    public void DieOnBodyReport(PlayerControl reporter, Optional<NetworkedPlayerInfo> body, ActionHandle handle)
     {
         if (reporter.PlayerId != killerId) return;
-        if (body.PlayerId != MyPlayer.PlayerId) return;
+        if (body.Exists()) if (body.Get().PlayerId != MyPlayer.PlayerId) return;
         ExplodePlayer(reporter);
         handle.Cancel();
     }
@@ -79,7 +80,7 @@ public class Demolitionist : Crewmate
     protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier).RoleColor("#5e2801");
 
     [Localized(nameof(Demolitionist))]
-    private static class Translations
+    public static class Translations
     {
         [Localized(nameof(YouKilledDemoMessage))]
         public static string YouKilledDemoMessage = "You Killed the {0}! Vent to stay alive!";

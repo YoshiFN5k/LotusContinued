@@ -1,11 +1,11 @@
 using Lotus.Factions;
 using Lotus.Roles.Interfaces;
-using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using UnityEngine;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
-
-public partial class NeutralKillingBase: Vanilla.Impostor, IModdable
+// IModdable
+public class NeutralKillingBase : Vanilla.Impostor
 {
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)

@@ -6,31 +6,33 @@ using Lotus.API.Player;
 using Lotus.API.Reactive;
 using Lotus.Extensions;
 using Lotus.Managers.History;
-using Lotus.Options;
 using Lotus.Roles;
-using Lotus.Roles.Extra;
+using Lotus.Roles.Builtins;
 using Lotus.Victory;
 using Lotus.Victory.Conditions;
+using Lotus.Options;
 using UnityEngine;
 using VentLib.Commands;
 using VentLib.Commands.Attributes;
 using VentLib.Localization.Attributes;
 using VentLib.Utilities;
 using VentLib.Utilities.Attributes;
+using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using static Lotus.ModConstants.Palette;
+using VentLib.Networking;
 
 namespace Lotus.Chat.Commands;
 
 [LoadStatic]
-public class LastResultCommand: CommandTranslations
+public class LastResultCommand : CommandTranslations
 {
     static LastResultCommand()
     {
         Hooks.NetworkHooks.ReceiveVersionHook.Bind(nameof(LastResultCommand), versionEvent =>
         {
-            if (!GeneralOptions.MiscellaneousOptions.AutoDisplayResults) return;
+            if (!GeneralOptions.MiscellaneousOptions.AutoDisplayLastResults) return;
             if (versionEvent.Player == null) return;
             if (PlayerHistories == null) return;
             if (AmongUsClient.Instance.NetworkMode is not NetworkModes.LocalGame && PlayerHistories.All(p => p.UniquePlayerId.ToFriendcode() != versionEvent.Player.FriendCode)) return;
@@ -38,7 +40,7 @@ public class LastResultCommand: CommandTranslations
         });
         Hooks.NetworkHooks.GameJoinHook.Bind(nameof(LastResultCommand), gameJoinEvent =>
         {
-            if (!GeneralOptions.MiscellaneousOptions.AutoDisplayResults) return;
+            if (!GeneralOptions.MiscellaneousOptions.AutoDisplayLastResults) return;
             if (gameJoinEvent.IsNewLobby) return;
             Async.WaitUntil(() => PlayerControl.LocalPlayer, p => p != null, GeneralResults, 0.1f, 30);
         });
@@ -49,13 +51,13 @@ public class LastResultCommand: CommandTranslations
     {
         if (PlayerHistories == null) ErrorHandler(source).Message(NoPreviousGameText).Send();
         else if (context.Args.Length == 0) GeneralResults(source);
-        else PlayerResults(source, context.Join());
+        else PlayerResults(source, context.Join().ToLower());
     }
 
     public static void PlayerResults(PlayerControl source, string name)
     {
         HashSet<byte> winners = Game.MatchData.GameHistory.LastWinners.Select(p => p.MyPlayer.PlayerId).ToHashSet();
-        PlayerHistory? foundPlayer = PlayerHistories!.FirstOrDefault(p => p.Name == name);
+        PlayerHistory? foundPlayer = PlayerHistories!.FirstOrDefault(p => p.Name.ToLower().Contains(name));
         if (foundPlayer == null)
         {
             ErrorHandler(source).Message(PlayerNotFoundText.Formatted(name)).Send();
@@ -69,15 +71,10 @@ public class LastResultCommand: CommandTranslations
 
         string winnerText = winners.Contains(foundPlayer.PlayerId) ? WinnerColor.Colorize(" ★ " + LRTranslations.WinnerText + " ★") : "";
         string titleText = $"{name} {coloredName}{winnerText}\n";
-        titleText += $"{LRTranslations.RoleText.Formatted(foundPlayer.Role.RoleColor.Colorize(foundPlayer.Role.RoleName))} ({playerStatus})\n";
+        titleText += $"{LRTranslations.RoleText.Formatted(foundPlayer.MainRole.RoleColor.Colorize(foundPlayer.MainRole.RoleName))} ({playerStatus})\n";
         if (foundPlayer.Subroles.Count > 0) titleText += LRTranslations.ModifierText.Formatted(foundPlayer.Subroles.Select(sr => sr.RoleColor.Colorize(sr.RoleName)).Fuse());
 
-        string text = "";
-        text += "\n\n";
-
-        text += foundPlayer.Role.Statistics().Select(s => $"{s.Name()}: {s.GetGenericValue(foundPlayer.UniquePlayerId)}").Fuse("\n") + "\n.";
-
-        ChatHandler.Of(text, titleText).LeftAlign().Send(source);
+        ChatHandler.Of("\n", titleText).LeftAlign().Send(source);
     }
 
     public static void GeneralResults(PlayerControl source)
@@ -85,14 +82,33 @@ public class LastResultCommand: CommandTranslations
         if (PlayerHistories == null) return;
 
         HashSet<byte> winners = Game.MatchData.GameHistory.LastWinners.Select(p => p.MyPlayer.PlayerId).ToHashSet();
-        string text = GeneralColor3.Colorize("<b>Translations.ResultsText</b>") + "\n";
 
-        text = PlayerHistories
-            .Where(ph => ph.Role is not GM)
+        List<string> messages = new();
+        int _maxMessagePacketSize = NetworkRules.MaxPacketSize + 200;
+        List<string> playerResults = PlayerHistories
+            .Where(ph => ph.MainRole is not GameMaster)
             .OrderBy(StatusOrder)
             .Select(p => CreateSmallPlayerResult(p, winners.Contains(p.PlayerId)))
-            .Fuse("<line-height=4>\n</line-height>");
+            .ToList();
 
+        int i = 1;
+        int lastI = 0;
+
+        while (i <= playerResults.Count)
+        {
+            IEnumerable<string> curText = playerResults.Skip(lastI).Take(i - lastI);
+            string fusedText = curText.Fuse("<line-height=4>\n</line-height>");
+
+            if (fusedText.Length >= _maxMessagePacketSize)
+            {
+                int difference = i - lastI;
+                messages.Add(playerResults.GetRange(lastI, difference - 1).Fuse("<line-height=4>\n</line-height>"));
+                lastI = i - 1;
+            }
+            else i++;
+        }
+
+        if (lastI < playerResults.Count) messages.Add(playerResults.Skip(lastI).Fuse("<line-height=4>\n</line-height>"));
         WinDelegate winDelegate = Game.GetWinDelegate();
         string winResult = new Optional<IWinCondition>(winDelegate.WinCondition()).Map(wc =>
         {
@@ -103,27 +119,25 @@ public class LastResultCommand: CommandTranslations
                 List<FrozenPlayer> additionalWinners = Game.MatchData.GameHistory.AdditionalWinners;
                 if (additionalWinners.Count > 0)
                 {
-                    string awText = additionalWinners.Select(fp => new List<CustomRole> {fp.Role}.Concat(fp.Subroles).MaxBy(r => r.DisplayOrder)).Fuse();
+                    string awText = additionalWinners.Select(fp => new List<CustomRole> { fp.MainRole }.Concat(fp.Subroles).MaxBy(r => r.DisplayOrder)).Fuse();
                     t += $" + {awText}";
                 }
             }
-            else t = Game.MatchData.GameHistory.LastWinners.Select(lw => lw.Role.ColoredRoleName()).Fuse();
+            else t = Game.MatchData.GameHistory.LastWinners.Select(lw => lw.MainRole.ColoredRoleName()).Fuse();
 
             string? wcText = wc.GetWinReason().ReasonText;
             string reasonText = wcText == null ? "" : $"\n<size=1.45>{LRTranslations.WinReasonText.Formatted(wcText)}</size>";
             return $"\n\n<size=1.6>{LRTranslations.WinResultText.Formatted(t)}{reasonText}</size>";
-        }).OrElse("");
+        }).OrElse("").TrimStart('\n', '\r');
 
-
-        string content = $"<size=1.7>{text + winResult}</size>";
-
-        ChatHandler.Of("\n".Repeat(PlayerHistories.Count - 1), content).LeftAlign().Send(source);
+        messages.ForEach(m => ChatHandler.Of("\n", m).LeftAlign().Send(source));
+        if (winResult != "") ChatHandler.Of("\n", $"<size=1.7>{winResult}</size>").LeftAlign().Send(source);
+        messages.Clear();
         return;
 
         float DeathTimeOrder(PlayerHistory ph) => ph.CauseOfDeath == null ? 0f : (7200f - (float)ph.CauseOfDeath.Timestamp().TimeSpan().TotalSeconds) / 7200f;
         float StatusOrder(PlayerHistory ph) => winners.Contains(ph.PlayerId) ? (float)ph.Status + DeathTimeOrder(ph) : (float)ph.Status + 99 + DeathTimeOrder(ph);
     }
-
     private static string CreateSmallPlayerResult(PlayerHistory history, bool isWinner)
     {
         const string indent = "<indent=5.5%>{0}</indent>";
@@ -132,19 +146,19 @@ public class LastResultCommand: CommandTranslations
         string statusText = history.Status is PlayerStatus.Dead ? history.CauseOfDeath?.SimpleName() ?? history.Status.ToString() : history.Status.ToString();
         string playerStatus = StatusColor(history.Status).Colorize(statusText);
 
-        string statText = history.Role.Statistics().FirstOrOptional().Map(t => $" <size=1.5>[{t.Name()}: {t.GetGenericValue(history.UniquePlayerId)}]</size>").OrElse("");
+        string statText = history.MainRole.Statistics().FirstOrOptional().Map(t => $" <size=1.5>[{t.Name()}: {t.GetGenericValue(history.UniquePlayerId)}]</size>").OrElse("");
 
         int colorId = history.Outfit.ColorId;
         string coloredName = ((Color)Palette.PlayerColors[colorId]).Colorize(ModConstants.ColorNames[colorId]);
         string modifiers = history.Subroles.Count == 0 ? "" : $"\n<size=1.3>{history.Subroles.Select(sr => sr.ColoredRoleName()).Fuse()}</size>";
 
-        string totalText = winnerPrefix.Formatted($"{history.Name} : {coloredName} <size=1.5>({playerStatus})</size>\n{indent.Formatted($"<size=1.9>{history.Role.ColoredRoleName()}</size> {statText}{modifiers}")}");
+        string totalText = winnerPrefix.Formatted($"{history.Name} : {coloredName} <size=1.5>({playerStatus})</size>\n{indent.Formatted($"<size=1.9>{history.MainRole.ColoredRoleName()}</size> {statText}{modifiers}")}");
         return $"<line-height=2.2>{totalText}</line-height>";
     }
 
     private static ChatHandler ErrorHandler(PlayerControl source) => new ChatHandler().Title(t => t.Text(CommandError).Color(KillingColor).Build()).Player(source).LeftAlign();
 
-    private static Color StatusColor(PlayerStatus status)
+    public static Color StatusColor(PlayerStatus status)
     {
         return status switch
         {

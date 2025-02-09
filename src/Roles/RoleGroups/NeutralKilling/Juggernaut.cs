@@ -7,13 +7,14 @@ using Lotus.GUI;
 using Lotus.GUI.Name;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Logging;
-using VentLib.Options.Game;
+using Lotus.Roles.Internals.Enums;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 
 public class Juggernaut : NeutralKillingBase
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Juggernaut));
     private bool canVent;
     private bool impostorVision;
     private float decreaseBy;
@@ -23,12 +24,12 @@ public class Juggernaut : NeutralKillingBase
     [UIComponent(UI.Counter, ViewMode.Additive, GameState.Roaming, GameState.InMeeting)]
     public string KillCounter() => RoleUtils.Counter(kills, color: RoleColor);
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         if (!base.TryKill(target)) return false;
         kills++;
-        VentLogger.Trace($"Juggernaut Kill Cooldown {KillCooldown - (decreaseBy * kills)}");
+        log.Trace($"Juggernaut Kill Cooldown {KillCooldown - (decreaseBy * kills)}");
         SyncOptions();
         return true;
     }
@@ -41,17 +42,17 @@ public class Juggernaut : NeutralKillingBase
                 .AddFloatRange(0, 30, 0.5f, 5)
                 .Build())
             .SubOption(sub => sub
-                .Name("Can Vent")
+                .KeyName("Can Vent", RoleTranslations.CanVent)
                 .BindBool(v => canVent = v)
                 .AddOnOffValues()
                 .Build())
             .SubOption(sub => sub
-                .Name("Can Sabotage")
+                .KeyName("Can Sabotage", RoleTranslations.CanSabotage)
                 .BindBool(v => canSabotage = v)
                 .AddOnOffValues()
                 .Build())
             .SubOption(sub => sub
-                .Name("Impostor Vision")
+                .KeyName("Impostor Vision", RoleTranslations.ImpostorVision)
                 .BindBool(v => impostorVision = v)
                 .AddOnOffValues()
                 .Build());

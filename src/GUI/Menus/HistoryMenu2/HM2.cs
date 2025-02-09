@@ -14,7 +14,7 @@ using VentLib.Utilities.Harmony.Attributes;
 namespace Lotus.GUI.Menus.HistoryMenu2;
 
 [RegisterInIl2Cpp]
-public class HM2: MonoBehaviour
+public class HM2 : MonoBehaviour
 {
     private GameObject anchorObject;
     private GameObject buttonObject;
@@ -30,8 +30,8 @@ public class HM2: MonoBehaviour
 
     public HM2(IntPtr intPtr) : base(intPtr)
     {
-        anchorObject = gameObject.CreateChild("Anchor", new Vector3(0.3f, -0.1f, -1.5f));
-        buttonObject = gameObject.CreateChild("HistoryButton", new Vector3(-8.1f, -0.1f));
+        anchorObject = gameObject.CreateChild("Anchor", new Vector3(-1.44f, -0.1f, -1.5f));
+        buttonObject = gameObject.CreateChild("HistoryButton", new Vector3(.15f, -0.175f), new Vector3(0.95f, 0.95f));
         Hooks.GameStateHooks.GameStartHook.Bind(nameof(HM2), _ =>
         {
             if (anchorObject != null) anchorObject.SetActive(false);
@@ -49,19 +49,19 @@ public class HM2: MonoBehaviour
         DevLogger.Log("Setting up history button");
         hudManager.ReportButton.gameObject.SetActive(true);
         historyButton = Instantiate(hudManager.ReportButton, buttonObject.transform);
-        historyButton.graphic.sprite = Utils.LoadSprite("Lotus.assets.History.png", 800);
+        historyButton.graphic.sprite = AssetLoader.LoadSprite("Lotus.assets.History.png", 800);
         historyButton.GetComponentInChildren<PassiveButton>().Modify(ToggleMenu);
         historyButton.SetActive(true);
         Async.Schedule(() => historyButton.buttonLabelText.text = "History", 0.05f);
 
         // ===================
         // Set up Parent Menu
-        // ===================
-        background = Instantiate(hudManager.Chat.BackgroundImage, anchorObject.transform);
+        // ====================
+        background = Instantiate(hudManager.Chat.backgroundImage, anchorObject.transform);
         background.flipX = background.flipY = true;
         background.transform.localScale += new Vector3(0.3f, 0f);
 
-        PassiveButton parentButton = chatController.Content.FindChild<PassiveButton>("OpenKeyboardButton");
+        PassiveButton parentButton = chatController.openKeyboardButton.GetComponentInChildren<PassiveButton>();
 
         ResultsMenu = anchorObject.AddComponent<ResultsMenu>();
         ResultsMenu.PassHudManager(hudManager);
@@ -82,7 +82,10 @@ public class HM2: MonoBehaviour
     public void Open()
     {
         HudManager.Instance.SetHudActive(false);
-        GameStartManager.Instance.StartButton.gameObject.SetActive(false);
+        if (AmongUsClient.Instance.AmHost) GameStartManager.Instance.StartButton.gameObject.SetActive(false);
+        else GameStartManager.Instance.StartButtonClient.gameObject.SetActive(false);
+
+        // HudManager.Instance.gameObject.transform.Find("LobbyInfoPane/AspectSize").gameObject.SetActive(false);
         historyButton.SetDisabled();
 
         HudManager.Instance.IsIntroDisplayed = true;
@@ -94,7 +97,10 @@ public class HM2: MonoBehaviour
     public void Close()
     {
         HudManager.Instance.SetHudActive(true);
-        GameStartManager.Instance.StartButton.gameObject.SetActive(true);
+        if (AmongUsClient.Instance.AmHost) GameStartManager.Instance.StartButton.gameObject.SetActive(true);
+        else GameStartManager.Instance.StartButtonClient.gameObject.SetActive(true);
+
+        HudManager.Instance.gameObject.transform.Find("LobbyInfoPane/AspectSize").gameObject.SetActive(true);
         historyButton.SetEnabled();
 
         HudManager.Instance.IsIntroDisplayed = false;
@@ -112,11 +118,11 @@ public class HM2: MonoBehaviour
         });
     }
 
-    [QuickPostfix(typeof(HudManager), nameof(HudManager.Start))]
-    public static void CreateButton(HudManager __instance)
+    [QuickPostfix(typeof(LobbyBehaviour), nameof(LobbyBehaviour.Start))]
+    public static void CreateButton(LobbyBehaviour __instance)
     {
-        if (LobbyBehaviour.Instance == null) return;
-        HM2 historyMenu = __instance.gameObject.AddComponent<HM2>();
-        historyMenu.PassHudManager(__instance);
+        HudManager Instance = DestroyableSingleton<HudManager>.Instance;
+        HM2 historyMenu = Instance.gameObject.AddComponent<HM2>();
+        historyMenu.PassHudManager(Instance);
     }
 }

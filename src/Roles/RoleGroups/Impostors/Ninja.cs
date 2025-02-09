@@ -5,12 +5,16 @@ using Lotus.GUI;
 using Lotus.GUI.Name;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Utilities;
 using Lotus.Extensions;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
+using Lotus.Roles.RoleGroups.Vanilla;
+using Lotus.Options;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -21,12 +25,16 @@ public class Ninja : Vanilla.Impostor
     public NinjaMode Mode = NinjaMode.Killing;
     private ActivationType activationType;
 
+
+    private float ShapeshiftCooldown;
+    private float ShapeshiftDuration;
+
     [UIComponent(UI.Text)]
     private string CurrentMode() => RoleColor.Colorize(Mode == NinjaMode.Hunting ? "(Hunting)" : "(Killing)");
 
     protected override void Setup(PlayerControl player) => playerList = new List<PlayerControl>();
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public new bool TryKill(PlayerControl target)
     {
         SyncOptions();
@@ -38,27 +46,27 @@ public class Ninja : Vanilla.Impostor
         return true;
     }
 
-    [RoleAction(RoleActionType.Shapeshift)]
+    [RoleAction(LotusActionType.Shapeshift)]
     private void NinjaTargetCheck()
     {
         if (activationType is not ActivationType.Shapeshift) return;
         Mode = NinjaMode.Hunting;
     }
 
-    [RoleAction(RoleActionType.Unshapeshift)]
+    [RoleAction(LotusActionType.Unshapeshift)]
     private void NinjaUnShapeShift()
     {
         if (activationType is not ActivationType.Shapeshift) return;
         NinjaHuntAbility();
     }
 
-    [RoleAction(RoleActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundStart)]
     private void EnterKillMode() => Mode = NinjaMode.Killing;
 
-    [RoleAction(RoleActionType.RoundEnd)]
+    [RoleAction(LotusActionType.RoundEnd)]
     private void NinjaClearTarget() => playerList.Clear();
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     public void SwitchMode()
     {
         if (activationType is not ActivationType.PetButton) return;
@@ -88,26 +96,55 @@ public class Ninja : Vanilla.Impostor
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
         .SubOption(sub => sub
-            .Name("Players Teleport to Ninja")
+            .KeyName("Players Teleport to Ninja", Translations.Options.TeleportToNinja)
             .BindBool(v => playerTeleportsToNinja = v)
-            .AddOnOffValues(false)
+            .AddBoolean(false)
             .Build())
         .SubOption(sub => sub
-            .Name("Ninja Ability Activation")
+            .KeyName("Ninja Ability Activation", Translations.Options.AbilityActiviation)
             .BindInt(v => activationType = (ActivationType)v)
             .Value(v => v.Text("Pet Button").Value(0).Build())
             .Value(v => v.Text("Shapeshift Button").Value(1).Build())
+            .ShowSubOptionPredicate(v => (int)v == 1)
+            .SubOption(sub => sub
+                .KeyName("Shapeshift Cooldown", Shapeshifter.Translations.Options.ShapeshiftCooldown)
+                .AddFloatRange(0, 120, 2.5f, 12, GeneralOptionTranslations.SecondsSuffix)
+                .BindFloat(f => ShapeshiftCooldown = f)
+                .Build())
+            .SubOption(sub => sub
+                .KeyName("Shapeshift Duration", Shapeshifter.Translations.Options.ShapeshiftDuration)
+                .Value(1f)
+                .AddFloatRange(2.5f, 120, 2.5f, 6, GeneralOptionTranslations.SecondsSuffix)
+                .BindFloat(f => ShapeshiftDuration = f)
+                .Build())
             .Build());
 
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .VanillaRole(activationType is ActivationType.Shapeshift ? RoleTypes.Shapeshifter : RoleTypes.Impostor)
-            .OptionOverride(new IndirectKillCooldown(KillCooldown, () => Mode is NinjaMode.Hunting));
+            .OptionOverride(new IndirectKillCooldown(KillCooldown, () => Mode is NinjaMode.Hunting))
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
+            .OptionOverride(Override.ShapeshiftCooldown, () => ShapeshiftCooldown)
+            .OptionOverride(Override.ShapeshiftDuration, () => ShapeshiftDuration);
 
     public enum NinjaMode
     {
         Killing,
         Hunting
+    }
+
+    [Localized(nameof(Ninja))]
+    public static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(TeleportToNinja))]
+            public static string TeleportToNinja = "Players Teleport to Ninja";
+
+            [Localized(nameof(AbilityActiviation))]
+            public static string AbilityActiviation = "Ninja Ability Activation";
+        }
     }
 }

@@ -2,10 +2,10 @@ using Lotus.API;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Extensions;
-using Lotus.Options;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 
@@ -14,23 +14,23 @@ public class Jackal : NeutralKillingBase
     private bool canVent;
     private bool impostorVision;
 
-    [RoleAction(RoleActionType.Attack)]
-    public new bool TryKill(PlayerControl target) => base.TryKill(target);
+    [RoleAction(LotusActionType.Attack)]
+    public override bool TryKill(PlayerControl target) => base.TryKill(target);
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddKillCooldownOptions(base.RegisterOptions(optionStream))
             .SubOption(sub => sub
-                .Name("Can Vent")
+                .KeyName("Can Vent", RoleTranslations.CanVent)
                 .BindBool(v => canVent = v)
                 .AddOnOffValues()
                 .Build())
             .SubOption(sub => sub
-                .Name("Can Sabotage")
+                .KeyName("Can Sabotage", RoleTranslations.CanSabotage)
                 .BindBool(v => canSabotage = v)
                 .AddOnOffValues()
                 .Build())
             .SubOption(sub => sub
-                .Name("Impostor Vision")
+                .KeyName("Impostor Vision", RoleTranslations.ImpostorVision)
                 .BindBool(v => impostorVision = v)
                 .AddOnOffValues()
                 .Build());

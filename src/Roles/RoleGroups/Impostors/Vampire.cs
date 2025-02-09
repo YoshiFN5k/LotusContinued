@@ -7,12 +7,13 @@ using Lotus.Roles.Events;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Interfaces;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Options;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 
@@ -25,7 +26,7 @@ public class Vampire : Impostor, IVariableRole
     private float killDelay;
     [NewOnSetup] private HashSet<byte> bitten = null!;
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         MyPlayer.RpcMark(target);
@@ -44,10 +45,10 @@ public class Vampire : Impostor, IVariableRole
         return false;
     }
 
-    [RoleAction(RoleActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundStart)]
     public void ResetBitten() => bitten.Clear();
 
-    [RoleAction(RoleActionType.MeetingCalled)]
+    [RoleAction(LotusActionType.ReportBody, priority: API.Priority.Low)]
     public void KillBitten() => bitten.Filter(Players.PlayerById).Where(p => p.IsAlive()).ForEach(p => MyPlayer.InteractWith(p, CreateInteraction(p)));
 
     private DelayedInteraction CreateInteraction(PlayerControl target)
@@ -63,15 +64,17 @@ public class Vampire : Impostor, IVariableRole
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub
-                .Name("Kill Delay")
+                .KeyName("Kill Delay", VampireTranslations.Options.KillDelay)
                 .Bind(v => killDelay = (float)v)
                 .AddFloatRange(2.5f, 60f, 2.5f, 2, GeneralOptionTranslations.SecondsSuffix)
                 .Build());
 
+    protected override List<CustomRole> LinkedRoles() => base.LinkedRoles().Concat(new List<CustomRole>() { _vampiress }).ToList();
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .OptionOverride(new IndirectKillCooldown(KillCooldown))
-            .LinkedRoles(_vampiress);
+            .IntroSound(AmongUs.GameOptions.RoleTypes.Shapeshifter);
 
     [Localized(nameof(Vampire))]
     public static class VampireTranslations

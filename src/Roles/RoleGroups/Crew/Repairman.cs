@@ -9,21 +9,22 @@ using Lotus.Extensions;
 using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using Lotus.Roles.Internals.Enums;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using static Lotus.Roles.RoleGroups.Crew.Repairman.RepairmanTranslations.RepairmanOptionTranslations;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
-public class Repairman: Engineer
+public class Repairman : Engineer
 {
     private bool repairmanCanVent;
     private List<SabotageType> sabotages = new();
 
-    [RoleAction(RoleActionType.SabotagePartialFix)]
-    private void SaboMasterFixes(ISabotage sabotage, PlayerControl fixer)
+    [RoleAction(LotusActionType.SabotagePartialFix)]
+    private void SaboMasterFixes(ISabotage sabotage)
     {
-        if (fixer.PlayerId != MyPlayer.PlayerId || !sabotages.Contains(sabotage.SabotageType())) return;
+        if (!sabotages.Contains(sabotage.SabotageType())) return;
         bool result = sabotage is DoorSabotage doorSabotage ? doorSabotage.FixRoom(MyPlayer) : sabotage.Fix(MyPlayer);
         if (result) Game.MatchData.GameHistory.AddEvent(new GenericAbilityEvent(MyPlayer, $"{ModConstants.HColor1.Colorize(MyPlayer.name)} fixed {sabotage.SabotageType()}."));
     }
@@ -63,7 +64,8 @@ public class Repairman: Engineer
 
     protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier)
         .VanillaRole(repairmanCanVent ? RoleTypes.Engineer : RoleTypes.Crewmate)
-        .RoleColor(Color.blue);
+        .RoleColor(Color.blue)
+        .IntroSound(() => ShipStatus.Instance.SabotageSound);
 
     [Localized(nameof(Repairman))]
     internal static class RepairmanTranslations

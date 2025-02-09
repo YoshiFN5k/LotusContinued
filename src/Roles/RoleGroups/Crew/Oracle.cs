@@ -7,6 +7,7 @@ using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name.Holders;
 using Lotus.GUI.Name.Impl;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Utilities;
@@ -16,10 +17,14 @@ using VentLib.Localization.Attributes;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
+using Lotus.API.Player;
+using Lotus.API.Vanilla.Meetings;
+using Lotus.Roles.Interfaces;
+using Lotus.Roles.Internals.Trackers;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
-public class Oracle: Crewmate
+public class Oracle : Crewmate, IInfoResender
 {
     private static ColorGradient _oracleGradient = new(new Color(0.49f, 0.57f, 0.84f), new Color(0.67f, 0.36f, 0.76f));
 
@@ -27,67 +32,64 @@ public class Oracle: Crewmate
     private bool targetLockedIn;
     private bool initialSkip;
 
+    [NewOnSetup] private MeetingPlayerSelector voteSelector = null!;
 
-    [RoleAction(RoleActionType.RoundEnd)]
+    public void ResendMessages() => CHandler().Message(Translations.VotePlayerInfo).Send(MyPlayer);
+
+    [RoleAction(LotusActionType.RoundEnd)]
     private void OracleSendMessage()
     {
         initialSkip = false;
         if (selectedPlayer.Exists()) return;
         CHandler().Message(Translations.VotePlayerInfo).Send(MyPlayer);
+        voteSelector.Reset();
     }
 
-    [RoleAction(RoleActionType.MyVote)]
-    private void OracleLockInTarget(Optional<PlayerControl> target, ActionHandle handle)
+    [RoleAction(LotusActionType.Vote)]
+    private void OracleLockInTarget(Optional<PlayerControl> target, MeetingDelegate _, ActionHandle handle)
     {
         if (targetLockedIn || initialSkip) return;
         handle.Cancel();
-
-        if (!selectedPlayer.Exists())
+        VoteResult result = voteSelector.CastVote(target);
+        switch (result.VoteResultType)
         {
-            selectedPlayer = target.Map(p => p.PlayerId);
-            selectedPlayer.Handle(
-                _ => CHandler().Message($"{Translations.SelectRole.Formatted(target.Get().name)}\n{Translations.SkipMessage}").Send(MyPlayer),
-                () =>
+            case VoteResultType.None:
+                break;
+            // case VoteResultType.Unselected:
+            case VoteResultType.Selected:
+                selectedPlayer = target.Map(p => p.PlayerId);
+                CHandler().Message($"{Translations.SelectRole.Formatted(target.Get().name)}\n{Translations.SkipMessage}").Send(MyPlayer);
+                break;
+            case VoteResultType.Skipped:
+                if (!targetLockedIn)
                 {
+                    selectedPlayer = Optional<byte>.Null();
                     CHandler().Message(Translations.VoteNormallyMessage).Send(MyPlayer);
                     initialSkip = true;
                 }
-            );
-            return;
+                break;
+            case VoteResultType.Confirmed:
+                targetLockedIn = true;
+                CHandler().Message(Translations.VoteNormallyMessage).Send(MyPlayer);
+                break;
         }
-
-        if (!target.Exists())
-        {
-            CHandler().Message(Translations.VoteNormallyMessage).Send(MyPlayer);
-            targetLockedIn = true;
-            return;
-        }
-
-        if (selectedPlayer.Get() == target.Get().PlayerId)
-        {
-            selectedPlayer = Optional<byte>.Null();
-            CHandler().Message($"{Translations.UnselectRole.Formatted(target.Get().name)}\n{Translations.SkipMessage}").Send(MyPlayer);
-            return;
-        }
-
-        selectedPlayer = target.Map(p => p.PlayerId);
-        CHandler().Message($"{Translations.SelectRole.Formatted(target.Get().name)}\n{Translations.SkipMessage}").Send(MyPlayer);
     }
 
-    [RoleAction(RoleActionType.MyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath)]
     private void OracleDies()
     {
         if (!selectedPlayer.Exists()) return;
         PlayerControl target = Utils.GetPlayerById(selectedPlayer.Get())!;
-        target.NameModel().GetComponentHolder<RoleHolder>().LastOrDefault(c => c.ViewMode() is ViewMode.Replace)?.SetViewerSupplier(() => Game.GetAllPlayers().ToList());
+        if (target == null) return; // If the target no longer exists.
+        target.NameModel().GetComponentHolder<RoleHolder>().LastOrDefault(c => c.ViewMode() is ViewMode.Replace)?.SetViewerSupplier(() => Players.GetAllPlayers().ToList());
 
-        string roleName = _oracleGradient.Apply(target.GetCustomRole().RoleName);
+        string roleName = _oracleGradient.Apply(target.PrimaryRole().RoleName);
 
-        target.NameModel().GetComponentHolder<RoleHolder>().Add(new RoleComponent(new LiveString(() => roleName), GameStates.IgnStates, ViewMode.Replace));
+        target.NameModel().GetComponentHolder<RoleHolder>().Add(new RoleComponent(new LiveString(_ => roleName), Game.InGameStates, ViewMode.Replace));
         CHandler().Message(Translations.RevealMessage, target.name, roleName).Send();
     }
 
-    [RoleAction(RoleActionType.Disconnect)]
+    [RoleAction(LotusActionType.Disconnect, ActionFlag.GlobalDetector)]
     private void TargetDisconnected(PlayerControl dcPlayer)
     {
         if (!selectedPlayer.Exists() || selectedPlayer.Get() != dcPlayer.PlayerId) return;
@@ -108,7 +110,7 @@ public class Oracle: Crewmate
         public static string OracleMessageTitle = "Oracle Ability";
 
         [Localized(nameof(VotePlayerInfo))]
-        public static string VotePlayerInfo = "Vote to select a player to reveal on your death. You can re-vote a player to unselect them.\nAfter confirming your target cannot be changed.";
+        public static string VotePlayerInfo = "Vote to select a player to reveal on your death. You can vote someone else to change to that person.\nAfter confirming your target cannot be changed.";
 
         [Localized(nameof(SelectRole))]
         public static string SelectRole = "You have selected: {0}";
@@ -117,10 +119,10 @@ public class Oracle: Crewmate
         public static string UnselectRole = "You have unselected: {0}";
 
         [Localized(nameof(VoteNormallyMessage))]
-        public static string VoteNormallyMessage = "You may now vote normally";
+        public static string VoteNormallyMessage = "You may now vote normally.";
 
         [Localized(nameof(SkipMessage))]
-        public static string SkipMessage = "Press \"Skip Vote\" to continue.";
+        public static string SkipMessage = "Vote the same player to continue.";
 
         [Localized(nameof(RevealMessage))]
         public static string RevealMessage = "The Oracle has revealed to all that {0} is the {1}";

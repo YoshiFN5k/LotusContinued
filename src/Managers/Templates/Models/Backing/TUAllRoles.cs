@@ -1,10 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Lotus.API;
 using Lotus.Factions.Neutrals;
-using Lotus.Logging;
 using Lotus.Roles;
+using Lotus.Roles.Builtins;
 using Lotus.Roles.Debugger;
-using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
+using Lotus.Roles.Managers.Interfaces;
+using Lotus.Roles.Properties;
 using Lotus.Roles.Subroles;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
@@ -20,24 +23,27 @@ internal class TUAllRoles
 
         OrderedDictionary<string, List<CustomRole>> rolesByFaction = new();
 
-        string FactionName(CustomRole role)
+        string FactionName(CustomRole roleDefinition)
         {
-            if (role is Subrole || onlyModifiers) return "Modifiers";
-            if (role.Faction is not Neutral) return role.Faction.Name();
-            return role.SpecialType is SpecialType.NeutralKilling ? "Neutral Killers" : "Neutral";
+            if (roleDefinition.Metadata.GetOrEmpty(RoleProperties.Key).Compare(r => r.HasProperty(RoleProperty.IsModifier))) return "Modifiers";
+            if (roleDefinition.Faction is not Neutral) return roleDefinition.Faction.Name();
+
+            SpecialType specialType = roleDefinition.Metadata.GetOrDefault(LotusKeys.AuxiliaryRoleType, SpecialType.None);
+
+            return specialType is SpecialType.NeutralKilling ? "Neutral Killers" : "Neutral";
         }
 
         bool Condition(CustomRole role)
         {
-            if (role is Debugger or IllegalRole or EnforceFunctionOrderingRole) return false;
-            if (onlyModifiers && role.RoleFlags.HasFlag(RoleFlag.IsSubrole)) return true;
+            if (role is EmptyRole) return false;
+            if (onlyModifiers && role is Subrole) return true;
             if (onlyModifiers) return false;
             if (allowSubroles) return true;
-            return !role.RoleFlags.HasFlag(RoleFlag.IsSubrole);
+            return role is not Subrole;
         }
 
 
-        CustomRoleManager.AllRoles.ForEach(r => rolesByFaction.GetOrCompute(FactionName(r), () => new List<CustomRole>()).Add(r));
+        IRoleManager.Current.AllCustomRoles().ForEach(r => rolesByFaction.GetOrCompute(FactionName(r), () => new List<CustomRole>()).Add(r));
 
         string text = "";
 

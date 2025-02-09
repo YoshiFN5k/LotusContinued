@@ -1,4 +1,5 @@
-﻿using Lotus.Managers.History.Events;
+﻿using Lotus.API.Odyssey;
+using Lotus.Managers.History.Events;
 
 namespace Lotus.Roles.Events;
 
@@ -10,5 +11,5 @@ public class MisfiredEvent: DeathEvent
 
     public override string SimpleName() => ModConstants.DeathNames.Misfired;
 
-    public override string Message() => $"{Player().name} misfired.";
+    public override string Message() => $"{Game.GetName(Player())} misfired.";
 }

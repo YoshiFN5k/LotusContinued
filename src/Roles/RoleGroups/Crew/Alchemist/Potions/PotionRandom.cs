@@ -8,7 +8,7 @@ using VentLib.Utilities.Extensions;
 
 namespace Lotus.Roles.RoleGroups.Crew.Potions;
 
-public class PotionRandom: Potion
+public class PotionRandom : Potion
 {
     [Localized("Random")]
     public static string PotionName = "Unstable Concoction";
@@ -28,7 +28,7 @@ public class PotionRandom: Potion
 
     public override bool Use(PlayerControl user)
     {
-        Alchemist alchemist = user.GetCustomRole<Alchemist>();
+        Alchemist alchemist = user.PrimaryRole<Alchemist>();
         ICraftable randomPotion = alchemist.Craftables.Where(p => p is Potion and not PotionRandom).ToList().GetRandom();
         Async.Schedule(() => alchemist.HeldCraftable = randomPotion, 0.1f);
         return true;

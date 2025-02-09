@@ -5,14 +5,12 @@ using HarmonyLib;
 using Lotus.API.Odyssey;
 using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
-using Lotus.Logging;
 using Lotus.Managers.History;
 using Lotus.Managers.Hotkeys;
-using Lotus.Options;
 using Lotus.Utilities;
 using Lotus.Victory.Conditions;
+using Lotus.Options;
 using UnityEngine;
-using VentLib.Logging;
 using VentLib.Utilities;
 using VentLib.Utilities.Debug.Profiling;
 
@@ -21,15 +19,17 @@ namespace Lotus.Victory;
 [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))]
 public class CheckEndGamePatch
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(CheckEndGamePatch));
+
     public static bool BeginWin;
     public static bool Deferred;
     private static DateTime slowDown = DateTime.Now;
-    private static FixedUpdateLock _fixedUpdateLock = new FixedUpdateLock(0.1f);
+    private static FixedUpdateLock _fixedUpdateLock = new(0.1f);
 
     static CheckEndGamePatch()
     {
         HotkeyManager.Bind(KeyCode.LeftShift, KeyCode.L, KeyCode.Return)
-            .If(p => p.HostOnly().State(Game.IgnStates))
+            .If(p => p.HostOnly().State(Game.InGameStates))
             .Do(() =>
             {
                 Deferred = false;
@@ -74,7 +74,7 @@ public class CheckEndGamePatch
             ReasonType.Sabotage => GameOverReason.ImpostorBySabotage,
             ReasonType.NoWinCondition => GameOverReason.ImpostorDisconnect,
             ReasonType.HostForceEnd => GameOverReason.ImpostorDisconnect,
-            ReasonType.GamemodeSpecificWin => GameOverReason.ImpostorByKill,
+            ReasonType.GameModeSpecificWin => GameOverReason.ImpostorByKill,
             ReasonType.SoloWinner => GameOverReason.ImpostorByKill,
         };
 
@@ -94,7 +94,7 @@ public class CheckEndGamePatch
     {
         Deferred = false;
         BeginWin = false;
-        VentLogger.Info("Ending Game", "DelayedWin");
+        log.Info("Ending Game");
         GameManager.Instance.RpcEndGame(reason, false);
         Async.Schedule(() => GameManager.Instance.EndGame(), 0.1f);
     }

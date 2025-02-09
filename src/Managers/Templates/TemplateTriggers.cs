@@ -3,38 +3,60 @@ using System.Collections.Generic;
 using System.Linq;
 using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
+using Lotus.Extensions;
 using Lotus.Logging;
 using Lotus.Managers.Templates.Models;
-using VentLib.Logging;
+using Lotus.Roles.Interfaces;
+using Lotus.Roles;
+using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
+using VentLib.Utilities.Optionals;
 
 namespace Lotus.Managers.Templates;
 
 public class TemplateTriggers
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(TemplateTriggers));
+
     public static Dictionary<string, TriggerBinder> TriggerHooks = new()
     {
+        { "LobbyStart", (key, action) => Hooks.NetworkHooks.GameJoinHook.Bind(key, ev => Async.WaitUntil(() => { }, () => ev.Loaded, () =>
+        {
+            if (AmongUsClient.Instance.AmHost) action(ev);
+        }, maxRetries: 30), true) },
+
         { "PlayerDeath", (key, action) => Hooks.PlayerHooks.PlayerDeathHook.Bind(key, action, true) },
         { "PlayerDisconnect", (key, action) => Hooks.PlayerHooks.PlayerDisconnectHook.Bind(key, action, true) },
+
         { "PlayerChat", (key, action) => Hooks.PlayerHooks.PlayerMessageHook.Bind(key, action, true) },
+        { "CustomCommand", (key, action) => Hooks.ModHooks.CustomCommandHook.Bind(key, action, true) },
+
         { "StatusReceived", (key, action) => Hooks.ModHooks.StatusReceivedHook.Bind(key, action, true) },
-        { "TaskComplete", (key, action) => Hooks.PlayerHooks.PlayerTaskCompleteHook.Bind(key, action, true) },
+        { "TaskComplete", (key, action) => Hooks.PlayerHooks.PlayerTaskCompleteHook.Bind(key, ev => Async.Schedule(() => action(ev), 0.001f), true) },
         { "ForceEndGame", (key, action) => Hooks.ResultHooks.ForceEndGameHook.Bind(key, action, true) },
     };
 
     public static Dictionary<Type, Func<IHookEvent, ResolvedTrigger>> TriggerResolvers = new()
     {
         { typeof(PlayerMessageHookEvent), he => ResultFromPlayerMessageHook((PlayerMessageHookEvent)he) },
+        { typeof(CustomCommandHookEvent), he => ResultFromCustomCommandHook((CustomCommandHookEvent)he) },
+
+        { typeof(GameJoinHookEvent), he => ResultFromGameJoinHook((GameJoinHookEvent)he) },
 
         { typeof(PlayerStatusReceivedHook), he => ResultFromPlayerStatusHook((PlayerStatusReceivedHook)he) },
 
         { typeof(PlayerTaskHookEvent), he => ResultFromPlayerTaskHook((PlayerTaskHookEvent)he) },
 
-        { typeof(PlayerMurderHookEvent), he => ResultFromPlayerHook((PlayerDeathHookEvent)he) },
+        { typeof(PlayerMurderHookEvent), he => ResultFromPlayerDeathHook((PlayerDeathHookEvent)he) },
         { typeof(PlayerDeathHookEvent), he => ResultFromPlayerHook((PlayerDeathHookEvent)he) },
         { typeof(PlayerHookEvent), he => ResultFromPlayerHook((PlayerHookEvent)he) },
         { typeof(EmptyHookEvent), he => ResultFromEmptyHook((EmptyHookEvent)he) },
     };
+
+    public static ResolvedTrigger ResultFromGameJoinHook(GameJoinHookEvent gje)
+    {
+        return new ResolvedTrigger { Player = PlayerControl.LocalPlayer, Data = gje.IsNewLobby.ToString() };
+    }
 
     public static ResolvedTrigger ResultFromEmptyHook(EmptyHookEvent _)
     {
@@ -51,9 +73,19 @@ public class TemplateTriggers
         return new ResolvedTrigger { Player = playerHookEvent.Player, Data = playerHookEvent.Player.Data.Tasks.ToArray().Count(t => t.Complete).ToString() };
     }
 
+    public static ResolvedTrigger ResultFromCustomCommandHook(CustomCommandHookEvent commandHookEvent)
+    {
+        return new ResolvedTrigger { Player = commandHookEvent.Player, Data = commandHookEvent.Args.Fuse(" ") };
+    }
+
     public static ResolvedTrigger ResultFromPlayerMessageHook(PlayerMessageHookEvent playerHookEvent)
     {
         return new ResolvedTrigger { Player = playerHookEvent.Player, Data = playerHookEvent.Message };
+    }
+
+    public static ResolvedTrigger ResultFromPlayerDeathHook(PlayerDeathHookEvent playerHookEvent)
+    {
+        return new ResolvedTrigger { Player = playerHookEvent.Player, Data = playerHookEvent.CauseOfDeath.Instigator().FlatMap(fp => new UnityOptional<PlayerControl>(fp.MyPlayer)).Map(p => p.name).OrElse("Unknown") };
     }
 
     public static ResolvedTrigger ResultFromPlayerHook(PlayerHookEvent playerHookEvent)
@@ -70,7 +102,7 @@ public class TemplateTriggers
             handler(TriggerResolvers.GetValueOrDefault(h.GetType())?.Invoke(h));
         }), () =>
         {
-            VentLogger.Warn($"Could not bind Trigger \"{key}.\" No such trigger exists!");
+            log.Warn($"Could not bind Trigger \"{key}.\" No such trigger exists!");
             return null!;
         });
     }

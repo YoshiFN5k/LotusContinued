@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
@@ -36,14 +35,14 @@ public class SubroleHolder : ComponentHolder<SubroleComponent>
             switch (textMode)
             {
                 case ModifierTextMode.First when i == 0 && state is not GameState.InMeeting:
-                    text = component.GenerateText();
+                    text = component.GenerateText(state);
                     break;
                 case ModifierTextMode.All when state is not GameState.InMeeting:
-                    text = component.GenerateText();
+                    text = component.GenerateText(state);
                     break;
                 case ModifierTextMode.Off:
                 default:
-                    text = component.GenerateIdentifier();
+                    text = component.GenerateIdentifier(state);
                     break;
             }
             if (text == null!) continue;
@@ -51,7 +50,7 @@ public class SubroleHolder : ComponentHolder<SubroleComponent>
             if (newMode is ViewMode.Absolute) break;
         }
 
-        string newString = endString.Count == 0 ? "" :  " " + endString.Join(delimiter: " ".Repeat(Spacing - 1));
+        string newString = endString.Count == 0 ? "" : " " + endString.Join(delimiter: " ".Repeat(Spacing - 1));
 
         updated[player.PlayerId] = CacheStates.GetValueOrDefault(player.PlayerId, "") != newString;
         return CacheStates[player.PlayerId] = newString;

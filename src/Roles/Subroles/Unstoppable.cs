@@ -8,25 +8,28 @@ using Lotus.Managers.History.Events;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Interactions.Interfaces;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Logging;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Optionals;
+using Lotus.API.Player;
+using Lotus.Roles.Operations;
 
 namespace Lotus.Roles.Subroles;
 
-public class Unstoppable: Subrole
+public class Unstoppable : Subrole
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Unstoppable));
     private bool canKillUntargetable;
 
     public override string Identifier() => "◇";
 
-    [RoleAction(RoleActionType.AnyInteraction, priority: Priority.First)]
-    public void InterceptAnyInteraction(PlayerControl player, PlayerControl target, Interaction interaction, ActionHandle handle)
+    [RoleAction(LotusActionType.Interaction, ActionFlag.GlobalDetector, priority: Priority.First)]
+    public void InterceptAnyInteraction(PlayerControl target, PlayerControl player, Interaction interaction, ActionHandle handle)
     {
-        DevLogger.Log($"PLayer: {player.name} INteraction: {interaction.Intent}");
+        DevLogger.Log($"Player: {player.name} Interaction: {interaction.Intent}");
         if (player.PlayerId != MyPlayer.PlayerId) return;
         if (interaction is not LotusInteraction lotusInteraction) return;
         if (lotusInteraction.Intent is not IFatalIntent fatalIntent) return;
@@ -35,12 +38,12 @@ public class Unstoppable: Subrole
         lotusInteraction.Intent = new UnstoppableIntent(fatalIntent.IsRanged(), causeOfDeath);
         lotusInteraction.IsPromised = canKillUntargetable;
 
-        VentLogger.Debug($"Unstoppable Interaction Swap IsPromised={lotusInteraction.IsPromised}", "UnstoppableInterception");
+        log.Debug($"Unstoppable Interaction Swap IsPromised={lotusInteraction.IsPromised}", "UnstoppableInterception");
     }
 
     public override bool IsAssignableTo(PlayerControl player)
     {
-        return player.GetCustomRole().RoleAbilityFlags.HasFlag(RoleAbilityFlag.IsAbleToKill) && base.IsAssignableTo(player);
+        return player.PrimaryRole().RoleAbilityFlags.HasFlag(RoleAbilityFlag.IsAbleToKill) && base.IsAssignableTo(player);
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
@@ -84,14 +87,14 @@ public class Unstoppable: Subrole
         public void Action(PlayerControl actor, PlayerControl target)
         {
             Optional<IDeathEvent> deathEvent = CauseOfDeath();
-            actor.GetCustomRole().SyncOptions();
+            actor.PrimaryRole().SyncOptions();
 
             Optional<IDeathEvent> currentDeathEvent = Game.MatchData.GameHistory.GetCauseOfDeath(target.PlayerId);
             deathEvent.IfPresent(death => Game.MatchData.GameHistory.SetCauseOfDeath(target.PlayerId, death));
             KillTarget(actor, target);
 
             ActionHandle ignored = ActionHandle.NoInit();
-            if (target.IsAlive()) Game.TriggerForAll(RoleActionType.SuccessfulAngelProtect, ref ignored, target, actor);
+            if (target.IsAlive()) RoleOperations.Current.TriggerForAll(LotusActionType.SuccessfulAngelProtect, target, ignored, target, actor);
             else currentDeathEvent.IfPresent(de => Game.MatchData.GameHistory.SetCauseOfDeath(target.PlayerId, de));
         }
 

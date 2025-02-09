@@ -3,11 +3,13 @@ using Lotus.GUI.Name;
 using Lotus.Options;
 using Lotus.Roles.Interactions.Interfaces;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Extensions;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 
@@ -23,10 +25,10 @@ public class BloodKnight : NeutralKillingBase
     [UIComponent(UI.Counter)]
     private string ProtectedIndicator() => isProtected ? RoleColor.Colorize("•") : "";
 
-    [RoleAction(RoleActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundStart)]
     public void Reset() => isProtected = false;
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public new bool TryKill(PlayerControl target)
     {
         // Call to Impostor.TryKill()
@@ -39,7 +41,7 @@ public class BloodKnight : NeutralKillingBase
         return killed;
     }
 
-    [RoleAction(RoleActionType.Interaction)]
+    [RoleAction(LotusActionType.Interaction)]
     private void InteractedWith(Interaction interaction, ActionHandle handle)
     {
         if (!isProtected) return;
@@ -48,27 +50,35 @@ public class BloodKnight : NeutralKillingBase
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
-         AddKillCooldownOptions(base.RegisterOptions(optionStream))
+         AddKillCooldownOptions(base.RegisterOptions(optionStream), name: RoleTranslations.KillCooldown)
              .Tab(DefaultTabs.NeutralTab)
-             .SubOption(opt =>
-                opt.Name("Protection Duration")
+             .SubOption(opt => opt
+                .KeyName("Protection Duration", Translations.Options.ProtectDuration)
                 .BindFloat(v => protectionAmt = v)
                 .AddFloatRange(2.5f, 180, 2.5f, 5, GeneralOptionTranslations.SecondsSuffix)
                 .Build())
-            .SubOption(opt =>
-                opt.Name("Can Vent")
+            .SubOption(opt => opt
+                .KeyName("Can Vent", RoleTranslations.CanVent)
                 .BindBool(v => canVent = v)
                 .AddOnOffValues()
                 .Build());
 
-
-
     protected override RoleModifier Modify(RoleModifier roleModifier)
     {
-        return base.Modify(roleModifier) // call base because we're utilizing some settings setup by NeutralKillingBase
-            .RoleName("Blood Knight")
-            .RoleColor(new Color(0.47f, 0f, 0f)) // Using Color() because it's easier to edit and get an idea for actual color
+        return base.Modify(roleModifier)
+            .RoleName("BloodKnight")
+            .RoleColor(new Color(0.47f, 0f, 0f))
             .CanVent(canVent);
     }
 
+    [Localized(nameof(BloodKnight))]
+    public static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(ProtectDuration))]
+            public static string ProtectDuration = "Protect Duration";
+        }
+    }
 }

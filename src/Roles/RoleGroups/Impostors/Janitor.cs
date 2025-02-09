@@ -9,6 +9,7 @@ using Lotus.GUI.Name;
 using Lotus.Managers.History.Events;
 using Lotus.Roles.Events;
 using Lotus.Roles.Interactions;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Interactions.Interfaces;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Attributes;
@@ -22,7 +23,7 @@ using VentLib.Localization.Attributes;
 using VentLib.Logging;
 using VentLib.Networking.RPC;
 using VentLib.Networking.RPC.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
@@ -30,8 +31,9 @@ using Object = UnityEngine.Object;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
-public class Janitor: Impostor
+public class Janitor : Impostor
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Janitor));
     public static HashSet<Type> JanitorBannedModifiers = new() { typeof(Oblivious), typeof(Sleuth) };
     public override HashSet<Type> BannedModifiers() => cleanOnKill ? new HashSet<Type>() : JanitorBannedModifiers;
 
@@ -43,7 +45,7 @@ public class Janitor: Impostor
     [UIComponent(UI.Cooldown)]
     private Cooldown cleanCooldown;
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public new bool TryKill(PlayerControl target)
     {
         cleanCooldown.Start(AUSettings.KillCooldown());
@@ -58,14 +60,15 @@ public class Janitor: Impostor
         return true;
     }
 
-    [RoleAction(RoleActionType.SelfReportBody)]
-    private void JanitorCleanBody(GameData.PlayerInfo target, ActionHandle handle)
+    [RoleAction(LotusActionType.ReportBody)]
+    private void JanitorCleanBody(Optional<NetworkedPlayerInfo> target, ActionHandle handle)
     {
+        if (!target.Exists()) return;
         if (cleanCooldown.NotReady()) return;
         handle.Cancel();
         cleanCooldown.Start();
 
-        byte playerId = target.Object.PlayerId;
+        byte playerId = target.Get().PlayerId;
 
         foreach (DeadBody deadBody in Object.FindObjectsOfType<DeadBody>())
             if (deadBody.ParentId == playerId)
@@ -78,7 +81,7 @@ public class Janitor: Impostor
     [ModRPC(RoleRPC.RemoveBody, invocation: MethodInvocation.ExecuteAfter)]
     private static void CleanBody(byte playerId)
     {
-        VentLogger.Debug("Destroying Bodies", "JanitorClean");
+        log.Debug("Destroying Bodies", "JanitorClean");
         Object.FindObjectsOfType<DeadBody>().ToArray().Where(db => db.ParentId == playerId).ForEach(b => Object.Destroy(b.gameObject));
     }
 
@@ -100,7 +103,7 @@ public class Janitor: Impostor
             .OptionOverride(new IndirectKillCooldown(JanitorKillCooldown, () => cleanOnKill || cleanCooldown.NotReady()));
 
     [Localized(nameof(Janitor))]
-    private static class Translations
+    public static class Translations
     {
         [Localized(ModConstants.Options)]
         public static class Options
@@ -112,7 +115,6 @@ public class Janitor: Impostor
             public static string KillCooldownMultiplier = "Kill Cooldown Multiplier";
         }
     }
-
 
     private class FakeFatalIntent : IFatalIntent
     {

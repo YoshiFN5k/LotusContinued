@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Lotus.API.Odyssey;
-using Lotus.GUI.Name.Impl;
 using Lotus.Roles;
-using Lotus.API;
 using Lotus.Extensions;
-using Lotus.Logging;
+using System.Text.RegularExpressions;
 using VentLib.Utilities;
+using Lotus.Logging;
 
 namespace Lotus.GUI.Name.Components;
 
@@ -25,7 +24,7 @@ public class RoleComponent : SimpleComponent
     {
     }
 
-    public RoleComponent(CustomRole role, GameState gameState, ViewMode viewMode = Name.ViewMode.Additive, params PlayerControl[] viewers) : this(role, new []{gameState}, viewMode, viewers)
+    public RoleComponent(CustomRole role, GameState gameState, ViewMode viewMode = Name.ViewMode.Additive, params PlayerControl[] viewers) : this(role, [gameState], viewMode, viewers)
     {
     }
 

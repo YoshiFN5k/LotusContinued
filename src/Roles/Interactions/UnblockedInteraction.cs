@@ -4,7 +4,7 @@ namespace Lotus.Roles.Interactions;
 
 public class UnblockedInteraction : LotusInteraction, IUnblockedInteraction
 {
-    public UnblockedInteraction(Intent intent, CustomRole customRole) : base(intent, customRole)
+    public UnblockedInteraction(Intent intent, CustomRole roleDefinition) : base(intent, roleDefinition)
     {
         IsPromised = true;
     }

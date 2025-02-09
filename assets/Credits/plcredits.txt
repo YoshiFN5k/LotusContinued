@@ -1,0 +1,43 @@
+﻿Format,Column1,Column2
+image,100;;Lotus.assets.Credits.Images.topcredits.png,
+person,Discussions,Owner and Lead Developer
+person,Theta,Bot Developer & Translator (Eng)
+person,Piggy B,Art Director
+person,Shiftyrose,Honorary Contributor & Translator
+person,Tealeaf,Honorary Contributor
+person,Det,Honorary Contributor
+person,eur mom,Contributor & Translator (Eng)
+person,Crewbait,Contributor
+person,GD,Contributor
+person,miniduikboot,Contributor
+person,Essence,Translator (Eng)
+person,Spike MS,Translator (Spanish)
+person,CreepPower,Translator (Spanish)
+person,Shapmaster,Translator (French)
+person,Gotzon,Translator (French)
+person,Fate,Translator (SChinese)
+image,100;;Lotus.assets.Credits.Images.testerstitle.png,
+person,AnonWorks,
+person,AlunnyBunny,
+person,ArayaAilsa,
+person,Citriondragon,
+person,DarkFedora,
+person,Demob,
+person,Donk,
+person,Essence,
+person,eur mom,
+person,Filipopoi,
+person,GD,
+person,Gotzon,
+person,HinataHyuga,
+person,J (fatherjgg),
+person,Mama BB,"""I'm a good bean"""
+person,Piggy B,
+person,pumpkingaming5548,
+person,Skarlat,
+person,Shapmaster,
+person,Theta,
+person,Timmay,"""Bestest Tester Ever!"""
+person,,
+person,,
+person,And You!,Thanks for playing.

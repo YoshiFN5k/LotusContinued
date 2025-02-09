@@ -6,13 +6,15 @@ using Lotus.Roles.Interactions;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Utilities;
 using Lotus.API;
 using Lotus.Extensions;
 using Lotus.Factions;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -25,13 +27,13 @@ public class Warlock : Shapeshifter
     [NewOnSetup] private FixedUpdateLock fixedUpdateLock = new(ModConstants.RoleFixedUpdateCooldown);
     public bool Shapeshifted;
 
-    [RoleAction(RoleActionType.Unshapeshift)]
+    [RoleAction(LotusActionType.Unshapeshift)]
     private void WarlockUnshapeshift() => Shapeshifted = false;
 
-    [RoleAction(RoleActionType.RoundEnd)]
+    [RoleAction(LotusActionType.RoundEnd)]
     private void WarlockClearCursed() => cursedPlayers.Clear();
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         if (Shapeshifted) return base.TryKill(target);
@@ -42,7 +44,7 @@ public class Warlock : Shapeshifter
         return true;
     }
 
-    [RoleAction(RoleActionType.FixedUpdate)]
+    [RoleAction(LotusActionType.FixedUpdate)]
     private void WarlockFixedUpdate()
     {
         if (!Shapeshifted || cursedPlayersKillImmediately || !fixedUpdateLock.AcquireLock()) return;
@@ -55,7 +57,7 @@ public class Warlock : Shapeshifter
         }
     }
 
-    [RoleAction(RoleActionType.Shapeshift)]
+    [RoleAction(LotusActionType.Shapeshift)]
     private void WarlockKillCheck()
     {
         Shapeshifted = true;
@@ -79,7 +81,7 @@ public class Warlock : Shapeshifter
         ManipulatedPlayerDeathEvent playerDeathEvent = new(target, player);
         FatalIntent fatalIntent = new(false, () => playerDeathEvent);
 
-        bool isDead = player.InteractWith(target, new ManipulatedInteraction(fatalIntent, player.GetCustomRole(), MyPlayer)) is InteractionResult.Proceed;
+        bool isDead = player.InteractWith(target, new ManipulatedInteraction(fatalIntent, player.PrimaryRole(), MyPlayer)) is InteractionResult.Proceed;
         Game.MatchData.GameHistory.AddEvent(new ManipulatedPlayerKillEvent(player, target, MyPlayer, isDead));
 
         return isDead;
@@ -99,4 +101,18 @@ public class Warlock : Shapeshifter
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier).OptionOverride(new IndirectKillCooldown(KillCooldown, () => !Shapeshifted));
+
+    [Localized(nameof(Warlock))]
+    public static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(CursedKillImmediately))]
+            public static string CursedKillImmediately = "Cursed Players Kill Immediately";
+
+            [Localized(nameof(LimitedCurseKillRange))]
+            public static string LimitedCurseKillRange = "Limited Cursed Kill Range";
+        }
+    }
 }

@@ -2,8 +2,9 @@ using HarmonyLib;
 using Lotus.Roles;
 using Lotus.Utilities;
 using Lotus.Extensions;
-using Lotus.Roles.Legacy;
+using Lotus.Roles.Builtins;
 using VentLib.Utilities;
+using Lotus.Roles.Managers.Interfaces;
 
 namespace Lotus.Patches.Intro;
 
@@ -14,7 +15,8 @@ class ShowRolePatch
     {
         Async.Schedule(() =>
         {
-            CustomRole role = PlayerControl.LocalPlayer.GetCustomRole();
+            CustomRole role = PlayerControl.LocalPlayer.PrimaryRole();
+            if (role.GetType() == IRoleManager.Current.FallbackRole().GetType()) return;
             if (true)
             {
                 __instance.YouAreText.color = role.RoleColor;
@@ -22,7 +24,7 @@ class ShowRolePatch
                 __instance.RoleText.color = role.RoleColor;
                 __instance.RoleBlurbText.color = role.RoleColor;
 
-                __instance.RoleBlurbText.text = PlayerControl.LocalPlayer.GetCustomRole().Blurb;
+                __instance.RoleBlurbText.text = PlayerControl.LocalPlayer.PrimaryRole().Blurb;
             }
 
             __instance.RoleText.text += Utils.GetSubRolesText(PlayerControl.LocalPlayer.PlayerId);

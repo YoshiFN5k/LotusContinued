@@ -6,7 +6,7 @@ public enum ReasonType
     HostForceEnd,
     FactionLastStanding,
     TasksComplete,
-    GamemodeSpecificWin,
+    GameModeSpecificWin,
     Sabotage,
     RoleSpecificWin,
     /// <summary>
@@ -24,5 +24,10 @@ public struct WinReason
     {
         ReasonType = reasonType;
         ReasonText = reasonText;
+    }
+
+    public override string ToString()
+    {
+        return ReasonText ?? ReasonType.ToString();
     }
 }

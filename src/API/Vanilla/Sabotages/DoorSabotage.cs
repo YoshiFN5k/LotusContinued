@@ -3,8 +3,8 @@ using Lotus.API.Odyssey;
 using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
 using Lotus.Roles.Internals;
-using Lotus.Roles.Internals.Attributes;
-using VentLib.Logging;
+using Lotus.Roles.Internals.Enums;
+using Lotus.Roles.Operations;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 
@@ -12,6 +12,8 @@ namespace Lotus.API.Vanilla.Sabotages;
 
 public class DoorSabotage : ISabotage
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(DoorSabotage));
+
     public SystemTypes Room { get; }
     private Optional<int> doorIndex;
     private UnityOptional<PlayerControl> caller;
@@ -28,14 +30,16 @@ public class DoorSabotage : ISabotage
     public bool Fix(PlayerControl? fixer = null)
     {
         ActionHandle handle = ActionHandle.NoInit();
-        Game.TriggerForAll(RoleActionType.SabotageFixed, ref handle, this, fixer == null ? PlayerControl.LocalPlayer : fixer);
+        RoleOperations.Current.TriggerForAll(LotusActionType.SabotageFixed, fixer == null ? PlayerControl.LocalPlayer : fixer, handle, this);
         if (handle.IsCanceled) return false;
 
         Hooks.SabotageHooks.SabotageFixedHook.Propagate(new SabotageFixHookEvent(fixer, this));
 
-        return doorIndex.Transform(index => {
-            if (index >= ShipStatus.Instance.AllDoors.Length) {
-                VentLogger.Warn($"Targeted door was out of range ({index})", "FixDoor");
+        return doorIndex.Transform(index =>
+        {
+            if (index >= ShipStatus.Instance.AllDoors.Length)
+            {
+                log.Warn($"Targeted door was out of range ({index})", "FixDoor");
                 return false;
             }
             ShipStatus.Instance.AllDoors[index].SetDoorway(true);
@@ -48,7 +52,7 @@ public class DoorSabotage : ISabotage
         if (sendAction)
         {
             ActionHandle handle = ActionHandle.NoInit();
-            Game.TriggerForAll(RoleActionType.SabotageFixed, ref handle, this, fixer == null ? PlayerControl.LocalPlayer : fixer);
+            RoleOperations.Current.TriggerForAll(LotusActionType.SabotageFixed, fixer == null ? PlayerControl.LocalPlayer : fixer, handle, this);
             Hooks.SabotageHooks.SabotageFixedHook.Propagate(new SabotageFixHookEvent(fixer, this));
             if (handle.IsCanceled) return false;
         }

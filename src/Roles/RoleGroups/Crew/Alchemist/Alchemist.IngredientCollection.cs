@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Crew.Ingredients;
 
@@ -12,7 +13,7 @@ public partial class Alchemist
 
     [NewOnSetup] private Dictionary<IngredientInfo, int> heldIngredients;
 
-    [RoleAction(RoleActionType.FixedUpdate)]
+    [RoleAction(LotusActionType.FixedUpdate)]
     private void CheckForIngredient()
     {
         if (DateTime.Now.Subtract(lastRun).TotalSeconds < AlchemistFixedUpdate) return;
@@ -29,7 +30,7 @@ public partial class Alchemist
         CheckDiscussionSpawn();
     }
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     private void CollectIngredient()
     {
         if (craftingMode) return;

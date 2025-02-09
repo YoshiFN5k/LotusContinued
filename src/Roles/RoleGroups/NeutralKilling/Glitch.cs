@@ -6,13 +6,14 @@ using Lotus.GUI.Name;
 using Lotus.Roles.Events;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Crew;
 using Lotus.Extensions;
 using Lotus.Options;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using static Lotus.Roles.RoleGroups.Crew.Escort;
@@ -20,7 +21,7 @@ using static Lotus.Roles.RoleGroups.Crew.Escort;
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 
 [Localized("Roles.Glitch")]
-public class Glitch: NeutralKillingBase
+public class Glitch : NeutralKillingBase
 {
     [Localized("ModeKilling")]
     private static string _glitchKillingMode = "Killing";
@@ -37,10 +38,10 @@ public class Glitch: NeutralKillingBase
     [UIComponent(UI.Text)]
     private string BlockingText() => textColor.Colorize(hackingMode ? _glitchHackingMode : _glitchKillingMode);
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     private void SwitchModes() => hackingMode = !hackingMode;
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         if (!hackingMode) return base.TryKill(target);
@@ -56,8 +57,8 @@ public class Glitch: NeutralKillingBase
         return false;
     }
 
-    [RoleAction(RoleActionType.RoundStart)]
-    [RoleAction(RoleActionType.RoundEnd)]
+    [RoleAction(LotusActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundEnd)]
     private void UnblockPlayers()
     {
         blockedPlayers.ToArray().ForEach(k =>
@@ -67,13 +68,13 @@ public class Glitch: NeutralKillingBase
         });
     }
 
-    [RoleAction(RoleActionType.AnyPlayerAction)]
+    [RoleAction(LotusActionType.PlayerAction, ActionFlag.GlobalDetector)]
     private void BlockAction(PlayerControl source, ActionHandle handle, RoleAction action)
     {
         if (action.Blockable) Block(source, handle);
     }
 
-    [RoleAction(RoleActionType.AnyEnterVent)]
+    [RoleAction(LotusActionType.VentEntered, ActionFlag.GlobalDetector)]
     private void Block(PlayerControl source, ActionHandle handle)
     {
         BlockDelegate? blockDelegate = blockedPlayers.GetValueOrDefault(source.PlayerId);
@@ -83,7 +84,7 @@ public class Glitch: NeutralKillingBase
         blockDelegate.UpdateDelegate();
     }
 
-    [RoleAction(RoleActionType.SabotageStarted)]
+    [RoleAction(LotusActionType.SabotageStarted, ActionFlag.GlobalDetector)]
     private void BlockSabotage(PlayerControl caller, ActionHandle handle)
     {
         BlockDelegate? blockDelegate = blockedPlayers.GetValueOrDefault(caller.PlayerId);
@@ -96,11 +97,24 @@ public class Glitch: NeutralKillingBase
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .SubOption(sub => sub
-                .Name("Hacking Duration")
+                .KeyName("Hacking Duration", Translations.Options.HackingDuration)
                 .BindFloat(v => roleblockDuration = v)
                 .Value(v => v.Text("Until Meeting").Value(-1f).Build())
                 .AddFloatRange(5, 120, 5, suffix: GeneralOptionTranslations.SecondsSuffix)
                 .Build());
 
-    protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier).RoleColor(Color.green);
+    protected override RoleModifier Modify(RoleModifier roleModifier) => base.Modify(roleModifier)
+        .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
+        .RoleColor(Color.green);
+
+    [Localized(nameof(Glitch))]
+    internal static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(HackingDuration))]
+            public static string HackingDuration = "Hacking Duration";
+        }
+    }
 }

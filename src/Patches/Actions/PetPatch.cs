@@ -4,17 +4,21 @@ using HarmonyLib;
 using Hazel;
 using Lotus.API.Odyssey;
 using Lotus.Roles.Internals;
-using Lotus.Roles.Internals.Attributes;
 using Lotus.Extensions;
-using VentLib.Logging;
+using Lotus.Roles.Internals.Enums;
 using VentLib.Networking.RPC;
 using VentLib.Utilities;
 using VentLib.Utilities.Harmony.Attributes;
+using Lotus.Roles.Operations;
+using Lotus.Roles;
+using Lotus.Roles.Managers.Interfaces;
 
 namespace Lotus.Patches.Actions;
 
 public class PetPatch
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(PetPatch));
+
     public const float PetDelay = 0.4f;
     private const byte PetCallId = (byte)RpcCalls.Pet;
 
@@ -27,7 +31,7 @@ public class PetPatch
     [QuickPostfix(typeof(PlayerPhysics), nameof(PlayerPhysics.HandleRpc))]
     public static void InterceptPet(PlayerPhysics __instance, [HarmonyArgument(0)] byte callId)
     {
-        if (!AmongUsClient.Instance.AmHost || callId != PetCallId) return;
+        if (!AmongUsClient.Instance.AmHost || callId != PetCallId || Game.State is not GameState.Roaming) return;
 
         byte playerId = __instance.myPlayer.PlayerId;
 
@@ -47,14 +51,11 @@ public class PetPatch
 
         Async.Schedule(() => ClearPetHold(player, timesPet), NetUtils.DeriveDelay(0.5f, 0.005f));
 
-        VentLogger.Trace($"{player.name} => Pet", "PetPatch");
-        ActionHandle handle = ActionHandle.NoInit();
-        Game.TriggerForAll(RoleActionType.AnyPet, ref handle, player);
-        player.Trigger(RoleActionType.OnPet, ref handle, __instance);
-
-        handle = ActionHandle.NoInit();
-        player.Trigger(RoleActionType.OnHoldPet, ref handle, __instance, timesPet);
-
+        log.Trace($"{player.name} => Pet");
+        if (player.PrimaryRole().GetType() == IRoleManager.Current.FallbackRole().GetType()) return; // no role.
+        if (timesPet == 1)
+            RoleOperations.Current.Trigger(LotusActionType.OnPet, player);
+        RoleOperations.Current.Trigger(LotusActionType.OnHoldPet, player, timesPet);
     }
 
     private static void ClearPetHold(PlayerControl player, int currentTimes)
@@ -63,7 +64,6 @@ public class PetPatch
         if (timesHeld != currentTimes) return;
 
         TimesPet[player.PlayerId] = 0;
-        ActionHandle handle = ActionHandle.NoInit();
-        player.Trigger(RoleActionType.OnPetRelease, ref handle, timesHeld);
+        RoleOperations.Current.Trigger(LotusActionType.OnPetRelease, player, timesHeld);
     }
 }

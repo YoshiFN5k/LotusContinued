@@ -5,18 +5,24 @@ using AmongUs.GameOptions;
 using HarmonyLib;
 using Hazel;
 using Lotus.API;
-using Lotus.API.Odyssey;
+using Lotus.API.Player;
 using Lotus.Roles.Overrides;
 using Lotus.Extensions;
-using VentLib.Logging;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
+using InnerNet;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using Lotus.Network;
+using Array = Il2CppSystem.Array;
+using Buffer = Il2CppSystem.Buffer;
 
 namespace Lotus.Options;
 
 public static class DesyncOptions
 {
-    public static void SyncToAll(IGameOptions options) => Game.GetAllPlayers().Do(p => SyncToPlayer(options, p));
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(DesyncOptions));
+
+    public static void SyncToAll(IGameOptions options) => Players.GetPlayers().Do(p => SyncToPlayer(options, p));
 
     public static void SyncToPlayer(IGameOptions options, PlayerControl player)
     {
@@ -24,43 +30,103 @@ public static class DesyncOptions
         if (player == null) return;
         if (!player.AmOwner)
         {
-            try {
+            try
+            {
                 SyncToClient(options, player.GetClientId());
             }
-            catch (Exception exception) {
-                VentLogger.Exception(exception, "Error syncing game options to client.");
+            catch (Exception exception)
+            {
+                log.Exception("Error syncing game options to client.", exception);
             }
             return;
         }
 
-        GameOptionsManager.Instance.currentGameOptions = options;
-
-        var normalOptions = options.TryCast<NormalGameOptionsV07>();
-        if (normalOptions != null)
-            GameManager.Instance.LogicOptions.Cast<LogicOptionsNormal>().GameOptions = normalOptions;
-        GameOptionsManager.Instance.currentGameOptions = options;
+        if (GameManager.Instance?.LogicComponents != null)
+        {
+            try
+            {
+                foreach (GameLogicComponent com in GameManager.Instance.LogicComponents)
+                    if (com.TryCast(out LogicOptions lo))
+                    {
+                        if (ConnectionManager.IsVanillaServer) lo.SetGameOptions(options);
+                        else
+                        {
+                            // Custom servers don't like SetGameOptions unfortunately.
+                            if (com.TryCast(out LogicOptionsNormal normalOpt)) normalOpt.GameOptions = options.Cast<NormalGameOptionsV08>();
+                            else if (com.TryCast(out LogicOptionsHnS hnsOpt)) hnsOpt.GameOptions = options.Cast<HideNSeekGameOptionsV08>();
+                            else log.Warn("Option cast failed. Could not set options for host.");
+                        }
+                    }
+            }
+            catch (Exception ex)
+            {
+                log.Exception(ex);
+            }
+        }
+        GameOptionsManager.Instance.CurrentGameOptions = options;
     }
 
     public static void SyncToClient(IGameOptions options, int clientId)
     {
-        GameOptionsFactory optionsFactory = GameOptionsManager.Instance.gameOptionsFactory;
+        MessageWriter writer = MessageWriter.Get(SendOption.None);
+        writer.Write(options.Version);
+        writer.StartMessage(0);
+        writer.Write((byte)options.GameMode);
 
-        MessageWriter messageWriter = MessageWriter.Get(); // Start message writer
-        messageWriter.StartMessage(6); // Initial control-flow path for packet receival (Line 1352 InnerNetClient.cs) || This can be changed to "5" and remove line 20 to sync options to everybody
-        messageWriter.Write(AmongUsClient.Instance.GameId); // Write 4 byte GameId
-        messageWriter.WritePacked(clientId); // Target player ID
+        if (options.TryCast(out NormalGameOptionsV08 normalOpt))
+            NormalGameOptionsV08.Serialize(writer, normalOpt);
+        else if (options.TryCast(out HideNSeekGameOptionsV08 hnsOpt))
+            HideNSeekGameOptionsV08.Serialize(writer, hnsOpt);
+        else
+        {
+            writer.Recycle();
+            log.Fatal("Option cast failed.");
+        }
+        writer.EndMessage();
 
-        messageWriter.StartMessage(1); // Second control-flow path specifically for changing game options
-        messageWriter.WritePacked(GetManagerClientId()); // Packed ID for game manager
+        // Array & Send
+        var byteArray = new Il2CppStructArray<byte>(writer.Length - 1);
+        // MessageWriter.ToByteArray
+        Buffer.BlockCopy(writer.Buffer.CastFast<Array>(), 1, byteArray.CastFast<Array>(), 0, writer.Length - 1);
 
-        messageWriter.StartMessage(4); // Index of logic component in GameManager (4 is current LogicOptionsNormal)
-        optionsFactory.ToNetworkMessageWithSize(messageWriter, options); // Write options to message
+        try
+        {
+            for (byte i = 0; i < GameManager.Instance.LogicComponents.Count; i++)
+            {
+                Il2CppSystem.Object logicComponent = GameManager.Instance.LogicComponents[(Index)i];
+                if (!logicComponent.TryCast<LogicOptions>(out _)) continue;
+                MessageWriter sentWriter = MessageWriter.Get(SendOption.Reliable);
 
-        messageWriter.EndMessage(); // Finish message 1
-        messageWriter.EndMessage(); // Finish message 2
-        messageWriter.EndMessage(); // Finish message 3
-        AmongUsClient.Instance.SendOrDisconnect(messageWriter); // Wrap up send
-        messageWriter.Recycle(); // Recycle
+                sentWriter.StartMessage(clientId == -1 ? Tags.GameData : Tags.GameDataTo);
+
+                {
+                    sentWriter.Write(AmongUsClient.Instance.GameId);
+                    if (clientId != -1) sentWriter.WritePacked(clientId);
+
+                    sentWriter.StartMessage(1);
+
+                    {
+                        sentWriter.WritePacked(GameManager.Instance.NetId);
+                        sentWriter.StartMessage(i);
+
+                        {
+                            sentWriter.WriteBytesAndSize(byteArray);
+                        }
+
+                        sentWriter.EndMessage();
+                    }
+
+                    sentWriter.EndMessage();
+                }
+
+                sentWriter.EndMessage();
+
+                AmongUsClient.Instance.SendOrDisconnect(sentWriter);
+                sentWriter.Recycle();
+            }
+        }
+        catch (Exception ex) { log.Fatal(ex.ToString()); }
+        writer.Recycle();
     }
 
     public static int GetTargetedClientId(string name)
@@ -81,7 +147,7 @@ public static class DesyncOptions
     public static IGameOptions GetModifiedOptions(IEnumerable<GameOptionOverride> overrides)
     {
         IGameOptions clonedOptions = AUSettings.StaticOptions.DeepCopy();
-        overrides.Where(o => o != null!).ForEach(optionOverride => optionOverride.ApplyTo(clonedOptions));
+        overrides.Where(o => o != null).ForEach(optionOverride => optionOverride.ApplyTo(clonedOptions));
         return clonedOptions;
     }
 
@@ -89,6 +155,4 @@ public static class DesyncOptions
     {
         SyncToPlayer(GetModifiedOptions(overrides), player);
     }
-
-
 }

@@ -1,23 +1,31 @@
 using System;
 using Lotus.API.Odyssey;
+using Lotus.API.Player;
 using Lotus.API.Processes;
 using Lotus.API.Reactive;
 using Lotus.Victory;
 using Lotus.Roles.Internals;
-using Lotus.Roles.Internals.Attributes;
-using Lotus.RPC;
-using UnityEngine;
-using VentLib.Logging;
+using Lotus.Roles.Internals.Enums;
+using Lotus.Roles.Operations;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
+using Lotus.GameModes.Standard;
+using Lotus.Options;
+using HarmonyLib;
+using Lotus.Extensions;
+using Lotus.Patches.Actions;
+using Lotus.RPC;
+using Lotus.Patches.Meetings;
 
 namespace Lotus.API.Vanilla.Meetings;
 
-internal class MeetingPrep
+public class MeetingPrep
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(MeetingPrep));
+
     internal static DateTime MeetingCalledTime = DateTime.Now;
-    internal static GameData.PlayerInfo? Reported;
+    internal static NetworkedPlayerInfo? Reported;
 
     private static MeetingDelegate _meetingDelegate = null!;
     public static bool Prepped;
@@ -36,13 +44,27 @@ internal class MeetingPrep
     /// <param name="reporter">Optional player, if provided, uses rpc to call meeting</param>
     /// <param name="deadBody">Optional reported body</param>
     /// <returns>the current meeting delegate</returns>
-    public static MeetingDelegate? PrepMeeting(PlayerControl? reporter = null, GameData.PlayerInfo? deadBody = null)
+    public static MeetingDelegate? PrepMeeting(PlayerControl? reporter = null, NetworkedPlayerInfo? deadBody = null, bool checkReportBodyCancel = true)
     {
         if (!Prepped) _meetingDelegate = new MeetingDelegate();
         if (Prepped || !AmongUsClient.Instance.AmHost) return _meetingDelegate;
-        ActionHandle handle = ActionHandle.NoInit();
-        if (reporter != null) Game.TriggerForAll(RoleActionType.MeetingCalled, ref handle, reporter, Optional<GameData.PlayerInfo>.Of(deadBody));
-        if (handle.IsCanceled) return null;
+        if (Game.CurrentGameMode is StandardGameMode && deadBody == null && GeneralOptions.MeetingOptions.SyncMeetingButtons)
+        {
+            if (Game.MatchData.EmergencyButtonsUsed >= GeneralOptions.MeetingOptions.MeetingButtonPool)
+            {
+                _meetingDelegate = null!;
+                log.Debug($"{reporter?.name ?? "null player"}'s meeting was canceled because there are no more meetings. {Game.MatchData.EmergencyButtonsUsed} >= {GeneralOptions.MeetingOptions.MeetingButtonPool}");
+                return _meetingDelegate;
+            }
+        }
+        if (checkReportBodyCancel)
+        {
+            ActionHandle handle = ActionHandle.NoInit();
+            if (reporter != null) RoleOperations.Current.TriggerForAll(LotusActionType.ReportBody, reporter, handle, Optional<NetworkedPlayerInfo>.Of(deadBody));
+            if (handle.IsCanceled) return null;
+        }
+
+        if (deadBody == null) Game.MatchData.EmergencyButtonsUsed += 1;
 
         Game.State = GameState.InMeeting;
 
@@ -52,13 +74,30 @@ internal class MeetingPrep
             Async.Schedule(() =>
             {
                 QuickStartMeeting(reporter);
-                /*Async.Schedule(() => Game.GetAllPlayers().ForEach(p => p.CRpcRevertShapeshift(false)), 0.1f);*/
+                /*Async.Schedule(() => Players.GetPlayers().ForEach(p => p.CRpcRevertShapeshift(false)), 0.1f);*/
             }, 0.1f);
+        Players.GetPlayers().Do(p =>
+        {
+            ActionHandle handle = ActionHandle.NoInit();
+            try
+            {
+                MeetingStartPatch.SendTemplates(p);
+            }
+            catch
+            {
+                // ignored. just so a meeting isn't forcefully stopped
+            }
+            finally
+            {
+                RoleOperations.Current.TriggerFor(p, LotusActionType.RoundEnd, null, handle, _meetingDelegate, false);
+                if (p.IsShapeshifted()) Async.Schedule(() => p.CRpcRevertShapeshift(false), .25f);
+            }
+        });
 
         Game.RenderAllForAll(GameState.InMeeting, true);
         Async.Schedule(FixChatNames, 5f);
 
-        VentLogger.Trace("Finished Prepping", "MeetingPrep");
+        log.Trace("Finished Prepping", "MeetingPrep");
         Prepped = true;
 
         CheckEndGamePatch.Deferred = true;
@@ -74,7 +113,8 @@ internal class MeetingPrep
         MeetingRoomManager.Instance.AssignSelf(reporter, Reported);
         DestroyableSingleton<HudManager>.Instance.OpenMeetingRoom(reporter);
         reporter.RpcStartMeeting(Reported);
+
     }
 
-    private static void FixChatNames() => Game.GetAllPlayers().ForEach(p => p.RpcSetName(Color.white.Colorize(p.name)));
+    private static void FixChatNames() => Players.GetPlayers().ForEach(p => p.RpcSetName(p.name));
 }

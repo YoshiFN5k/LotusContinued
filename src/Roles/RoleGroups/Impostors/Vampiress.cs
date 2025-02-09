@@ -6,6 +6,7 @@ using Lotus.GUI.Name;
 using Lotus.Roles.Events;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Roles.RoleGroups.Vanilla;
@@ -13,7 +14,7 @@ using Lotus.Utilities;
 using Lotus.Extensions;
 using Lotus.Options;
 using VentLib.Logging;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 
@@ -21,6 +22,7 @@ namespace Lotus.Roles.RoleGroups.Impostors;
 
 public class Vampiress : Impostor
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Vampiress));
     private float killDelay;
     private VampireMode mode = VampireMode.Biting;
     [NewOnSetup] private HashSet<byte> bitten = null!;
@@ -28,7 +30,7 @@ public class Vampiress : Impostor
     [UIComponent(UI.Text)]
     private string CurrentMode() => mode is VampireMode.Biting ? RoleColor.Colorize("(Bite)") : RoleColor.Colorize("(Kill)");
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         SyncOptions();
@@ -48,21 +50,21 @@ public class Vampiress : Impostor
         return false;
     }
 
-    [RoleAction(RoleActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundStart)]
     private void ResetKillState()
     {
         mode = VampireMode.Killing;
     }
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     public void SwitchMode()
     {
         VampireMode currentMode = mode;
         mode = mode is VampireMode.Killing ? VampireMode.Biting : VampireMode.Killing;
-        VentLogger.Trace($"Swapping Vampire Mode: {currentMode} => {mode}");
+        log.Trace($"Swapping Vampire Mode: {currentMode} => {mode}");
     }
 
-    [RoleAction(RoleActionType.MeetingCalled, triggerAfterDeath: true)]
+    [RoleAction(LotusActionType.ReportBody, ActionFlag.WorksAfterDeath, priority: API.Priority.Low)]
     public void KillBitten()
     {
         bitten.Filter(Players.PlayerById).Where(p => p.IsAlive()).ForEach(p =>
@@ -82,10 +84,14 @@ public class Vampiress : Impostor
                 .AddFloatRange(2.5f, 60f, 2.5f, 2, GeneralOptionTranslations.SecondsSuffix)
                 .Build());
 
+    protected override RoleType GetRoleType() => RoleType.Variation;
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .OptionOverride(new IndirectKillCooldown(KillCooldown, () => mode is VampireMode.Biting))
-            .RoleFlags(RoleFlag.VariationRole);
+            .RoleFlags(RoleFlag.VariationRole)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
+            .IntroSound(AmongUs.GameOptions.RoleTypes.Shapeshifter);
 
     public enum VampireMode
     {

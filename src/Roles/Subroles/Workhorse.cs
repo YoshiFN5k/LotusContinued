@@ -2,12 +2,13 @@
 using Lotus.Extensions;
 using Lotus.Roles.Interfaces;
 using UnityEngine;
+using Lotus.Roles.Internals.Enums;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles.Subroles;
 
-public class Workhorse: Subrole
+public class Workhorse : Subrole
 {
     private int additionalShortTasks;
     private int additionalLongTasks;
@@ -16,12 +17,12 @@ public class Workhorse: Subrole
 
     protected override void PostSetup()
     {
-        Tasks.AssignAdditionalTasks(MyPlayer.GetCustomRole(), additionalShortTasks, additionalLongTasks, TaskAssignmentMode.Add);
+        Tasks.AssignAdditionalTasks(MyPlayer.PrimaryRole(), additionalShortTasks, additionalLongTasks, TaskAssignmentMode.Add);
     }
 
     public override bool IsAssignableTo(PlayerControl player)
     {
-        return player.GetCustomRole() is ITaskHolderRole itr && itr.HasTasks() && base.IsAssignableTo(player);
+        return player.PrimaryRole() is ITaskHolderRole itr && itr.HasTasks() && base.IsAssignableTo(player);
     }
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>

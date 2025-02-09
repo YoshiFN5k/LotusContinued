@@ -10,5 +10,5 @@ public static class PassiveButtonExtension
         if (passiveButton == null) return;
         passiveButton.OnClick = new Button.ButtonClickedEvent();
         passiveButton.OnClick.AddListener(action);
-    } 
+    }
 }

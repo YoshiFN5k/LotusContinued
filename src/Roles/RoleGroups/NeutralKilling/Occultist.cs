@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using Lotus.API;
 using Lotus.API.Odyssey;
 using Lotus.API.Player;
-using Lotus.API.Vanilla.Meetings;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Extensions;
 using Lotus.GUI;
 using Lotus.GUI.Name;
@@ -19,15 +17,16 @@ using Lotus.Statuses;
 using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
+using Lotus.GameModes.Standard;
 
 namespace Lotus.Roles.RoleGroups.NeutralKilling;
 
-public class Occultist: NeutralKillingBase
+public class Occultist : NeutralKillingBase
 {
     private bool freelySwitchModes;
     private bool switchModesAfterAttack;
@@ -38,9 +37,9 @@ public class Occultist: NeutralKillingBase
     private bool isCursingMode = true;
 
     [UIComponent(UI.Text)]
-    private string ModeDisplay() => freelySwitchModes ? isCursingMode ? RoleColor.Colorize(Translations.CursingModeText) : Color.red.Colorize(Translations.KillingModeText) : "";
+    private string ModeDisplay() => (freelySwitchModes || switchModesAfterAttack) ? (isCursingMode ? RoleColor.Colorize(Translations.CursingModeText) : Color.red.Colorize(Translations.KillingModeText)) : "";
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         if (!isCursingMode)
@@ -55,23 +54,23 @@ public class Occultist: NeutralKillingBase
         if (cursedPlayers.ContainsKey(target.PlayerId)) return false;
 
         CustomStatus status = CustomStatus.Of(RoleName).Description(Translations.CursedStatusDescription).Color(RoleColor).Build();
-        cursedPlayers.Add(target.PlayerId,  MatchData.AddStatus(target, status, MyPlayer));
+        cursedPlayers.Add(target.PlayerId, Game.MatchData.AddStatus(target, status, MyPlayer));
         indicators.GetValueOrDefault(target.PlayerId)?.Delete();
         indicators[target.PlayerId] = target.NameModel().GCH<IndicatorHolder>().Add(new SimpleIndicatorComponent("†", Color.red, GameState.InMeeting));
 
-        string eventMessage = TranslationUtil.Colorize(Translations.CursedMessage.Formatted(MyPlayer.name, target.name), RoleColor, target.GetCustomRole().RoleColor);
+        string eventMessage = TranslationUtil.Colorize(Translations.CursedMessage.Formatted(MyPlayer.name, target.name), RoleColor, target.PrimaryRole().RoleColor);
         Game.MatchData.GameHistory.AddEvent(new GenericTargetedEvent(MyPlayer, target, eventMessage));
         return false;
     }
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     public void SwitchWitchMode()
     {
         if (freelySwitchModes) isCursingMode = !isCursingMode;
     }
 
-    [RoleAction(RoleActionType.MeetingEnd)]
-    public void KillCursedPlayers(Optional<GameData.PlayerInfo> exiledPlayer)
+    [RoleAction(LotusActionType.MeetingEnd)]
+    public void KillCursedPlayers(Optional<NetworkedPlayerInfo> exiledPlayer)
     {
         if (exiledPlayer.Compare(p => p.PlayerId == MyPlayer.PlayerId)) return;
         cursedPlayers.Keys.Filter(Players.PlayerById).ForEach(p =>
@@ -80,11 +79,18 @@ public class Occultist: NeutralKillingBase
             MyPlayer.InteractWith(p, new UnblockedInteraction(new FatalIntent(false, () => cod), this));
             cursedPlayers[p.PlayerId]?.Delete();
         });
-        cursedPlayers.Clear();
+    }
+
+    [RoleAction(LotusActionType.RoundStart, ActionFlag.WorksAfterDeath)]
+    private void ClearCursedPlayers()
+    {
+        cursedPlayers.ForEach(c => c.Value?.Delete());
         indicators.ForEach(i => i.Value.Delete());
+        cursedPlayers.Clear();
         indicators.Clear();
     }
 
+    public override void HandleDisconnect() => ClearCursedPlayers();
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
@@ -100,12 +106,12 @@ public class Occultist: NeutralKillingBase
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(0.39f, 0.47f, 0.87f))
-            .RoleAbilityFlags(RoleAbilityFlag.CannotSabotage)
+            .RoleAbilityFlags(RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.UsesPet)
             .OptionOverride(new IndirectKillCooldown(KillCooldown, () => isCursingMode));
 
 
     [Localized(nameof(Occultist))]
-    private static class Translations
+    public static class Translations
     {
         [Localized(nameof(CursedStatusDescription))]
         public static string CursedStatusDescription = "You have been hexed. Hexed players will die after the meeting unless the source of the hex is voted out.";

@@ -4,21 +4,23 @@ using System.Text.RegularExpressions;
 using Lotus.Factions;
 using Lotus.Factions.Crew;
 using Lotus.Factions.Impostors;
-using Lotus.Managers;
-using Lotus.Options;
 using Lotus.Roles;
-using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
+using Lotus.Roles.Managers.Interfaces;
+using Lotus.Roles.Properties;
+using Lotus.Options;
 using VentLib.Commands;
 using VentLib.Commands.Attributes;
 using VentLib.Commands.Interfaces;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
+using Lotus.API.Odyssey;
 
 namespace Lotus.Chat.Commands;
 
 [Command("n", "now")]
-public class NowCommand: ICommandReceiver
+public class NowCommand : ICommandReceiver
 {
     private static Regex descriptionRegex = new("^.*#.*$", RegexOptions.Multiline);
 
@@ -36,41 +38,41 @@ public class NowCommand: ICommandReceiver
     public void ListCrewmateOptions(PlayerControl source)
     {
         string title = FactionInstances.Crewmates.Color.Colorize($"★ {FactionInstances.Crewmates.Name()} ★");
-        ListRoleGroup(source, title, CustomRoleManager.AllRoles.Where(r => r.Faction is Crewmates));
+        ListRoleGroup(source, title, IRoleManager.Current.AllCustomRoles().Where(r => r.Faction is Crewmates));
     }
     [Command("impostors", "imp")]
     public void ListImpostorOptions(PlayerControl source)
     {
         string title = FactionInstances.Impostors.Color.Colorize($"★ {FactionInstances.Impostors.Name()} ★");
-        ListRoleGroup(source, title, CustomRoleManager.AllRoles.Where(r => r.Faction is ImpostorFaction));
+        ListRoleGroup(source, title, IRoleManager.Current.AllCustomRoles().Where(r => r.Faction is ImpostorFaction));
     }
 
     [Command("nk", "neutral-killers", "nks")]
     public void ListNeutralKillers(PlayerControl source)
     {
         string title = ModConstants.Palette.KillingColor.Colorize("★ Neutral Killing ★");
-        ListRoleGroup(source, title, CustomRoleManager.AllRoles.Where(r => r.SpecialType is SpecialType.NeutralKilling));
+        ListRoleGroup(source, title, IRoleManager.Current.AllCustomRoles().Where(r => RoleProperties.IsSpecialType(r, SpecialType.NeutralKilling)));
     }
 
     [Command("neutral", "neutrals", "np")]
     public void ListNeutralPassive(PlayerControl source)
     {
         string title = ModConstants.Palette.PassiveColor.Colorize("★ Neutrals ★");
-        ListRoleGroup(source, title, CustomRoleManager.AllRoles.Where(r => r.SpecialType is SpecialType.Neutral));
+        ListRoleGroup(source, title, IRoleManager.Current.AllCustomRoles().Where(r => RoleProperties.IsSpecialType(r, SpecialType.Neutral)));
     }
 
     [Command("mods", "mod", "subroles", "modifiers", "modifier")]
     public void ListModifiers(PlayerControl source)
     {
         string title = ModConstants.Palette.ModifierColor.Colorize("★ Modifiers ★");
-        ListRoleGroup(source, title, CustomRoleManager.ModifierRoles);
-    } 
+        ListRoleGroup(source, title, IRoleManager.Current.AllCustomRoles().Where(RoleProperties.IsModifier));
+    }
 
     public void ListNormalOptions(PlayerControl source)
     {
         string title = "";
         string content = "";
-        foreach (GameOption option in GeneralOptions.AllOptions)
+        foreach (GameOption option in Game.CurrentGameMode.MainTab().GetOptions())
         {
             if (!option.IsTitle)
             {
@@ -84,7 +86,7 @@ public class NowCommand: ICommandReceiver
             title = $"★ {option.Name()} ★";
             content = "";
         }
-        
+
         ChatHandler.Of(content[..^1], title).LeftAlign().Send(source);
     }
 

@@ -2,9 +2,10 @@ using Lotus.Utilities;
 using Lotus.Extensions;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Options.IO;
 using static Lotus.ModConstants.Palette;
+using System.Collections.Generic;
 
 namespace Lotus.Options.Roles;
 
@@ -18,57 +19,72 @@ public class NeutralOptions
     public int MaximumNeutralKillingRoles;
 
     public NeutralTeaming NeutralTeamingMode;
-    public bool KnowAlliedRoles => NeutralTeamingMode is not NeutralTeaming.Disabled && knowAlliedRoles;
+    public bool NeutralsKnowAlliedRoles => NeutralTeamingMode is not NeutralTeaming.Disabled && knowAlliedRoles;
 
     private bool knowAlliedRoles;
+
+    public List<GameOption> AllOptions = new();
 
     public NeutralOptions()
     {
         string GColor(string input) => TranslationUtil.Colorize(input, NeutralColor, PassiveColor, KillingColor);
 
-        Builder("Neutral Teaming Mode")
-            .IsHeader(true)
-            .Name(GColor(NeutralOptionTranslations.NeutralTeamMode))
-            .BindInt(i => NeutralTeamingMode = (NeutralTeaming)i)
+        AllOptions.Add(new GameOptionTitleBuilder().Title(GColor(NeutralOptionTranslations.NeutralTeamMode))
+            // .Tab(DefaultTabs.NeutralTab)
+            .Build());
+
+        AllOptions.Add(new GameOptionBuilder()
             .Value(v => v.Text(GeneralOptionTranslations.DisabledText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(NeutralOptionTranslations.SameRoleText).Value(1).Color(GeneralColor2).Build())
             .Value(v => v.Text(GColor(NeutralOptionTranslations.KillerNeutral)).Value(2).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(3).Color(GeneralColor4).Build())
+            .Builder("Neutral Teaming Mode")
+            .IsHeader(true)
+            .Name(GColor(NeutralOptionTranslations.NeutralTeamMode))
+            .BindInt(i => NeutralTeamingMode = (NeutralTeaming)i)
             .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
+            // .Tab(DefaultTabs.NeutralTab)
             .ShowSubOptionPredicate(v => (int)v >= 1)
-            .SubOption(sub => sub.KeyName("Team Knows Each Other's Roles", NeutralOptionTranslations.AlliedKnowRoles)
-                .AddOnOffValues()
+            .SubOption(sub => sub
+                .AddOnOffValues(true)
+                .KeyName("Team Knows Each Other's Roles", NeutralOptionTranslations.AlliedKnowRoles)
                 .BindBool(b => knowAlliedRoles = b)
                 .Build())
-            .BuildAndRegister();
-        
-        Builder("Minimum Neutral Passive Roles")
+            .Build());
+
+        AllOptions.Add(new GameOptionBuilder()
+            .AddIntRange(0, ModConstants.MaxPlayers)
+            .Builder("Minimum Neutral Passive Roles")
             .IsHeader(true)
             .Name(GColor(NeutralOptionTranslations.MinimumNeutralPassiveRoles))
             .BindInt(i => MinimumNeutralPassiveRoles = i)
-            .AddIntRange(0, 15)
-            .BuildAndRegister();
-        
-        Builder("Maximum Neutral Passive Roles")
+            // .Tab(DefaultTabs.NeutralTab)
+            .Build());
+
+        AllOptions.Add(new GameOptionBuilder()
+            .AddIntRange(0, ModConstants.MaxPlayers)
+            .Builder("Maximum Neutral Passive Roles")
             .Name(GColor(NeutralOptionTranslations.MaximumNeutralPassiveRoles))
+            // .Tab(DefaultTabs.NeutralTab)
             .BindInt(i => MaximumNeutralPassiveRoles = i)
-            .AddIntRange(0, 15)
-            .BuildAndRegister();
+            .Build());
 
-        Builder("Minimum Neutral Killing Roles")
-            .Name(GColor(NeutralOptionTranslations.MinimumNeutralKillingRoles))
+        AllOptions.Add(new GameOptionBuilder()
+            .AddIntRange(0, ModConstants.MaxPlayers)
+            // .Tab(DefaultTabs.NeutralTab)
             .BindInt(i => MinimumNeutralKillingRoles = i)
-            .AddIntRange(0, 15)
-            .BuildAndRegister();
-        
-        Builder("Maximum Neutral Killing Roles")
-            .Name(GColor(NeutralOptionTranslations.MaximumNeutralKillingRoles))
-            .BindInt(i => MaximumNeutralKillingRoles = i)
-            .AddIntRange(0, 15)
-            .BuildAndRegister();
-    }
+            .Builder("Minimum Neutral Killing Roles")
+            .Name(GColor(NeutralOptionTranslations.MinimumNeutralKillingRoles))
+            .Build());
 
-    private GameOptionBuilder Builder(string key) => new GameOptionBuilder().Key(key).Tab(DefaultTabs.NeutralTab);
+        AllOptions.Add(new GameOptionBuilder()
+            .AddIntRange(0, ModConstants.MaxPlayers)
+            // .Tab(DefaultTabs.NeutralTab)
+            .BindInt(i => MaximumNeutralKillingRoles = i)
+            .Builder("Maximum Neutral Killing Roles")
+            .Name(GColor(NeutralOptionTranslations.MaximumNeutralKillingRoles))
+            .Build());
+    }
 
     [Localized("RolesNeutral")]
     private static class NeutralOptionTranslations

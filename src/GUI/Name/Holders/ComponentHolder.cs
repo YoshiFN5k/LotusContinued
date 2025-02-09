@@ -4,14 +4,15 @@ using System.Linq;
 using HarmonyLib;
 using Lotus.API.Odyssey;
 using Lotus.GUI.Name.Interfaces;
-using Lotus.Patches.Actions;
+using UnityEngine;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 
 namespace Lotus.GUI.Name.Holders;
 
-public class ComponentHolder<T> : RemoteList<T>, IComponentHolder<T> where T: INameModelComponent
+public class ComponentHolder<T> : RemoteList<T>, IComponentHolder<T> where T : INameModelComponent
 {
+    protected DisplayStyle DisplayStyle;
     protected float Size = 2.925f;
     protected int DisplayLine;
     protected int Spacing = 0;
@@ -20,13 +21,10 @@ public class ComponentHolder<T> : RemoteList<T>, IComponentHolder<T> where T: IN
     protected readonly Dictionary<byte, string> CacheStates = new();
     private readonly List<Action<INameModelComponent>> eventConsumers = new();
 
-    public ComponentHolder()
-    {
-    }
-
-    public ComponentHolder(int line = 0)
+    public ComponentHolder(int line = 0, DisplayStyle displayStyle = DisplayStyle.All)
     {
         this.DisplayLine = line;
+        this.DisplayStyle = displayStyle;
     }
 
     public RemoteList<T> Components() => this;
@@ -41,16 +39,30 @@ public class ComponentHolder<T> : RemoteList<T>, IComponentHolder<T> where T: IN
 
     public virtual string Render(PlayerControl player, GameState state)
     {
-        if (player.IsShapeshifted() && this is not NameHolder) return "";
         List<string> endString = new();
         ViewMode lastMode = ViewMode.Absolute;
-        // TODO: if laggy investigate ways to circumvent ToArray() call here
-        foreach (T component in this.Where(p => p.GameStates().Contains(state)).ToArray().Where(p => p.Viewers().Any(pp => pp.PlayerId == player.PlayerId)))
+        IEnumerable<T> allComponents;
+        switch (this.DisplayStyle)
+        {
+            case DisplayStyle.FirstOnly:
+                allComponents = this.Where(p => p.GameStates().Contains(state)).Where(p => p.Viewers().Any(pp => pp.PlayerId == player.PlayerId)).Where((_, i) => i == 0);
+                break;
+            case DisplayStyle.LastOnly:
+                allComponents = this.Where(p => p.GameStates().Contains(state)).Where(p => p.Viewers().Any(pp => pp.PlayerId == player.PlayerId));
+                int count = allComponents.Count() - 1;
+                allComponents = allComponents.Where((_, i) => i == count);
+                break;
+            case DisplayStyle.All:
+            default:
+                allComponents = this.Where(p => p.GameStates().Contains(state)).Where(p => p.Viewers().Any(pp => pp.PlayerId == player.PlayerId));
+                break;
+        }
+        foreach (T component in allComponents)
         {
             ViewMode newMode = component.ViewMode();
             if (newMode is ViewMode.Replace or ViewMode.Absolute || lastMode is ViewMode.Overriden) endString.Clear();
             lastMode = newMode;
-            string text = component.GenerateText();
+            string text = component.GenerateText(state);
             if (text == null) continue;
             endString.Add(text);
             if (newMode is ViewMode.Absolute) break;
@@ -72,4 +84,11 @@ public class ComponentHolder<T> : RemoteList<T>, IComponentHolder<T> where T: IN
     }
 
     public void AddListener(Action<INameModelComponent> eventConsumer) => eventConsumers.Add(eventConsumer);
+}
+
+public enum DisplayStyle
+{
+    All,
+    FirstOnly,
+    LastOnly
 }

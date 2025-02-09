@@ -3,14 +3,16 @@ using Lotus.API.Odyssey;
 using Lotus.Roles;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.API;
+using Lotus.API.Player;
 using Lotus.Extensions;
 using VentLib.Utilities.Optionals;
+using Lotus.Roles.Interfaces;
 
 namespace Lotus.Managers.History.Events;
 
 public class TaskCompleteEvent : IHistoryEvent
 {
-    private PlayerControl player;
+    private FrozenPlayer player;
     private Optional<CustomRole> playerRole;
 
     private int tasksRemaining;
@@ -18,15 +20,15 @@ public class TaskCompleteEvent : IHistoryEvent
 
     public TaskCompleteEvent(PlayerControl player)
     {
-        this.player = player;
-        playerRole = Optional<CustomRole>.Of(player.GetCustomRole());
+        this.player = Game.MatchData.GetFrozenPlayer(player);
+        playerRole = Optional<CustomRole>.Of(player.PrimaryRole());
 
-        tasksRemaining = this.player.GetCustomRole() is Crewmate crew
-            ? crew.TotalTasks - crew.TasksComplete
+        tasksRemaining = player.PrimaryRole() is ITaskHolderRole taskHolder
+            ? taskHolder.TotalTasks - taskHolder.CompleteTasks
             : player.Data.Tasks.ToArray().Count(t => !t.Complete);
     }
 
-    public PlayerControl Player() => player;
+    public FrozenPlayer Player() => player;
 
     public Optional<CustomRole> RelatedRole() => playerRole;
 

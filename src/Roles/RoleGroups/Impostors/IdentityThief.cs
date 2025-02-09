@@ -1,5 +1,6 @@
 using Lotus.API;
 using Lotus.API.Odyssey;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Extensions;
@@ -10,10 +11,12 @@ using Lotus.Roles.Internals;
 using Lotus.Roles.Overrides;
 using Lotus.RPC;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using static Lotus.ModConstants.Palette;
 using static Lotus.Roles.RoleGroups.Impostors.IdentityThief.Translations.Options;
+using VentLib.Utilities.Optionals;
+using Lotus.API.Vanilla.Meetings;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
@@ -23,7 +26,9 @@ public class IdentityThief : Impostor
 
     private bool shapeshiftedThisRound;
 
-    [RoleAction(RoleActionType.Attack)]
+    private int currentRound;
+
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         if (Relationship(target) is Relation.FullAllies) return false;
@@ -36,10 +41,12 @@ public class IdentityThief : Impostor
 
         if (shiftingType is not ShiftingType.UntilMeeting || !shapeshiftedThisRound) MyPlayer.CRpcShapeshift(target, true);
 
+        int curRoundCopy = currentRound;
         if (shiftingType is ShiftingType.KillCooldown) Async.Schedule(() =>
         {
-            if (Game.State is GameState.InMeeting) return;
+            if (Game.State is GameState.InMeeting || currentRound != curRoundCopy) return;
             MyPlayer.CRpcRevertShapeshift(true);
+            shapeshiftedThisRound = false;
         }, KillCooldown);
 
         ProtectedRpc.CheckMurder(MyPlayer, target);
@@ -47,8 +54,30 @@ public class IdentityThief : Impostor
         return true;
     }
 
-    [RoleAction(RoleActionType.RoundStart)]
-    private void ClearShapeshiftStatus() => shapeshiftedThisRound = false;
+    [RoleAction(LotusActionType.RoundStart)]
+    private void ClearShapeshiftStatus()
+    {
+        shapeshiftedThisRound = false;
+        currentRound++;
+    }
+
+    // might conflict with camouflager
+    // [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector, priority: Priority.Low)]
+    // private void HandleMeetingCall(PlayerControl reporter, Optional<NetworkedPlayerInfo> reported, ActionHandle handle)
+    // {
+    //     if (!shapeshiftedThisRound) return;
+    //     shapeshiftedThisRound = false;
+    //     MyPlayer.CRpcRevertShapeshift(false);
+    //     handle.Cancel();
+    //     Async.Schedule(() => MeetingPrep.PrepMeeting(reporter, reported.OrElse(null!)), 0.5f);
+    // }
+    [RoleAction(LotusActionType.RoundEnd, ActionFlag.WorksAfterDeath)]
+    private void HandleMeetingCall()
+    {
+        if (!shapeshiftedThisRound) return;
+        shapeshiftedThisRound = false;
+        MyPlayer.CRpcRevertShapeshift(false);
+    }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)

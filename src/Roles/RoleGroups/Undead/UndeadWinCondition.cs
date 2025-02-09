@@ -7,6 +7,7 @@ using Lotus.Factions.Undead;
 using Lotus.Roles.RoleGroups.Undead.Roles;
 using Lotus.Victory.Conditions;
 using Lotus.Extensions;
+using Lotus.API.Player;
 
 namespace Lotus.Roles.RoleGroups.Undead;
 
@@ -23,7 +24,7 @@ public class UndeadWinCondition : IFactionWinCondition
         int aliveOther = 0;
 
         bool necromancerAlive = false;
-        foreach (CustomRole role in Game.GetAlivePlayers().Select(p => p.GetCustomRole()))
+        foreach (CustomRole role in Players.GetAlivePlayers().Select(p => p.PrimaryRole()))
         {
             if (role is Necromancer) necromancerAlive = true;
             if (role.Faction is TheUndead) aliveUndead++;

@@ -7,6 +7,7 @@ using Lotus.GUI.Name;
 using Lotus.GUI.Name.Holders;
 using Lotus.Patches.Systems;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Utilities;
@@ -14,14 +15,15 @@ using Lotus.Chat;
 using Lotus.Extensions;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using static Lotus.Roles.RoleGroups.Crew.Mayor.Translations;
+using Lotus.API.Player;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
-public class Mayor: Crewmate
+public class Mayor : Crewmate
 {
     private bool hasPocketMeeting;
 
@@ -45,7 +47,7 @@ public class Mayor: Crewmate
         if (!hasPocketMeeting) MyPlayer.NameModel().GetComponentHolder<CounterHolder>().RemoveLast();
     }
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     private void MayorPocketMeeting()
     {
         if (!updateLock.AcquireLock()) return;
@@ -56,7 +58,7 @@ public class Mayor: Crewmate
         MeetingApi.StartMeeting(creator => creator.QuickCall(MyPlayer));
     }
 
-    [RoleAction(RoleActionType.MyVote)]
+    [RoleAction(LotusActionType.Vote)]
     private void MayorVotes(Optional<PlayerControl> voted, MeetingDelegate meetingDelegate, ActionHandle handle)
     {
         if (revealToVote && !revealed)
@@ -65,7 +67,7 @@ public class Mayor: Crewmate
             handle.Cancel();
             revealed = true;
             ChatHandler.Of(MayorRevealMessage.Formatted(MyPlayer.name)).Title(t => t.Color(RoleColor).Text(MayorRevealTitle).Build()).Send();
-            List<PlayerControl> allPlayers = Game.GetAllPlayers().ToList();
+            List<PlayerControl> allPlayers = Players.GetAllPlayers().ToList();
             MyPlayer.NameModel().GetComponentHolder<RoleHolder>().Last().SetViewerSupplier(() => allPlayers);
             return;
         }
@@ -73,11 +75,11 @@ public class Mayor: Crewmate
         for (int i = 0; i < additionalVotes; i++) meetingDelegate.CastVote(MyPlayer, voted);
     }
 
-    [RoleAction(RoleActionType.RoundEnd)]
+    [RoleAction(LotusActionType.RoundEnd)]
     private void MayorNotify()
     {
-       if (revealToVote && !revealed)
-           ChatHandler.Of(RevealMessage).Title(t => t.Color(RoleColor).Text(MayorRevealTitle).Build()).Send(MyPlayer);
+        if (revealToVote && !revealed)
+            ChatHandler.Of(RevealMessage).Title(t => t.Color(RoleColor).Text(MayorRevealTitle).Build()).Send(MyPlayer);
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
@@ -101,7 +103,9 @@ public class Mayor: Crewmate
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier).RoleColor(new Color(0.13f, 0.3f, 0.26f));
+        base.Modify(roleModifier).RoleColor(new Color(0.13f, 0.3f, 0.26f))
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
+            .IntroSound(AmongUs.GameOptions.RoleTypes.Crewmate);
 
     [Localized(nameof(Mayor))]
     internal static class Translations

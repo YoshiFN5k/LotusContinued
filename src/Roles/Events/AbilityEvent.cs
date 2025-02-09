@@ -1,3 +1,5 @@
+using Lotus.API.Odyssey;
+using Lotus.API.Player;
 using Lotus.Managers.History;
 using Lotus.Managers.History.Events;
 using Lotus.Extensions;
@@ -7,7 +9,7 @@ namespace Lotus.Roles.Events;
 
 public abstract class AbilityEvent : IRoleEvent
 {
-    private PlayerControl user;
+    private FrozenPlayer? user;
     private Optional<CustomRole> role;
 
     private Timestamp timestamp = new();
@@ -15,12 +17,12 @@ public abstract class AbilityEvent : IRoleEvent
 
     public AbilityEvent(PlayerControl user, bool completed = true)
     {
-        this.user = user;
-        role = Optional<CustomRole>.Of(user.GetCustomRole());
+        this.user = Game.MatchData.GetFrozenPlayer(user);
+        role = Optional<CustomRole>.Of(user.PrimaryRole());
         completion = completed;
     }
 
-    public PlayerControl Player() => user;
+    public FrozenPlayer Player() => user;
 
     public Optional<CustomRole> RelatedRole() => role;
 

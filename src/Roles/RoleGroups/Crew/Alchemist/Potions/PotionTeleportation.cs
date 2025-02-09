@@ -7,10 +7,11 @@ using Lotus.API;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Utilities.Extensions;
+using Lotus.API.Player;
 
 namespace Lotus.Roles.RoleGroups.Crew.Potions;
 
-public class PotionTeleportation: Potion
+public class PotionTeleportation : Potion
 {
     [Localized("Teleportation")]
     public static string PotionName = "Warp Potion";
@@ -25,7 +26,7 @@ public class PotionTeleportation: Potion
 
     public override bool Use(PlayerControl user)
     {
-        List<PlayerControl> players = Game.GetAlivePlayers().Where(p => p.PlayerId != user.PlayerId).ToList();
+        List<PlayerControl> players = Players.GetAlivePlayers().Where(p => p.PlayerId != user.PlayerId).ToList();
         if (players.Count == 0) return true;
         PlayerControl randomPlayer = players.GetRandom();
         Vector2 myPosition = user.GetTruePosition();

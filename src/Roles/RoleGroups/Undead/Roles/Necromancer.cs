@@ -13,6 +13,7 @@ using Lotus.Managers.History.Events;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Interactions.Interfaces;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Victory;
@@ -21,14 +22,18 @@ using Lotus.Managers;
 using Lotus.Options;
 using UnityEngine;
 using VentLib.Logging;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
+using Lotus.API.Player;
+using Lotus.GameModes.Standard;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Undead.Roles;
 
 public class Necromancer : UndeadRole
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Necromancer));
     private static Deathknight _deathknight = new Deathknight();
 
     [UIComponent(UI.Cooldown)]
@@ -46,18 +51,19 @@ public class Necromancer : UndeadRole
         Game.GetWinDelegate().AddSubscriber(DenyWinConditions);
     }
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     private bool NecromancerConvert(PlayerControl? target)
     {
         if (target == null) return false;
         if (MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this)) is InteractionResult.Halt) return false;
         MyPlayer.RpcMark(target);
+        log.Debug($"Is first convert? {isFirstConvert} - {target.GetNameWithRole()}");
         if (isFirstConvert) return ConvertToDeathknight(target);
         ConvertToUndead(target);
         return false;
     }
 
-    [RoleAction(RoleActionType.Interaction)]
+    [RoleAction(LotusActionType.Interaction)]
     private void NecromancerImmunity(PlayerControl actor, Interaction interaction, ActionHandle handle)
     {
         if (interaction.Intent is not (IHostileIntent or IFatalIntent)) return;
@@ -66,7 +72,7 @@ public class Necromancer : UndeadRole
     }
 
     // TODO: cooldown
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     private void NecromancerConvertPet()
     {
         if (convertCooldown.NotReady()) return;
@@ -74,7 +80,7 @@ public class Necromancer : UndeadRole
         NecromancerConvert(MyPlayer.GetPlayersInAbilityRangeSorted().FirstOrOptional().OrElse(null!));
     }
 
-    [RoleAction(RoleActionType.MyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath)]
     private void NecromancerDeath()
     {
         if (myDeathknight == null || !myDeathknight.MyPlayer.IsAlive() || !myDeathknight.CanBecomeNecromancer) return;
@@ -82,10 +88,10 @@ public class Necromancer : UndeadRole
         player.GetSubroles().Remove(deathknightOriginal);
         myDeathknight = null;
         player.NameModel().GetComponentHolder<CooldownHolder>().Clear();
-        player.NameModel().GetComponentHolder<CooldownHolder>().Add(new CooldownComponent(convertCooldown, GameState.Roaming, ViewMode.Additive, player));
+        player.NameModel().GetComponentHolder<CooldownHolder>().Add(new CooldownComponent(convertCooldown, GameState.Roaming, ViewMode.Additive, viewers: player));
 
-        MatchData.AssignRole(player, this);
-        Necromancer necromancer = player.GetCustomRole<Necromancer>();
+        StandardGameMode.Instance.Assign(player, this);
+        Necromancer necromancer = player.PrimaryRole<Necromancer>()!;
         necromancer.isFirstConvert = false;
         Game.MatchData.GameHistory.AddEvent(new RoleChangeEvent(player, necromancer));
         disableWinCheck = true;
@@ -98,14 +104,14 @@ public class Necromancer : UndeadRole
         ConvertToUndead(target);
         InitiateUndead(target);
 
-        deathknightOriginal = target.GetCustomRole();
+        deathknightOriginal = target.PrimaryRole();
         Game.MatchData.Roles.AddSubrole(target.PlayerId, deathknightOriginal);
-        MatchData.AssignRole(target, _deathknight);
-        myDeathknight = target.GetCustomRole<Deathknight>();
+        StandardGameMode.Instance.Assign(target, _deathknight);
+        myDeathknight = target.PrimaryRole<Deathknight>();
         target.NameModel().GetComponentHolder<RoleHolder>()[^1]
-            .SetViewerSupplier(() => Game.GetAllPlayers().Where(p => p.PlayerId == target.PlayerId || p.Relationship(target) is Relation.FullAllies).ToList());
+            .SetViewerSupplier(() => Players.GetAllPlayers().Where(p => p.PlayerId == target.PlayerId || p.Relationship(target) is Relation.FullAllies).ToList());
 
-        VentLogger.Fatal($"Indicator count 22: {target.NameModel().GetComponentHolder<IndicatorHolder>().Count}");
+        log.Fatal($"Indicator count 22: {target.NameModel().GetComponentHolder<IndicatorHolder>().Count}");
         Game.MatchData.GameHistory.AddEvent(new RoleChangeEvent(target, _deathknight));
         return false;
     }
@@ -115,28 +121,48 @@ public class Necromancer : UndeadRole
         if (disableWinCheck) return;
         List<PlayerControl> winners = winDelegate.GetWinners();
         if (winners.Any(p => p.PlayerId == MyPlayer.PlayerId)) return;
-        List<PlayerControl> undeadWinners = winners.Where(p => p.GetCustomRole().Faction is TheUndead).ToList();
+        List<PlayerControl> undeadWinners = winners.Where(p => p.PrimaryRole().Faction is TheUndead).ToList();
 
         if (undeadWinners.Count(IsConvertedUndead) == winners.Count) winDelegate.CancelGameWin();
         else if (undeadWinners.Count == winners.Count && MyPlayer.IsAlive()) winDelegate.CancelGameWin();
         else undeadWinners.Where(tc => IsConvertedUndead(tc) || MyPlayer.IsAlive() && IsUnconvertedUndead(tc)).ForEach(uw => winners.Remove(uw));
     }
 
+    protected override string ForceRoleImageDirectory() => "Lotus.assets.RoleImages.Neutral.necromancer";
+
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Convert Cooldown")
+            .SubOption(sub => sub
+                .KeyName("Convert Cooldown", Translations.Options.ConvertCooldown)
                 .AddFloatRange(15f, 120f, 5f, 9, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(convertCooldown.SetDuration)
                 .Build())
-            .SubOption(sub => sub.Name("Immune to Partially Converted")
+            .SubOption(sub => sub
+                .KeyName("Immune to Partially Converted", Translations.Options.PartialConvertImmunity)
                 .AddOnOffValues()
                 .BindBool(b => immuneToPartialConverted = b)
                 .Build());
+
+    protected override List<CustomRole> LinkedRoles() => base.LinkedRoles().Concat(new List<CustomRole>() { _deathknight }).ToList();
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(0.61f, 0.53f, 0.67f))
             .CanVent(false)
             .OptionOverride(new IndirectKillCooldown(convertCooldown.Duration))
-            .LinkedRoles(_deathknight);
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
+
+    [Localized(nameof(Necromancer))]
+    public static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(ConvertCooldown))]
+            public static string ConvertCooldown = "Convert Cooldown";
+
+            [Localized(nameof(PartialConvertImmunity))]
+            public static string PartialConvertImmunity = "Immune to Partially Converted";
+        }
+    }
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Lotus.API.Odyssey;
 using Lotus.GUI.Name.Interfaces;
 using UnityEngine;
 
@@ -28,4 +29,5 @@ public class Ubifix
     });
 
     public override string ToString() => liveString.ToString();
+    public string GetValue(GameState state) => liveString.GetValue(state);
 }

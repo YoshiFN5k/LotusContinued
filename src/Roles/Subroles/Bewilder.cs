@@ -4,23 +4,24 @@ using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Extensions;
 using Lotus.GUI.Name;
+using Lotus.Roles.Internals.Enums;
 using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name.Holders;
 using Lotus.Statuses;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.Subroles;
 
-public class Bewilder: Subrole
+public class Bewilder : Subrole
 {
     private float visionMultiplier;
     public override string Identifier() => "<size=2.3>⁂</size>";
 
-    [RoleAction(RoleActionType.MyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath)]
     private void BewilderDies(PlayerControl killer, Optional<FrozenPlayer> realKiller)
     {
         if (realKiller.Exists()) killer = realKiller.Get().MyPlayer;
@@ -31,12 +32,12 @@ public class Bewilder: Subrole
 
 
         Game.MatchData.Roles.AddOverride(killer.PlayerId, optionOverride);
-        killer.GetCustomRole().SyncOptions();
+        killer.PrimaryRole().SyncOptions();
         string name = killer.name;
         killer.NameModel().GCH<IndicatorHolder>().Add(new SimpleIndicatorComponent(Identifier(), RoleColor, GameState.Roaming, killer));
 
         CustomStatus status = CustomStatus.Of(Translations.BewilderedStatus).Description(Translations.BewilderedDescription).Color(RoleColor).StatusFlags(StatusFlag.Hidden).Build();
-        MatchData.AddStatus(killer, status, MyPlayer);
+        Game.MatchData.AddStatus(killer, status, MyPlayer);
     }
 
 
@@ -51,19 +52,15 @@ public class Bewilder: Subrole
 
 
     [Localized(nameof(Bewilder))]
-    private static class Translations
+    public static class Translations
     {
-        [Localized(nameof(BewilderedStatus))]
-        public static string BewilderedStatus = "Bewildered";
-
-        [Localized(nameof(BewilderedDescription))]
-        public static string BewilderedDescription = "The Bewildered status reduces your vision by a specific multiplier.";
+        [Localized(nameof(BewilderedDescription))] public static string BewilderedDescription = "The Bewildered status reduces your vision by a specific multiplier.";
+        [Localized(nameof(BewilderedStatus))] public static string BewilderedStatus = "Bewildered";
 
         [Localized(ModConstants.Options)]
         public static class Options
         {
-            public static string VisionMultiplier = "Vision Multiplier";
+            [Localized(nameof(VisionMultiplier))] public static string VisionMultiplier = "Vision Multiplier";
         }
     }
-
 }

@@ -14,12 +14,13 @@ using Lotus.Managers.History.Events;
 using Lotus.Roles.Events;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Utilities;
 using Lotus.Extensions;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
@@ -55,7 +56,7 @@ public class Arsonist : NeutralKillingBase
     [UIComponent(UI.Text)]
     private string DisplayWin() => dousedPlayers.Count >= backedAlivePlayers ? RoleColor.Colorize(Translations.PressIgniteToWinMessage) : "";
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public new bool TryKill(PlayerControl target)
     {
         bool douseAttempt = MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this)) is InteractionResult.Proceed;
@@ -83,14 +84,14 @@ public class Arsonist : NeutralKillingBase
         if (progress > requiredAttacks) return;
         string indicator = _douseProgressIndicators[Mathf.Clamp(Mathf.FloorToInt(progress / (requiredAttacks / (float)_douseProgressIndicators.Length) - 1), 0, 3)];
 
-        Remote<IndicatorComponent> IndicatorSupplier() => target.NameModel().GetComponentHolder<IndicatorHolder>().Add(new IndicatorComponent("", GameStates.IgnStates, viewers: MyPlayer));
+        Remote<IndicatorComponent> IndicatorSupplier() => target.NameModel().GetComponentHolder<IndicatorHolder>().Add(new IndicatorComponent("", Game.InGameStates, viewers: MyPlayer));
 
         Remote<IndicatorComponent> component = indicators.GetOrCompute(target.PlayerId, IndicatorSupplier);
         component.Get().SetMainText(new LiveString(indicator, RoleColor));
     }
 
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     private void KillDoused() => dousedPlayers.Filter(p => Utils.PlayerById(p)).Where(p => p.IsAlive()).Do(p =>
     {
         if (dousedPlayers.Count < CountAlivePlayers() && !canIgniteAnyitme) return;
@@ -100,18 +101,18 @@ public class Arsonist : NeutralKillingBase
         _incineratedPlayers.Update(MyPlayer.UniquePlayerId(), i => i + 1);
     });
 
-    [RoleAction(RoleActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundStart)]
     protected override void PostSetup()
     {
         knownAlivePlayers = CountAlivePlayers();
         dousedPlayers.RemoveWhere(p => Utils.PlayerById(p).Transform(pp => !pp.IsAlive(), () => true));
     }
 
-    [RoleAction(RoleActionType.Disconnect)]
-    [RoleAction(RoleActionType.AnyDeath)]
+    [RoleAction(LotusActionType.Disconnect)]
+    [RoleAction(LotusActionType.PlayerDeath, ActionFlag.GlobalDetector)]
     private int CountAlivePlayers() => backedAlivePlayers = Players.GetPlayers(PlayerFilter.Alive | PlayerFilter.NonPhantom).Count(p => p.PlayerId != MyPlayer.PlayerId && Relationship(p) is not Relation.FullAllies);
 
-    [RoleAction(RoleActionType.MyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath)]
     private void ArsonistDies() => indicators.Values.ForEach(v => v.Delete());
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
@@ -129,10 +130,12 @@ public class Arsonist : NeutralKillingBase
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleColor(new Color(1f, 0.4f, 0.2f))
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
+            .IntroSound(AmongUs.GameOptions.RoleTypes.Crewmate)
             .RoleAbilityFlags(RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.CannotVent);
 
     [Localized(nameof(Arsonist))]
-    private static class Translations
+    public static class Translations
     {
         [Localized(nameof(IncineratedDeathName))]
         public static string IncineratedDeathName = "Incinerated";

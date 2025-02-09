@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
-using Lotus.API;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Factions;
 using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name.Holders;
@@ -28,20 +28,20 @@ public class NeutWitch : NeutralKillingBase
     protected override void Setup(PlayerControl player) => cursedPlayers = new List<PlayerControl>();
     protected override void PostSetup() => remotes = new Dictionary<byte, Remote<IndicatorComponent>>();
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target)
     {
         if (MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this)) is InteractionResult.Halt) return false;
 
         cursedPlayers.Add(target);
         remotes.GetValueOrDefault(target.PlayerId)?.Delete();
-        IndicatorComponent component = new SimpleIndicatorComponent("◆", new Color(0.36f, 0f, 0.58f), GameStates.IgnStates, MyPlayer);
+        IndicatorComponent component = new SimpleIndicatorComponent("◆", new Color(0.36f, 0f, 0.58f), Game.InGameStates, MyPlayer);
         remotes[target.PlayerId] = target.NameModel().GetComponentHolder<IndicatorHolder>().Add(component);
         MyPlayer.RpcMark(target);
         return true;
     }
 
-    [RoleAction(RoleActionType.FixedUpdate)]
+    [RoleAction(LotusActionType.FixedUpdate)]
     private void PuppeteerKillCheck()
     {
         double elapsed = (DateTime.Now - lastCheck).TotalSeconds;
@@ -50,16 +50,17 @@ public class NeutWitch : NeutralKillingBase
         foreach (PlayerControl player in new List<PlayerControl>(cursedPlayers))
         {
 
-            if (player.Data.IsDead) {
+            if (player.Data.IsDead)
+            {
                 RemovePuppet(player);
                 continue;
             }
             List<PlayerControl> inRangePlayers = player.GetPlayersInAbilityRangeSorted().Where(p => p.Relationship(MyPlayer) is not Relation.FullAllies).ToList();
             if (inRangePlayers.Count == 0) continue;
-            player.RpcMurderPlayer(inRangePlayers.GetRandom());
+            player.RpcMurderPlayer(inRangePlayers.GetRandom(), true);
             RemovePuppet(player);
         }
-        
+
 
         cursedPlayers.Where(p => p.Data.IsDead).ToArray().Do(RemovePuppet);
     }

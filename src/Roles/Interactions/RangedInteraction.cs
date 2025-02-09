@@ -6,7 +6,7 @@ public class RangedInteraction : LotusInteraction, IRangedInteraction
 {
     private readonly float distance;
 
-    public RangedInteraction(Intent intent, float distance, CustomRole customRole) : base(intent, customRole)
+    public RangedInteraction(Intent intent, float distance, CustomRole roleDefinition) : base(intent, roleDefinition)
     {
         this.distance = distance;
     }

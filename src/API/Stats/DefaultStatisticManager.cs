@@ -5,7 +5,6 @@ using System.Text.Json;
 using Lotus.API.Player;
 using Lotus.API.Reactive;
 using Lotus.Managers;
-using VentLib.Logging;
 using VentLib.Options;
 using VentLib.Utilities.Extensions;
 
@@ -13,6 +12,8 @@ namespace Lotus.API.Stats;
 
 sealed class DefaultStatisticManager : Statistics
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(DefaultStatisticManager));
+
     private FileInfo? file;
     private const string CachePlayerStatsHookHey = nameof(CachePlayerStatsHookHey);
     private static readonly Dictionary<string, Statistic> BoundStatistics = new();
@@ -59,20 +60,21 @@ sealed class DefaultStatisticManager : Statistics
 
     private void CachePlayerStats()
     {
-        VentLogger.Info("Caching player stats");
-        if (file == null) return;
-        Dictionary<string, Dictionary<string, string>> jsonStatistics = new();
-        trackedStatistics.ForEach(kv =>
-        {
-            if (kv.Value is not IJsonStats jsonStats) return;
-            VentLogger.Info($"Stats: {jsonStats}");
-            jsonStatistics[kv.Key] = jsonStats.ToJsonDict();
-        });
+        log.Info("Not caching player stats because that crashes the game.");
+        // log.Info("Caching player stats");
+        // if (file == null) return;
+        // Dictionary<string, Dictionary<string, string>> jsonStatistics = new();
+        // trackedStatistics.ForEach(kv =>
+        // {
+        //     if (kv.Value is not IJsonStats jsonStats) return;
+        //     log.Trace($"Stats: {jsonStats}");
+        //     jsonStatistics[kv.Key] = jsonStats.ToJsonDict();
+        // });
 
-        StatisticDump dump = new() { Statistics = jsonStatistics };
-        string json = JsonSerializer.Serialize(dump);
-        StreamWriter writer = file.OpenWriter(fileMode: FileMode.Create);
-        writer.Write(json);
-        writer.Close();
+        // StatisticDump dump = new() { Statistics = jsonStatistics };
+        // string json = JsonSerializer.Serialize(dump);
+        // StreamWriter writer = file.OpenWriter(fileMode: FileMode.Create);
+        // writer.Write(json);
+        // writer.Close();
     }
 }

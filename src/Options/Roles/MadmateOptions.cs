@@ -1,8 +1,9 @@
+using System.Collections.Generic;
 using Lotus.Extensions;
 using Lotus.Factions;
 using Lotus.Utilities;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Options.Roles;
 
@@ -15,30 +16,36 @@ public class MadmateOptions
 
     string GColor(string input) => TranslationUtil.Colorize(input, ModConstants.Palette.MadmateColor);
 
+    public List<GameOption> AllOptions = new();
+
     public MadmateOptions()
     {
-        new GameOptionTitleBuilder().Title($"<size=2.3>★ {FactionInstances.Madmates.Name()} ★</size>")
+        AllOptions.Add(new GameOptionTitleBuilder().Title($"★ {FactionInstances.Madmates.Name()} ★")
             .Color(ModConstants.Palette.MadmateColor)
-            .Tab(DefaultTabs.ImpostorsTab)
-            .Build();
+            // .Tab(DefaultTabs.ImpostorsTab)
+            .Build());
 
-        Builder("Madmates Take Impostor Slots")
+        AllOptions.Add(new GameOptionBuilder()
+            .AddBoolean()
+            .Builder("Madmates Take Impostor Slots")
             .Name(GColor(Translations.MadmatesTakeImpostorSlots))
             .IsHeader(true)
-            .AddOnOffValues()
             .BindBool(b => MadmatesTakeImpostorSlots = b)
+            // .Tab(DefaultTabs.ImpostorsTab)
             .ShowSubOptionPredicate(b => !(bool)b)
             .SubOption(sub2 => sub2.KeyName("Minimum Madmates", GColor(Translations.MinimumMadmates))
-                .AddIntRange(0, 15, 1)
+                .AddIntRange(0, ModConstants.MaxPlayers, 1)
                 .BindInt(i => MinimumMadmates = i)
                 .Build())
-            .BuildAndRegister();
+            .Build());
 
-        Builder("Maximum Madmates")
+        AllOptions.Add(new GameOptionBuilder()
+            .AddIntRange(0, ModConstants.MaxPlayers, 1)
+            .Builder("Maximum Madmates")
             .Name(GColor(Translations.MaximumMadmates))
-            .AddIntRange(0, 15, 1)
+            .Tab(DefaultTabs.ImpostorsTab)
             .BindInt(i => MaximumMadmates = i)
-            .BuildAndRegister();
+            .Build());
     }
 
     private static GameOptionBuilder Builder(string key) => new GameOptionBuilder().Key(key).Tab(DefaultTabs.ImpostorsTab);

@@ -1,110 +1,128 @@
-using System;
-using System.Linq;
-using HarmonyLib;
-using Lotus.API.Odyssey;
-using Lotus.Managers;
-using Lotus.Roles;
-using Lotus.Utilities;
-using Lotus.API;
-using UnityEngine;
-using VentLib.Localization.Attributes;
-using VentLib.Options;
-using VentLib.Options.Game;
-using VentLib.Utilities;
-using VentLib.Utilities.Extensions;
+// using System;
+// using System.Linq;
+// using HarmonyLib;
+// using Lotus.API.Odyssey;
+// using Lotus.Logging;
+// using Lotus.Roles;
+// using Lotus.Roles.Builtins;
+// using Lotus.Roles.Internals.Enums;
+// using Lotus.Utilities;
+// using Lotus.Options;
+// using UnityEngine;
+// using VentLib.Localization.Attributes;
+// using VentLib.Options;
+// using VentLib.Options.UI;
+// using VentLib.Utilities;
+// using VentLib.Utilities.Extensions;
 
-namespace Lotus.Options;
+// namespace Lotus.Options;
 
-[Localized("OptionShower")]
-public class ShowerPages
-{
-    [Localized("ActiveRolesList")]
-    private static string ActiveRolesList = "Active Roles List";
+// [Localized("OptionShower")]
+// public class ShowerPages
+// {
+//     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(ShowerPages));
 
-    public static void InitPages()
-    {
-        OptionShower shower = OptionShower.GetOptionShower();
-        shower.AddPage(VanillaPage());
-        shower.AddPage(EnabledRolePage());
-        shower.AddPage(RoleOptionsPage());
-        shower.AddPage(EnableGeneralPage());
-    }
+//     [Localized("ActiveRolesList")]
+//     private static string ActiveRolesList = "Active Roles List";
 
-    private static Func<string> VanillaPage()
-    {
-        return () => GameOptionsManager.Instance.CurrentGameOptions.ToHudString(GameData.Instance
-            ? GameData.Instance.PlayerCount
-            : 10) + "\n";
-    }
+//     public static void InitPages()
+//     {
+//         OptionShower shower = OptionShower.GetOptionShower();
+//         shower.AddPage(VanillaPage());
+//         shower.AddPage(EnabledRolePage());
+//         shower.AddPage(RoleOptionsPage());
+//         shower.AddPage(EnableGeneralPage());
+//     }
 
-    private static Func<string> EnabledRolePage()
-    {
-        return () =>
-        {
-            string content = $"Gamemode: {Game.CurrentGamemode.GetName()}\n\n";
-            content += $"{CustomRoleManager.Special.GM.RoleColor.Colorize("GM")}: {Utils.GetOnOffColored(GeneralOptions.AdminOptions.HostGM)}\n\n";
-            content += ActiveRolesList + "\n";
+//     private static Func<string> VanillaPage()
+//     {
+//         return () => GameOptionsManager.Instance.CurrentGameOptions.ToHudString(GameData.Instance
+//             ? GameData.Instance.PlayerCount
+//             : 10) + "\n";
+//     }
 
-            CustomRoleManager.MainRoles.Where(role => role.IsEnabled()).ForEach(role =>
-            {
-                Color color = role.RoleColor;
-                content += $"{color.Colorize(role.RoleName)}: {role.Chance}% x {role.Count}\n";
-            });
-            return content;
-        };
-    }
+//     private static Func<string> EnabledRolePage()
+//     {
+//         return () =>
+//         {
+//             DevLogger.Log("Enabled Role Page");
+//             string content = $"GameMode: {Game.CurrentGameMode.Name}\n\n";
+//             content += $"{GameMaster.GMColor.Colorize("GM")}: {Utils.GetOnOffColored(GeneralOptions.AdminOptions.HostGM)}\n\n";
+//             content += ActiveRolesList + "\n";
 
-    public static Func<string> RoleOptionsPage()
-    {
-        return () =>
-        {
-            var content = "";
-            CustomRoleManager.MainRoles.Where(role => role.IsEnabled()).ForEach(role =>
-            {
-                var opt = role.RoleOptions;
-                content += $"{opt.Name()}: {opt.GetValueText()}\n";
-                if (opt.Children.Matches(opt.GetValue()))
-                    content = ShowChildren(opt, opt.Color, content);
-                content += "\n";
-            });
-            return content;
-        };
-    }
+//             //TODO: Not(LotusRoleType.Internals)
+//             IRoleManager.Current.RoleDefinitions().Where(role => role.IsEnabled()).ForEach(role =>
+//             {
+//                 Color color = role.RoleColor;
+//                 content += $"{color.Colorize(role.RoleName)}: {role.Chance}% x {role.Count}\n";
+//             });
+//             return content;
+//         };
+//     }
 
-    private static Func<string> EnableGeneralPage()
-    {
-        return () =>
-        {
-            string optionString = "";
-            var optionManager = OptionManager.GetManager();
+//     public static Func<string> RoleOptionsPage()
+//     {
+//         return () =>
+//         {
+//             DevLogger.Log("Role Option Page");
+//             var content = "";
+//             IRoleManager.Current.RoleDefinitions().Where(role => role.IsEnabled()).ForEach(role =>
+//             {
+//                 var opt = role.OptionConsolidator.GetOption();
+//                 content += $"{opt.Name()}: {opt.GetValueText()}\n";
+//                 if (opt.Children.Matches(opt.GetValue()))
+//                     content = ShowChildren(opt, opt.Color, content);
+//                 content += "\n";
+//             });
+//             return content;
+//         };
+//     }
 
-            optionManager.GetOptions().Where(opt => opt.GetType() == typeof(GameOption)).Cast<GameOption>().Do(opt =>
-            {
-                CustomRole? matchingRole = CustomRoleManager.AllRoles.FirstOrDefault(r => r.RoleOptions == opt);
+//     private static Func<string> EnableGeneralPage()
+//     {
+//         return () =>
+//         {
+//             string optionString = "";
+//             var optionManager = OptionManager.GetManager();
 
-                if (matchingRole != null) return;
+//             optionManager.GetOptions().Where(opt => opt.GetType() == typeof(GameOption)).Cast<GameOption>().Do(opt =>
+//             {
+//                 CustomRole? matchingRole = IRoleManager.Current.RoleDefinitions().FirstOrDefault(r =>
+//                 {
+//                     try
+//                     {
+//                         return r.OptionConsolidator.GetOption() == opt;
+//                     }
+//                     catch (Exception e)
+//                     {
+//                         log.Exception(e);
+//                         return false;
+//                     }
+//                 });
 
-                optionString += $"{opt.Name()}: {opt.GetValueText()}\n";
-                if (opt.Children.Matches(opt.GetValue()))
-                    optionString = ShowChildren(opt, opt.Color, optionString);
-                optionString += "\n";
-            });
+//                 if (matchingRole != null) return;
 
-            return optionString;
-        };
-    }
+//                 optionString += $"{opt.Name()}: {opt.GetValueText()}\n";
+//                 if (opt.Children.Matches(opt.GetValue()))
+//                     optionString = ShowChildren(opt, opt.Color, optionString);
+//                 optionString += "\n";
+//             });
 
-    private static string ShowChildren(GameOption option, Color color, string text)
-    {
+//             return optionString;
+//         };
+//     }
 
-        option.Children.Cast<GameOption>().ForEach((opt, index) =>
-        {
-            if (opt.Name() == "Maximum") return;
-            text += color.Colorize("┃".Repeat(option.Level - 2));
-            text += color.Colorize(index == option.Children.Count - 1 ? "┗ " : "┣ ");
-            text += $"{opt.Name()}: {opt.GetValueText()}\n";
-            if (opt.Children.Matches(opt.GetValue())) text = ShowChildren(opt, color, text);
-        });
-        return text;
-    }
-}
+//     private static string ShowChildren(GameOption option, Color color, string text)
+//     {
+
+//         option.Children.Cast<GameOption>().ForEach((opt, index) =>
+//         {
+//             if (opt.Name() == "Maximum") return;
+//             text += color.Colorize("┃".Repeat(option.Level - 2));
+//             text += color.Colorize(index == option.Children.Count - 1 ? "┗ " : "┣ ");
+//             text += $"{opt.Name()}: {opt.GetValueText()}\n";
+//             if (opt.Children.Matches(opt.GetValue())) text = ShowChildren(opt, color, text);
+//         });
+//         return text;
+//     }
+// }

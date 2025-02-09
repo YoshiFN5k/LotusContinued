@@ -5,29 +5,30 @@ using Lotus.API.Odyssey;
 using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
 using Lotus.Managers;
-using Lotus.Options;
 using Lotus.Roles.Internals;
-using Lotus.Roles.Internals.Attributes;
-using Lotus.Utilities;
-using Lotus.API;
 using Lotus.Extensions;
 using Lotus.Logging;
-using VentLib.Logging;
+using Lotus.Roles.Internals.Enums;
+using Lotus.Roles.Operations;
+using Lotus.Options;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 
 namespace Lotus.Chat.Patches;
 
 [HarmonyPatch(typeof(ChatController), nameof(ChatController.AddChat))]
-internal static class OnChatPatch
+public static class OnChatPatch
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(OnChatPatch));
+
     internal static List<byte> UtilsSentList = new();
-    internal static bool EatMessage;
+    public static bool EatMessage;
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    internal static bool Prefix(ChatController __instance, PlayerControl sourcePlayer, string chatText)
+    internal static bool Prefix(ChatController __instance, PlayerControl sourcePlayer, string chatText, bool censor)
     {
-        VentLogger.Log(LogLevel.All, $"{sourcePlayer.name} => {chatText}");
+        log.Log(LogLevel.All, $"{sourcePlayer.name} => {chatText.Replace("\\", "(backwards slash here)")}"); // fix "\" crash. cant believe this crashes the game.
+        if (!AmongUsClient.Instance.AmHost || censor == false) return true;
         if (UtilsSentList.Contains(sourcePlayer.PlayerId))
         {
             UtilsSentList.RemoveAt(UtilsSentList.FindIndex(b => b == sourcePlayer.PlayerId));
@@ -41,7 +42,7 @@ internal static class OnChatPatch
             EatMessage = false;
             if (Game.State is GameState.InLobby) return !eat;
             ActionHandle handle = ActionHandle.NoInit();
-            Game.TriggerForAll(RoleActionType.Chat, ref handle, sourcePlayer, chatText, Game.State, sourcePlayer.IsAlive());
+            RoleOperations.Current.TriggerForAll(LotusActionType.Chat, sourcePlayer, handle, chatText, Game.State, sourcePlayer.IsAlive());
             return !eat;
         }
         AmongUsClient.Instance.KickPlayer(sourcePlayer.GetClientId(), false);

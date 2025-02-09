@@ -1,15 +1,22 @@
 using System.Collections.Generic;
 using Lotus.Options.General;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Attributes;
+using VentLib.Options;
+using System.Linq;
+using VentLib.Utilities.Extensions;
 
 namespace Lotus.Options;
 
 [Localized(ModConstants.Options)]
 [LoadStatic]
-public class GeneralOptions
+public static class GeneralOptions
 {
+    public static OptionManager StandardOptionManager = OptionManager.GetManager(file: "standard.txt");
+    public static OptionManager CaptureOptionManager = OptionManager.GetManager(file: "ctf.txt");
+    public static OptionManager ColorwarsOptionManager = OptionManager.GetManager(file: "colorwars.txt");
+
     public static AdminOptions AdminOptions;
     public static DebugOptions DebugOptions;
     public static GameplayOptions GameplayOptions;
@@ -18,28 +25,35 @@ public class GeneralOptions
     public static MiscellaneousOptions MiscellaneousOptions;
     public static SabotageOptions SabotageOptions;
 
-    public static List<GameOption> AllOptions = new();
+    public static List<GameOption> StandardOptions = new();
 
     static GeneralOptions()
     {
         AdminOptions = new AdminOptions();
+        // StandardOptions.AddRange(AdminOptions.AllOptions);
 
         GameplayOptions = new GameplayOptions();
-        AllOptions.AddRange(GameplayOptions.AllOptions);
+        StandardOptions.AddRange(GameplayOptions.AllOptions);
 
         SabotageOptions = new SabotageOptions();
-        AllOptions.AddRange(SabotageOptions.AllOptions);
+        StandardOptions.AddRange(SabotageOptions.AllOptions);
 
         MeetingOptions = new MeetingOptions();
-        AllOptions.AddRange(MeetingOptions.AllOptions);
+        StandardOptions.AddRange(MeetingOptions.AllOptions);
 
         MayhemOptions = new MayhemOptions();
-        AllOptions.AddRange(MayhemOptions.AllOptions);
+        StandardOptions.AddRange(MayhemOptions.AllOptions);
 
         MiscellaneousOptions = new MiscellaneousOptions();
-        AllOptions.AddRange(MiscellaneousOptions.AllOptions);
+        // StandardOptions.AddRange(MiscellaneousOptions.AllOptions);
 
         DebugOptions = new DebugOptions();
-        AllOptions.AddRange(DebugOptions.AllOptions);
+        // StandardOptions.AddRange(DebugOptions.AllOptions);
+
+        StandardOptions.AddRange(RoleOptions.LoadMadmateOptions().AllOptions);
+        StandardOptions.AddRange(RoleOptions.LoadNeutralOptions().AllOptions);
+        StandardOptions.AddRange(RoleOptions.LoadSubroleOptions().AllOptions);
+
+        StandardOptions.Where(o => !o.Attributes.ContainsKey("Title")).ForEach(o => StandardOptionManager.Register(o, OptionLoadMode.LoadOrCreate));
     }
 }

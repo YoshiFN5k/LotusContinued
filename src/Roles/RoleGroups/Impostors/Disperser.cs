@@ -4,6 +4,7 @@ using HarmonyLib;
 using Lotus.API.Odyssey;
 using Lotus.GUI;
 using Lotus.GUI.Name;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Utilities;
@@ -12,29 +13,30 @@ using Lotus.Extensions;
 using Lotus.Options;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
+using Lotus.API.Player;
 
 namespace Lotus.Roles.RoleGroups.Impostors;
 
-public class Disperser: Impostor
+public class Disperser : Impostor
 {
     private bool disperserDispersed;
 
     [UIComponent(UI.Cooldown)]
     private Cooldown abilityCooldown;
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public new bool TryKill(PlayerControl target) => base.TryKill(target);
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     private void DispersePlayers()
     {
         if (abilityCooldown.NotReady()) return;
         abilityCooldown.Start();
         List<Vent> vents = Object.FindObjectsOfType<Vent>().ToList();
         if (vents.Count == 0) return;
-        Game.GetAlivePlayers()
+        Players.GetAlivePlayers()
             .Where(p => disperserDispersed || p.PlayerId != MyPlayer.PlayerId)
             .Do(p =>
             {
@@ -54,6 +56,10 @@ public class Disperser: Impostor
                 .AddOnOffValues()
                 .BindBool(b => disperserDispersed = b)
                 .Build());
+
+    protected override RoleModifier Modify(RoleModifier roleModifier) =>
+        base.Modify(roleModifier)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
 
     [Localized(nameof(Disperser))]

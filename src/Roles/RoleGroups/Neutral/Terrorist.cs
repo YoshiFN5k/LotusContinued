@@ -6,8 +6,10 @@ using Lotus.Extensions;
 using Lotus.Roles.Internals;
 using Lotus.Victory.Conditions;
 using UnityEngine;
+using Lotus.Roles.Internals.Enums;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
+using System.Linq;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
@@ -19,14 +21,14 @@ public class Terrorist : Engineer
 
     public override bool TasksApplyToTotal() => false;
 
-    [RoleAction(RoleActionType.MyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath)]
     private void OnTerroristDeath(PlayerControl killer)
     {
         if (killer.PlayerId == MyPlayer.PlayerId && !canWinBySuicide) return;
         TerroristWinCheck();
     }
 
-    [RoleAction(RoleActionType.SelfExiled)]
+    [RoleAction(LotusActionType.Exiled)]
     private void OnExiled()
     {
         if (canWinByExiled) TerroristWinCheck();
@@ -37,6 +39,8 @@ public class Terrorist : Engineer
         if (!HasAllTasksComplete) return;
         ManualWin.Activate(MyPlayer, ReasonType.TasksComplete, 900);
     }
+
+    protected override string ForceRoleImageDirectory() => "Lotus.assets.RoleImages.Neutral.terrorist";
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         AddTaskOverrideOptions(base.RegisterOptions(optionStream)
@@ -57,7 +61,8 @@ public class Terrorist : Engineer
             .RoleColor(new Color(0.52f, 0.84f, 0.28f))
             .RoleFlags(RoleFlag.CannotWinAlone)
             .Faction(FactionInstances.Neutral)
-            .SpecialType(SpecialType.Neutral);
+            .SpecialType(SpecialType.Neutral)
+            .IntroSound(() => ShipStatus.Instance.CommonTasks.FirstOrDefault(task => task.TaskType == TaskTypes.FixWiring)?.MinigamePrefab.OpenSound ?? null);
 
     [Localized(nameof(Terrorist))]
     internal static class TerroristTranslations

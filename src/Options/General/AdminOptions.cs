@@ -1,28 +1,35 @@
 using System.Collections.Generic;
-using Lotus.Managers;
+using System.Linq;
+using Lotus;
 using Lotus.Extensions;
 using Lotus.GUI;
-using Lotus.Logging;
+using Lotus.Options;
 using Lotus.Patches.Network;
+using Lotus.Roles.Builtins;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
 using VentLib.Options.IO;
+using VentLib.Options.UI;
+using VentLib.Utilities.Extensions;
 
 namespace Lotus.Options.General;
 
 [Localized(ModConstants.Options)]
 public class AdminOptions
 {
-    private static Color _optionColor = CustomRoleManager.Special.GM.RoleColor;
+    private static Color _optionColor = GameMaster.GMColor;
     private static List<GameOption> additionalOptions = new();
 
     // ReSharper disable once InconsistentNaming
     public bool HostGM;
+    public bool SpectatorMode;
+    public float AutoHauntCooldown;
+
     public bool AutoKick;
     public bool KickPlayersWithoutFriendcodes;
     public int KickPlayersUnderLevel;
     public bool KickMobilePlayers;
+    public bool EnableWhitelist;
 
     public int AutoStartPlayerThreshold;
     public int AutoStartMaxTime = -1;
@@ -36,48 +43,72 @@ public class AdminOptions
     public AdminOptions()
     {
         AllOptions.Add(new GameOptionTitleBuilder()
-            .Tab(DefaultTabs.GeneralTab)
             .Title(AdminOptionTranslations.AdminTitle)
             .Color(_optionColor)
             .IsHeader(false)
             .Build());
 
-        AllOptions.Add(Builder("HostGM")
-            .Name(AdminOptionTranslations.HostGmText)
-            .AddOnOffValues(false)
+        AllOptions.Add(new GameOptionBuilder()
+            .AddBoolean(false)
+            .KeyName("Host GM", AdminOptionTranslations.HostGmText)
+            .Color(_optionColor)
             .BindBool(b => HostGM = b)
             .IsHeader(true)
-            .BuildAndRegister());
+            .ShowSubOptionPredicate(v => (bool)v)
+            .SubOption(sub => sub
+                .KeyName("Spectator Mode", AdminOptionTranslations.SpectatorMode)
+                .AddBoolean()
+                .BindBool(b => SpectatorMode = b)
+                .ShowSubOptionPredicate(v => (bool)v)
+                .SubOption(sub2 => sub2
+                    .KeyName("Auto Haunt Cooldown", AdminOptionTranslations.AutoHauntCooldown)
+                    .AddFloatRange(2.5f, 60f, 2.5f, 9, "s")
+                    .BindFloat(v => AutoHauntCooldown = v)
+                    .Build())
+                .Build())
+            .Build());
 
         // TODO: repeat offenders
-        AllOptions.Add(Builder("Chat AutoKick")
+        AllOptions.Add(new GameOptionBuilder()
+            .AddBoolean()
+            .Builder("Chat AutoKick", _optionColor)
             .Name(AdminOptionTranslations.AutoKickText)
-            .AddEnableDisabledValues()
             .BindBool(b => AutoKick = b)
-            .BuildAndRegister());
+            .Build());
 
-        AllOptions.Add(Builder("Kick Players Without Friendcode")
+        AllOptions.Add(new GameOptionBuilder()
+            .AddBoolean(false)
+            .Builder("Kick Players Without Friendcode", _optionColor)
             .Name(AdminOptionTranslations.AutoKickNoFriendCodeText)
-            .AddEnableDisabledValues(false)
             .BindBool(b => KickPlayersWithoutFriendcodes = b)
-            .BuildAndRegister());
+            .Build());
 
-        AllOptions.Add(Builder("Kick Players Under Level")
-            .Name(AdminOptionTranslations.AutoKickUnderLevel)
-            .Value(v => v.Text(GeneralOptionTranslations.DisabledText).Value(0).Color(Color.red).Build())
+        AllOptions.Add(new GameOptionBuilder()
+            .Builder("Kick Players Under Level", _optionColor)
             .AddIntRange(1, 100, 1)
+            .Value(v => v.Text(GeneralOptionTranslations.DisabledText).Value(0).Color(Color.red).Build())
+            .Name(AdminOptionTranslations.AutoKickUnderLevel)
             .BindInt(i => KickPlayersUnderLevel = i)
-            .BuildAndRegister());
+            .Build());
 
-        AllOptions.Add(Builder("Kick Mobile Players")
+        AllOptions.Add(new GameOptionBuilder()
+            .Builder("Kick Mobile Players", _optionColor)
             .Name(AdminOptionTranslations.AutoKickMobile)
-            .AddEnableDisabledValues(false)
+            .AddBoolean(false)
             .BindBool(b => KickMobilePlayers = b)
-            .BuildAndRegister());
+            .Build());
 
-        AllOptions.Add(Builder("Auto Start")
+        AllOptions.Add(new GameOptionBuilder()
+            .Builder("Enable Whitelist", _optionColor)
+            .Name(AdminOptionTranslations.EnableWhitelist)
+            .AddBoolean(false)
+            .BindBool(b => EnableWhitelist = b)
+            .Build());
+
+        AllOptions.Add(new GameOptionBuilder()
+            .Builder("Auto Start", _optionColor)
             .Name(AdminOptionTranslations.AutoStartText)
-            .AddOnOffValues(false)
+            .AddBoolean(false)
             .BindBool(b =>
             {
                 AutoStartEnabled = b;
@@ -85,16 +116,16 @@ public class AdminOptions
             })
             .ShowSubOptionPredicate(b => (bool)b)
             .SubOption(sub2 => sub2
-                .KeyName("Player Threshold", AdminOptionTranslations.AutoStartPlayerThreshold)
+                .AddIntRange(5, ModConstants.MaxPlayers, suffix: " " + AdminOptionTranslations.AutoStartSuffix)
                 .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(-1).Color(Color.red).Build())
-                .AddIntRange(5, 15, suffix: " " + AdminOptionTranslations.AutoStartSuffix)
+                .KeyName("Auto Start Player Threshold", AdminOptionTranslations.AutoStartPlayerThreshold)
                 .IOSettings(io => io.UnknownValueAction = ADEAnswer.Allow)
                 .BindInt(i => AutoStartPlayerThreshold = i)
                 .Build())
             .SubOption(sub2 => sub2
-                .KeyName("Maximum Wait Time", AdminOptionTranslations.AutoStartMaxWaitTime)
+                .AddIntRange(30, 540, ModConstants.MaxPlayers, 0, GeneralOptionTranslations.SecondsSuffix)
                 .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(-1).Color(Color.red).Build())
-                .AddIntRange(30, 540, 15, 0, GeneralOptionTranslations.SecondsSuffix)
+                .KeyName("Auto Start Max Wait Time", AdminOptionTranslations.AutoStartMaxWaitTime)
                 .IOSettings(io => io.UnknownValueAction = ADEAnswer.Allow)
                 .BindInt(i =>
                 {
@@ -110,23 +141,21 @@ public class AdminOptions
                 })
                 .Build())
             .SubOption(sub2 => sub2
-                .KeyName("Game Countdown", AdminOptionTranslations.AutoStartGameCountdown)
-                .AddIntRange(0, 20, 2, 5, GeneralOptionTranslations.SecondsSuffix)
+                .AddIntRange(4, 20, 2, 3, GeneralOptionTranslations.SecondsSuffix)
+                .KeyName("Auto Start Game Countdown", AdminOptionTranslations.AutoStartGameCountdown)
                 .BindInt(i => AutoStartGameCountdown = i)
                 .Build())
-            .BuildAndRegister());
+            .Build());
 
-        AllOptions.Add(Builder("Auto Play Again")
+        AllOptions.Add(new GameOptionBuilder()
+            .Builder("Auto Play Again", _optionColor)
             .Name(AdminOptionTranslations.AutoPlayAgain)
-            .AddEnableDisabledValues()
+            .AddBoolean()
             .BindBool(b => AutoPlayAgain = b)
-            .BuildAndRegister());
+            .Build());
 
-        additionalOptions.ForEach(o =>
-        {
-            o.Register();
-            AllOptions.Add(o);
-        });
+        AllOptions.AddRange(additionalOptions);
+        AllOptions.Where(o => !o.Attributes.ContainsKey("Title")).ForEach(o => GeneralOptions.StandardOptionManager.Register(o, VentLib.Options.OptionLoadMode.LoadOrCreate));
     }
 
     /// <summary>
@@ -138,8 +167,6 @@ public class AdminOptions
     {
         additionalOptions.Add(option);
     }
-
-    private GameOptionBuilder Builder(string key) => new GameOptionBuilder().Key(key).Tab(DefaultTabs.GeneralTab).Color(_optionColor);
 
     [Localized("Admin")]
     private class AdminOptionTranslations
@@ -180,11 +207,15 @@ public class AdminOptions
 
         [Localized(nameof(AutoPlayAgain))]
         public static string AutoPlayAgain = "Auto Play Again";
+
+        [Localized(nameof(SpectatorMode))]
+        public static string SpectatorMode = "Spectator Mode";
+
+        [Localized(nameof(AutoHauntCooldown))]
+        public static string AutoHauntCooldown = "Auto Haunt Cooldown";
+
+        [Localized(nameof(EnableWhitelist))]
+        public static string EnableWhitelist = "Enable Whitelist via Friendcode";
     }
-
-}
-
-public enum BannedMobileDevice
-{
 
 }

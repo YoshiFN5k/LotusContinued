@@ -6,6 +6,7 @@ using Lotus.API;
 using Lotus.API.Odyssey;
 using Lotus.Extensions;
 using Lotus.Factions;
+using Lotus.GameModes.Standard;
 using Lotus.GUI;
 using Lotus.GUI.Name;
 using Lotus.GUI.Name.Components;
@@ -14,22 +15,24 @@ using Lotus.Managers;
 using Lotus.Roles.Interfaces;
 using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Attributes;
-using Lotus.Roles.Legacy;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Subroles;
 using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Logging;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
+using VentLib.Utilities.Optionals;
 using Object = UnityEngine.Object;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
-public class Amalgamation: CustomRole
+public class Amalgamation : CustomRole
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Amalgamation));
     public static HashSet<Type> AmalgamationBannedModifier = new() { typeof(Oblivious), typeof(Sleuth) };
     public override HashSet<Type> BannedModifiers() => AmalgamationBannedModifier;
 
@@ -48,7 +51,7 @@ public class Amalgamation: CustomRole
     [UIComponent(UI.Indicator)]
     private string Arrows() => hasArrowsToBodies ? Object.FindObjectsOfType<DeadBody>()
         .Where(b => !Game.MatchData.UnreportableBodies.Contains(b.ParentId))
-        .Select(b => RoleUtils.CalculateArrow(MyPlayer, b.TruePosition, RoleColor)).Fuse("") : "";
+        .Select(b => RoleUtils.CalculateArrow(MyPlayer, b, RoleColor)).Fuse("") : "";
 
     protected override void PostSetup()
     {
@@ -58,39 +61,40 @@ public class Amalgamation: CustomRole
         rc.SetMainText(new LiveString(() => RoleColorGradient.Apply(RoleName)));
     }
 
-    [RoleAction(RoleActionType.SelfReportBody, priority: Priority.First)]
-    public void AmalgamationConsume(GameData.PlayerInfo reported, ActionHandle handle)
+    [RoleAction(LotusActionType.ReportBody, priority: Priority.First)]
+    public void AmalgamationConsume(Optional<NetworkedPlayerInfo> reported, ActionHandle handle)
     {
-        VentLogger.Trace($" Reported: {reported.GetNameWithRole()} | Self: {MyPlayer.name}", "");
+        if (!reported.Exists()) return;
+        log.Trace($" Reported: {reported.Get().GetNameWithRole()} | Self: {MyPlayer.name}", "");
 
         if (maxRoles != 0 && MyPlayer.GetSubroles().Count(sr => !sr.RoleFlags.HasFlag(RoleFlag.IsSubrole)) >= maxRoles) return;
-        if (personalUneportableBodies.Contains(reported.PlayerId)) return;
-        personalUneportableBodies.Add(reported.PlayerId);
+        if (personalUneportableBodies.Contains(reported.Get().PlayerId)) return;
+        personalUneportableBodies.Add(reported.Get().PlayerId);
 
-        CustomRole targetRole = reported.GetCustomRole();
+        CustomRole targetRole = reported.Get().GetPrimaryRole()!;
         Copycat.FallbackTypes.GetOptional(targetRole.GetType()).IfPresent(r => targetRole = r());
-        CustomRole newRole = CustomRoleManager.GetCleanRole(targetRole);
+        CustomRole newRole = ProjectLotus.GameModeManager.CurrentGameMode.RoleManager.GetCleanRole(targetRole);
 
         colorGradient.Add(newRole.RoleColor);
         RoleColorGradient = new ColorGradient(colorGradient.ToArray());
         if (newestRoleWinCondition || assignedRole == false)
         {
             assignedRole = true;
-            CustomRole myPlayerRole = MyPlayer.GetCustomRole();
-            MatchData.AssignRole(MyPlayer, newRole);
+            CustomRole myPlayerRole = MyPlayer.PrimaryRole();
+            Game.AssignRole(MyPlayer, newRole);
             MyPlayer.GetSubroles().Add(myPlayerRole);
             textRemote?.Delete();
-            textRemote = MyPlayer.NameModel().GCH<TextHolder>().Add(new TextComponent(new LiveString(newRole.RoleName, myPlayerRole.RoleColor), Game.IgnStates, ViewMode.Overriden, MyPlayer));
+            textRemote = MyPlayer.NameModel().GCH<TextHolder>().Add(new TextComponent(new LiveString(newRole.RoleName, myPlayerRole.RoleColor), Game.InGameStates, ViewMode.Overriden, MyPlayer));
             MyPlayer.NameModel().GCH<RoleHolder>().RemoveAt(MyPlayer.NameModel().GCH<RoleHolder>().Count - 1);
         }
         else
         {
-            MatchData.AssignSubrole(MyPlayer, newRole);
+            Game.AssignSubRole(MyPlayer, newRole);
             if (newRole is ISubrole) MyPlayer.NameModel().GCH<SubroleHolder>().RemoveLast();
             else MyPlayer.NameModel().GCH<RoleHolder>().RemoveLast();
         }
 
-        CustomRole role = MyPlayer.GetCustomRole();
+        CustomRole role = MyPlayer.PrimaryRole();
         role.DesyncRole = RoleTypes.Impostor;
         handle.Cancel();
     }
@@ -116,13 +120,15 @@ public class Amalgamation: CustomRole
                 .BindBool(b => absorbModifiers = b)
                 .Build());
 
+    protected override RoleType GetRoleType() => RoleType.Variation;
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         roleModifier
             .RoleColor(new Color(0.51f, 0.87f, 0.99f))
             .RoleFlags(RoleFlag.VariationRole | RoleFlag.CannotWinAlone)
             .RoleAbilityFlags(RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.CannotVent)
             .SpecialType(SpecialType.Neutral)
-            .DesyncRole(RoleTypes.Impostor)
+            .DesyncRole(ProjectLotus.AdvancedRoleAssignment ? RoleTypes.Impostor : RoleTypes.Crewmate)
             .Faction(FactionInstances.Neutral);
 
     [Localized(nameof(Amalgamation))]

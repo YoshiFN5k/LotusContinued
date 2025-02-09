@@ -9,6 +9,7 @@ using Lotus.GUI;
 using Lotus.GUI.Name;
 using Lotus.Options;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Victory.Conditions;
@@ -16,11 +17,12 @@ using Lotus.Extensions;
 using Lotus.Roles.Subroles;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using static Lotus.Roles.RoleGroups.Neutral.Vulture.Translations.Options;
 using Object = UnityEngine.Object;
+using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
@@ -49,19 +51,20 @@ public class Vulture : CustomRole
     [UIComponent(UI.Indicator)]
     private string Arrows() => hasArrowsToBodies ? Object.FindObjectsOfType<DeadBody>()
         .Where(b => !Game.MatchData.UnreportableBodies.Contains(b.ParentId))
-        .Select(b => RoleUtils.CalculateArrow(MyPlayer, b.TruePosition, RoleColor)).Fuse("") : "";
+        .Select(b => RoleUtils.CalculateArrow(MyPlayer, b, RoleColor)).Fuse("") : "";
 
-    [RoleAction(RoleActionType.SelfReportBody)]
-    private void EatBody(GameData.PlayerInfo body, ActionHandle handle)
+    [RoleAction(LotusActionType.ReportBody)]
+    private void EatBody(Optional<NetworkedPlayerInfo> body, ActionHandle handle)
     {
-        Game.MatchData.UnreportableBodies.Add(body.PlayerId);
+        if (!body.Exists() || !isEatMode) return;
+        Game.MatchData.UnreportableBodies.Add(body.Get().PlayerId);
 
         if (++bodyCount >= bodyAmount) ManualWin.Activate(MyPlayer, ReasonType.RoleSpecificWin, 100);
 
         handle.Cancel();
     }
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     public void Switch()
     {
         if (!canSwitchMode) return;
@@ -102,6 +105,7 @@ public class Vulture : CustomRole
             .VanillaRole(canUseVents ? RoleTypes.Engineer : RoleTypes.Crewmate)
             .CanVent(canUseVents)
             .SpecialType(SpecialType.Neutral)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
             .OptionOverride(Override.CrewLightMod, () => AUSettings.ImpostorLightMod(), () => impostorVision);
 
     [Localized(nameof(Vulture))]

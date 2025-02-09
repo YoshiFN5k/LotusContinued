@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Lotus.Managers;
 using UnityEngine;
 using VentLib.Commands.Attributes;
 using VentLib.Localization.Attributes;
@@ -19,6 +20,9 @@ public class HelpAllCommand : CommandTranslations
                 new($"/say [{MessageParameter}]", SayCommandDescription),
                 new($"/kick [{NameParameter} | ID]", KickCommandDescription),
                 new($"/ban [{NameParameter} | ID]", BanCommandDescription),
+                new($"/mod [{NameParameter} | ID]", ModCommandDescription),
+                new($"/admin [{NameParameter} | ID]", AdminCommandDescription),
+                new("/start", StartCommandDescription),
                 new("/dump", DumpCommandDescription),
                 new("/t help", TemplateHelpCommandDescription)
             } },
@@ -36,7 +40,8 @@ public class HelpAllCommand : CommandTranslations
             {
                 new("/m", MyRoleCommandDescription),
                 new("/o", RoleOptionCommandDescription),
-                new("/desc", DescCommandDescription)
+                new("/desc", DescCommandDescription),
+                new("/info", InfoCommandDescription)
             } },
 
             { CommandSection.Lobby, new List<CommandHelp>
@@ -59,7 +64,7 @@ public class HelpAllCommand : CommandTranslations
     [Command("help", "h")]
     public static void HelpCommand(PlayerControl source)
     {
-        string result = HelpSetions.Where(s => source.IsHost() || s.Key is not CommandSection.Host).Select(section =>
+        string result = HelpSetions.Where(s => source.IsHost() || s.Key is not CommandSection.Host || PluginDataManager.ModManager.IsPlayerModded(source)).Select(section =>
         {
             string content = section.Value.Select(v => v.ToString()).Fuse("\n");
             return $"★ {section.Key.SectionName()}\n{content}";
@@ -167,6 +172,18 @@ public class HelpAllCommand : CommandTranslations
 
         [Localized(nameof(StatsOtherCommandDescription))]
         public static string StatsOtherCommandDescription = "Displays another player's stats for the lobby.";
+
+        [Localized(nameof(ModCommandDescription))]
+        public static string ModCommandDescription = "Mod a player and give them the ability to kick or ban players!";
+
+        [Localized(nameof(AdminCommandDescription))]
+        public static string AdminCommandDescription = "Admin another player and give them the abilities of a Mod. However, admins can mod and unmod other players.";
+
+        [Localized(nameof(StartCommandDescription))]
+        public static string StartCommandDescription = "Forcefully starts the game immediately. Added for admins to start the game without host.";
+
+        [Localized(nameof(InfoCommandDescription))]
+        public static string InfoCommandDescription = "Resend information that your role displayed in chat at the start of the round.";
     }
 
 }

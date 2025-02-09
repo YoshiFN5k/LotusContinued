@@ -5,18 +5,21 @@ using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
 using Lotus.Managers;
 using Lotus.Extensions;
+using Lotus.Roles;
 using VentLib.Localization.Attributes;
-using VentLib.Logging;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
 using static MeetingHud;
+using Lotus.Managers.Blackscreen.Interfaces;
 
 namespace Lotus.API.Vanilla.Meetings;
 
 [Localized("Meetings")]
 public class MeetingDelegate
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(MeetingDelegate));
+
     [Localized(nameof(RoleRevealText))]
     public static string RoleRevealText = "{0} was the {1}.";
 
@@ -27,11 +30,11 @@ public class MeetingDelegate
     public static string NoImpostorsText = "No impostors remaining.";
 
     public static MeetingDelegate Instance = null!;
-    public GameData.PlayerInfo? ExiledPlayer { get; set; }
+    public NetworkedPlayerInfo? ExiledPlayer { get; set; }
     public HashSet<byte> TiedPlayers = new();
 
     public bool IsTie { get; set; }
-    internal BlackscreenResolver BlackscreenResolver { get; }
+    internal IBlackscreenResolver BlackscreenResolver { get; }
 
 
     private MeetingHud MeetingHud => MeetingHud.Instance;
@@ -41,12 +44,12 @@ public class MeetingDelegate
     public MeetingDelegate()
     {
         Instance = this;
-        BlackscreenResolver = new BlackscreenResolver(this);
+        BlackscreenResolver = ProjectLotus.Instance.GetNewBlackscreenResolver(this);
     }
 
     public void CastVote(PlayerControl player, Optional<PlayerControl> target)
     {
-        VentLogger.Trace($"{player.GetNameWithRole()} casted vote for {target.Map(p => p.GetNameWithRole()).OrElse("No One")}");
+        log.Trace($"{player.GetNameWithRole()} casted vote for {target.Map(p => p.GetNameWithRole()).OrElse("No One")}");
         CastVote(player.PlayerId, target.Map(p => p.PlayerId));
     }
 
@@ -67,6 +70,15 @@ public class MeetingDelegate
         votes.RemoveAt(index);
     }
 
+    public void ClearAllVotes()
+    {
+        List<byte> keys = new();
+        List<List<Optional<byte>>> votes = new();
+        currentVotes.Keys.ForEach(playerId => keys.Insert(0, playerId));
+        currentVotes.Values.ForEach(playerVotes => votes.Insert(0, playerVotes.ToList()));
+        keys.ForEach((key, index) => votes[index].ForEach(vote => RemoveVote(key, vote)));
+    }
+
     public Dictionary<byte, int> CurrentVoteCount()
     {
         Dictionary<byte, int> counts = new() { { 255, 0 } };
@@ -81,7 +93,7 @@ public class MeetingDelegate
 
     public void EndVoting() => isForceEnd = true;
 
-    public void EndVoting(GameData.PlayerInfo? exiledPlayer, bool isTie = false)
+    public void EndVoting(NetworkedPlayerInfo? exiledPlayer, bool isTie = false)
     {
         List<VoterState> voterStates = new();
         CurrentVoteCount().ForEach(t =>
@@ -93,7 +105,7 @@ public class MeetingDelegate
         EndVoting(voterStates.ToArray(), exiledPlayer, isTie);
     }
 
-    public void EndVoting(VoterState[] voterStates, GameData.PlayerInfo? exiledPlayer, bool isTie = false)
+    public void EndVoting(VoterState[] voterStates, NetworkedPlayerInfo? exiledPlayer, bool isTie = false)
     {
         this.isForceEnd = true;
         this.ExiledPlayer = exiledPlayer;
@@ -109,7 +121,7 @@ public class MeetingDelegate
         MeetingHud.RpcVotingComplete(voterStates, exiledPlayer, isTie);
     }
 
-    internal bool IsForceEnd() => isForceEnd;
+    public bool IsForceEnd() => isForceEnd;
 
     public void CalculateExiledPlayer()
     {
@@ -137,7 +149,7 @@ public class MeetingDelegate
         this.IsTie = isTie;
 
         string mostVotedPlayer = this.ExiledPlayer?.Object != null ? this.ExiledPlayer.Object.name : "Unknown";
-        VentLogger.Trace($"Calculated player votes. Player with most votes = {mostVotedPlayer}, isTie = {isTie}");
+        log.Trace($"Calculated player votes. Player with most votes = {mostVotedPlayer}, isTie = {isTie}");
 
         if (IsTie) this.ExiledPlayer = null;
     }
@@ -148,7 +160,8 @@ public class MeetingDelegate
 
         int impostors = Players.GetPlayers(PlayerFilter.Impostor | PlayerFilter.Alive).Count();
 
-        string textFormatting = "<size=0><size=2.5>" + RoleRevealText.Formatted(player.name, player.GetCustomRole().RoleColor.Colorize(player.GetCustomRole().RoleName));
+        CustomRole roleDefinition = player.PrimaryRole();
+        string textFormatting = "<size=0><size=2.5>" + RoleRevealText.Formatted(player.name, roleDefinition.RoleColor.Colorize(roleDefinition.RoleName));
         textFormatting += "\n" + (impostors == 0 ? NoImpostorsText : RemainingImpostorsText.Formatted(impostors)) + "</size>";
 
         player.RpcSetName(textFormatting);

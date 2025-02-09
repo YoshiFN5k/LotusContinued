@@ -1,4 +1,5 @@
 using Lotus.API.Odyssey;
+using Lotus.API.Player;
 using Lotus.Roles;
 using Lotus.Extensions;
 using VentLib.Utilities;
@@ -8,7 +9,7 @@ namespace Lotus.Managers.History.Events;
 
 public class RoleChangeEvent : IRoleChangeEvent
 {
-    private PlayerControl player;
+    private FrozenPlayer? player;
     private Optional<CustomRole> originalRole;
     private CustomRole newRole;
 
@@ -16,12 +17,12 @@ public class RoleChangeEvent : IRoleChangeEvent
 
     public RoleChangeEvent(PlayerControl player, CustomRole newRole, CustomRole? originalRole = null)
     {
-        this.player = player;
-        this.originalRole = Optional<CustomRole>.Of(originalRole ?? player.GetCustomRole());
+        this.player = Game.MatchData.GetFrozenPlayer(player);
+        this.originalRole = Optional<CustomRole>.Of(originalRole ?? player.PrimaryRole());
         this.newRole = newRole;
     }
 
-    public PlayerControl Player() => player;
+    public FrozenPlayer Player() => player;
 
     public Optional<CustomRole> RelatedRole() => originalRole;
 
@@ -31,7 +32,7 @@ public class RoleChangeEvent : IRoleChangeEvent
 
     public string Message()
     {
-        return $"{originalRole.OrElse(CustomRoleManager.Default).RoleColor.Colorize(Game.GetName(player))} transformed into {newRole.RoleColor.Colorize(newRole.RoleName)}";
+        return $"{originalRole.OrElse(ProjectLotus.GameModeManager.CurrentGameMode.RoleManager.FallbackRole()).RoleColor.Colorize(Game.GetName(player))} transformed into {newRole.RoleColor.Colorize(newRole.RoleName)}";
     }
 
     public CustomRole OriginalRole() => originalRole.Get();

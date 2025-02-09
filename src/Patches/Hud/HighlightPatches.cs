@@ -12,17 +12,17 @@ public class HighlightPatches
     private static readonly int AddColor = Shader.PropertyToID("_AddColor");
 
     [QuickPostfix(typeof(PlayerControl), nameof(PlayerControl.ToggleHighlight))]
-    public static void TogglePlayerHighlight(PlayerControl __instance)
+    public static void TogglePlayerHighlight(PlayerControl __instance, RoleTeamTypes targeterTeam)
     {
         var player = PlayerControl.LocalPlayer;
         if (player.Data.IsDead) return;
-        __instance.cosmetics.currentBodySprite.BodySprite.material.SetColor(OutlineColor, player.GetCustomRole().RoleColor);
+        __instance.cosmetics.currentBodySprite.BodySprite.material.SetColor(OutlineColor, player.PrimaryRole().RoleColor);
     }
 
     [QuickPostfix(typeof(Vent), nameof(Vent.SetOutline))]
-    public static void SetVentOutline(Vent __instance, [HarmonyArgument(1)] ref bool mainTarget)
+    public static void SetVentOutline(Vent __instance, [HarmonyArgument("mainTarget")] ref bool mainTarget)
     {
-        CustomRole role = PlayerControl.LocalPlayer.GetCustomRole();
+        CustomRole role = PlayerControl.LocalPlayer.PrimaryRole();
 
         __instance.myRend.material.SetColor(OutlineColor, role.RoleColor);
         __instance.myRend.material.SetColor(AddColor, mainTarget ? role.RoleColor : Color.clear);

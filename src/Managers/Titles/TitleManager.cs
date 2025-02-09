@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Lotus.API.Odyssey;
+using Lotus.API.Player;
 using Lotus.API.Reactive;
-using VentLib.Logging;
 using VentLib.Utilities.Extensions;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -14,6 +14,8 @@ namespace Lotus.Managers.Titles;
 
 public class TitleManager
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(TitleManager));
+
     private DirectoryInfo directory;
     private Dictionary<string, List<CustomTitle>> titles = null!;
 
@@ -23,10 +25,11 @@ public class TitleManager
 
     public TitleManager(DirectoryInfo directory)
     {
-        Hooks.NetworkHooks.ReceiveVersionHook.Bind(nameof(TitleManager), _ => Game.GetAllPlayers().ForEach(ApplyTitleWithChatFix));
+        Hooks.NetworkHooks.ReceiveVersionHook.Bind(nameof(TitleManager), _ => Players.GetPlayers().ForEach(ApplyTitleWithChatFix), replace: true);
         if (!directory.Exists) directory.Create();
         this.directory = directory;
         LoadAll();
+        if (Game.State is GameState.InLobby) Players.GetPlayers().ForEach(p => p.RpcSetName(p.name));
     }
 
     public string ApplyTitle(string friendCode, string playerName, bool nameOnly = false)
@@ -62,7 +65,7 @@ public class TitleManager
     {
         if (!AmongUsClient.Instance.AmHost) return;
         LoadAll();
-        Game.GetAllPlayers().ForEach(p => p.RpcSetName(p.name));
+        Players.GetPlayers().ForEach(p => p.RpcSetName(p.name));
     }
 
     public void LoadAll()
@@ -83,7 +86,7 @@ public class TitleManager
         }
         catch (Exception exception)
         {
-            VentLogger.Exception(exception, "Error loading in manifest (global) titles.");
+            log.Exception("Error loading in manifest (global) titles.", exception);
             titles = new Dictionary<string, List<CustomTitle>>();
         }
 
@@ -99,13 +102,13 @@ public class TitleManager
                 }
                 catch (Exception exception)
                 {
-                    VentLogger.Exception(exception, $"Error loading title file: {f.Name}.");
+                    log.Exception($"Error loading title file: {f.Name}.", exception);
                     return (null!, new CustomTitle());
                 }
             })
             .ForEach(pair =>
             {
-                if (pair.Item1 != null!) titles.GetOrCompute(pair.Item1, () => new List<CustomTitle>()).Add(pair.Item2);
+                if (!string.IsNullOrEmpty(pair.Item1)) titles.GetOrCompute(pair.Item1, () => new List<CustomTitle>()).Add(pair.Item2);
             });
     }
 

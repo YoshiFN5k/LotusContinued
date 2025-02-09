@@ -3,9 +3,9 @@ using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
 using Lotus.Patches.Systems;
 using Lotus.Roles.Internals;
-using Lotus.Roles.Internals.Attributes;
 using Lotus.Extensions;
-using VentLib.Logging;
+using Lotus.Roles.Internals.Enums;
+using Lotus.Roles.Operations;
 using VentLib.Utilities;
 using VentLib.Utilities.Optionals;
 
@@ -13,6 +13,8 @@ namespace Lotus.API.Vanilla.Sabotages;
 
 public class ElectricSabotage : ISabotage
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(ElectricSabotage));
+
     private UnityOptional<PlayerControl> caller;
 
     public ElectricSabotage(PlayerControl? player = null)
@@ -22,16 +24,17 @@ public class ElectricSabotage : ISabotage
 
     public SabotageType SabotageType() => Sabotages.SabotageType.Lights;
 
-    public bool Fix(PlayerControl? fixer = null) {
+    public bool Fix(PlayerControl? fixer = null)
+    {
         ActionHandle handle = ActionHandle.NoInit();
-        Game.TriggerForAll(RoleActionType.SabotageFixed, ref handle, this, fixer == null ? PlayerControl.LocalPlayer : fixer);
+        RoleOperations.Current.TriggerForAll(LotusActionType.SabotageFixed, fixer == null ? PlayerControl.LocalPlayer : fixer, handle, this);
         if (handle.IsCanceled) return false;
 
         if (!ShipStatus.Instance.TryGetSystem(SabotageType().ToSystemType(), out ISystemType? systemInstance)) return false;
         SwitchSystem? electrical = systemInstance!.TryCast<SwitchSystem>();
         if (electrical == null)
         {
-            VentLogger.Warn($"Error Fixing Lights Sabotage. Invalid System Cast from {SabotageType()}.");
+            log.Warn($"Error Fixing Lights Sabotage. Invalid System Cast from {SabotageType()}.");
             return false;
         }
 
@@ -52,10 +55,18 @@ public class ElectricSabotage : ISabotage
     public void CallSabotage(PlayerControl sabotageCaller)
     {
         ActionHandle handle = ActionHandle.NoInit();
-        Game.TriggerForAll(RoleActionType.SabotageStarted, ref handle, this, sabotageCaller);
+        RoleOperations.Current.TriggerForAll(LotusActionType.SabotageStarted, sabotageCaller, handle, this);
         if (handle.IsCanceled) return;
 
-        ShipStatus.Instance.RepairSystem(SabotageType().ToSystemType(), sabotageCaller, 128);
+        byte b2 = 4;
+        for (int i = 0; i < 5; i++)
+        {
+            if (BoolRange.Next(0.5f))
+            {
+                b2 |= (byte)(1 << i);
+            }
+        }
+        ShipStatus.Instance.UpdateSystem(SabotageType().ToSystemType(), sabotageCaller, (byte)(b2 | 128));
         caller.OrElseSet(() => sabotageCaller);
         SabotagePatch.CurrentSabotage = this;
     }

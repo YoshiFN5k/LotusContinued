@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Lotus.API.Player;
-using Lotus.Logging;
+using Lotus.API.Reactive;
+using Lotus.API.Reactive.HookEvents;
 using Lotus.Managers.Hotkeys;
 using Lotus.Managers.Templates.Models;
 using Lotus.Managers.Templates.Models.Units;
-using VentLib.Logging;
 using VentLib.Utilities.Extensions;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -17,15 +17,17 @@ namespace Lotus.Managers.Templates;
 
 public class TemplateManager
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(TemplateManager));
+
     public static int GlobalTriggerCount;
 
-    private IDeserializer deserializer = new DeserializerBuilder()
+    public static IDeserializer TemplateDeserializer = new DeserializerBuilder()
         .IgnoreUnmatchedProperties()
         .WithDuplicateKeyChecking()
         .WithNamingConvention(PascalCaseNamingConvention.Instance)
         .Build();
 
-    private ISerializer serializer = new SerializerBuilder()
+    public static ISerializer TemplateSerializer = new SerializerBuilder()
         .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull)
         .WithNamingConvention(PascalCaseNamingConvention.Instance)
         .Build();
@@ -37,11 +39,12 @@ public class TemplateManager
     private Dictionary<string, TemplateUnit>? variables;
     internal Dictionary<string, List<Template>> Commands = null!;
 
-    private List<Template>? allTemplates;
+    private List<Template>? allTemplates = new();
 
     private Dictionary<string, string> registeredTags = new()
     {
-        {"modifier-info", "The template is used by the @ModsDescriptive tag when displaying modifiers. This template uses ^Role_XXX variables to display its information."}
+        {"modifier-info", "The template is used by the @ModsDescriptive tag when displaying modifiers. This template uses ^Role_XXX variables to display its information."},
+        {"modifier-blurb", "The template is used by the @ModsShort tag when displaying modifiers. This template uses ^Role_XXX variables to display its information."},
     };
 
     internal TemplateManager(FileInfo templateFileInfo)
@@ -65,15 +68,22 @@ public class TemplateManager
 
     internal bool CheckAndRunCommand(PlayerControl source, string input)
     {
+        input = input.Trim();
         if (input.Length < 2 || !input.StartsWith("/")) return false;
         input = input[1..];
-        List<Template>? templates = Commands.GetValueOrDefault(input);
+
+        string[] splitCommand = input.Split(" ");
+        List<Template>? templates = Commands.GetValueOrDefault(splitCommand[0]);
         if (templates == null) return false;
+
+        string[] arguments = splitCommand.Length > 0 ? splitCommand[1..] : Array.Empty<string>();
+        Hooks.ModHooks.CustomCommandHook.Propagate(new CustomCommandHookEvent(source, splitCommand[0], arguments));
+        TemplateUnit.Arguments = arguments;
+
         templates.ForEach(template =>
         {
             if (source.IsHost())
             {
-                DevLogger.Log(input);
                 if (HotkeyManager.HoldingRightShift) ShowAll(template, source, Players.GetPlayers(PlayerFilter.Dead));
                 else ShowAll(template, source);
             }
@@ -109,10 +119,10 @@ public class TemplateManager
         return true;
     }
 
-    public bool TryFormat(object? obj, string tag, out string formatted, bool ignoreWarning = false)
+    public bool TryFormat(object? obj, string tag, out string formatted, bool ignoreWarning = true)
     {
         formatted = "";
-        if (!ignoreWarning && !registeredTags.ContainsKey(tag)) VentLogger.Warn($"Tag \"{tag}\" is not registered. Please ensure all template tags have been registered through TemplateManager.RegisterTag().", "TemplateManager");
+        if (!ignoreWarning && !registeredTags.ContainsKey(tag)) log.Warn($"Tag \"{tag}\" is not registered. Please ensure all template tags have been registered through TemplateManager.RegisterTag().", "TemplateManager");
         if (!templates!.ContainsKey(tag)) return false;
         formatted = templates.GetValueOrDefault(tag)?.Select(v => v.Format(obj).Replace("\\n", "\n")).Where(t => t != "").Fuse("\n") ?? "";
         return true;
@@ -122,7 +132,7 @@ public class TemplateManager
     {
         if (registeredTags.ContainsKey(tag) && registeredTags[tag] != description)
         {
-            VentLogger.Warn($"Could not register template tag \"{tag}\". A tag of the same name already exists.", "TemplateManager");
+            log.Warn($"Could not register template tag \"{tag}\". A tag of the same name already exists.", "TemplateManager");
             return false;
         }
 
@@ -147,7 +157,7 @@ public class TemplateManager
             string result;
             using (StreamReader reader = new(templateFileInfo.Open(FileMode.OpenOrCreate))) result = reader.ReadToEnd();
             if (result == null!) tFile = new TemplateFile();
-            else tFile = deserializer.Deserialize<TemplateFile>(result);
+            else tFile = TemplateDeserializer.Deserialize<TemplateFile>(result);
             if (tFile == null!) tFile = new TemplateFile();
 
             allTemplates = tFile.Templates;
@@ -163,14 +173,14 @@ public class TemplateManager
         }
         catch (Exception e)
         {
-            VentLogger.Exception(e);
+            log.Exception(e);
             return e.ToString();
         }
     }
 
     public void SaveTemplates()
     {
-        string yaml = serializer.Serialize(tFile);
+        string yaml = TemplateSerializer.Serialize(tFile);
         using FileStream stream = templateFileInfo.Open(FileMode.Create);
         stream.Write(Encoding.UTF8.GetBytes(yaml));
     }

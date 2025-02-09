@@ -3,6 +3,7 @@ using System.Linq;
 using Lotus.API.Player;
 using Lotus.API.Vanilla.Meetings;
 using Lotus.Chat;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using UnityEngine;
 using VentLib.Localization.Attributes;
@@ -12,11 +13,11 @@ using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.Subroles;
 
-public class TieBreaker: Subrole
+public class TieBreaker : Subrole
 {
     public override string Identifier() => "※";
 
-    [RoleAction(RoleActionType.VotingComplete)]
+    [RoleAction(LotusActionType.VotingComplete)]
     public void CheckForTie(MeetingDelegate meetingDelegate)
     {
         if (!meetingDelegate.IsTie || meetingDelegate.IsForceEnd()) return;

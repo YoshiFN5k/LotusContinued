@@ -12,20 +12,23 @@ using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Extensions;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Optionals;
 using static Lotus.Roles.RoleGroups.Crew.Crusader.CrusaderTranslations.CrusaderOptions;
+using Lotus.Roles.Internals.Enums;
 using static Lotus.Utilities.TranslationUtil;
+using Lotus.Patches.Systems;
+using Lotus.API.Vanilla.Sabotages;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
-public class Crusader: Crewmate, ISabotagerRole
+public class Crusader : Crewmate
 {
     private Optional<byte> protectedPlayer = Optional<byte>.Null();
     private bool protectAgainstHelpfulInteraction;
     private bool protectAgainstNeutralInteraction;
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     private void SelectTarget(PlayerControl target)
     {
         if (MyPlayer.InteractWith(target, LotusInteraction.HelpfulInteraction.Create(this)) == InteractionResult.Halt) return;
@@ -34,8 +37,8 @@ public class Crusader: Crewmate, ISabotagerRole
         Game.MatchData.GameHistory.AddEvent(new ProtectEvent(MyPlayer, target));
     }
 
-    [RoleAction(RoleActionType.AnyInteraction)]
-    private void AnyPlayerTargeted(PlayerControl killer, PlayerControl target, Interaction interaction, ActionHandle handle)
+    [RoleAction(LotusActionType.Interaction, ActionFlag.GlobalDetector)]
+    private void AnyPlayerTargeted(PlayerControl target, PlayerControl killer, Interaction interaction, ActionHandle handle)
     {
         if (Game.State is not GameState.Roaming) return;
         if (killer.PlayerId == MyPlayer.PlayerId) return;
@@ -76,13 +79,13 @@ public class Crusader: Crewmate, ISabotagerRole
             .DesyncRole(RoleTypes.Impostor)
             .RoleFlags(RoleFlag.CannotWinAlone)
             .RoleColor(new Color(0.78f, 0.36f, 0.22f))
+            .RoleAbilityFlags(RoleAbilityFlag.CannotVent | RoleAbilityFlag.CannotSabotage | RoleAbilityFlag.IsAbleToKill)
             .OptionOverride(new IndirectKillCooldown(() => AUSettings.KillCooldown()))
-            .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod());
-
-    public bool CanSabotage() => false;
+            .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod())
+            .OptionOverride(Override.ImpostorLightMod, () => AUSettings.CrewLightMod() / 5, () => SabotagePatch.CurrentSabotage != null && SabotagePatch.CurrentSabotage.SabotageType() is SabotageType.Lights);
 
     [Localized(nameof(Crusader))]
-    internal static class CrusaderTranslations
+    public static class CrusaderTranslations
     {
         [Localized(ModConstants.Options)]
         public static class CrusaderOptions

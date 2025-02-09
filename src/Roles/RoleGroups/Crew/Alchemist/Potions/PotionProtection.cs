@@ -6,7 +6,7 @@ using VentLib.Utilities;
 
 namespace Lotus.Roles.RoleGroups.Crew.Potions;
 
-public class PotionProtection: Potion
+public class PotionProtection : Potion
 {
     [Localized("Protection")]
     public static string PotionName = "Castling Brew";
@@ -22,7 +22,7 @@ public class PotionProtection: Potion
 
     public override bool Use(PlayerControl user)
     {
-        Alchemist alchemist = user.GetCustomRole<Alchemist>();
+        Alchemist alchemist = user.PrimaryRole<Alchemist>();
         alchemist.IsProtected = true;
         Async.Schedule(() => alchemist.IsProtected = false, 80f);
         return true;

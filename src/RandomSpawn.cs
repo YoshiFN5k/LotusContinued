@@ -10,7 +10,7 @@ namespace Lotus;
 
 public class RandomSpawn
 {
-    public Dictionary<string, Vector2> SkeldLocations = new()
+    public static Dictionary<string, Vector2> SkeldLocations = new()
     {
         ["Cafeteria"] = new(-1.0f, 3.0f),
         ["Weapons"] = new(9.3f, 1.0f),
@@ -28,7 +28,7 @@ public class RandomSpawn
         ["MedBay"] = new(-9.0f, -4.0f)
     };
 
-    public Dictionary<string, Vector2> MiraLocations = new()
+    public static Dictionary<string, Vector2> MiraLocations = new()
     {
         ["Cafeteria"] = new(25.5f, 2.0f),
         ["Balcony"] = new(24.0f, -2.0f),
@@ -46,7 +46,7 @@ public class RandomSpawn
         ["Greenhouse"] = new(17.8f, 23.0f)
     };
 
-    public Dictionary<string, Vector2> PolusLocations = new()
+    public static Dictionary<string, Vector2> PolusLocations = new()
     {
         ["Office1"] = new(19.5f, -18.0f),
         ["Office2"] = new(26.0f, -17.0f),
@@ -65,7 +65,7 @@ public class RandomSpawn
         ["SpecimenRoom"] = new(36.5f, -22.0f)
     };
 
-    public Dictionary<string, Vector2> AirshipLocations = new()
+    public static Dictionary<string, Vector2> AirshipLocations = new()
     {
         ["Brig"] = new(-0.7f, 8.5f),
         ["Engine"] = new(-0.7f, -1.0f),
@@ -91,11 +91,21 @@ public class RandomSpawn
     private Dictionary<string, Vector2> usedLocations = null!;
     private List<string>? availableLocations;
 
+    public void Refresh(bool forceRefresh = false)
+    {
+        if (availableLocations == null || availableLocations.Count <= 0 || forceRefresh) ResetLocations();
+    }
+    public Vector2 GetRandomLocation()
+    {
+        Refresh();
+        return usedLocations[availableLocations!.PopRandom()];
+    }
+
     private void ResetLocations()
     {
         if (ShipStatus.Instance is AirshipStatus) usedLocations = AirshipLocations;
         else
-            usedLocations = (ShipStatus.Instance.Type) switch
+            usedLocations = ShipStatus.Instance.Type switch
             {
                 ShipStatus.MapType.Ship => SkeldLocations,
                 ShipStatus.MapType.Hq => MiraLocations,
@@ -108,14 +118,14 @@ public class RandomSpawn
     public void Spawn(PlayerControl player)
     {
         // ReSharper disable once MergeIntoNegatedPattern
-        if (availableLocations == null || availableLocations.Count <= 0) ResetLocations();
-        Utils.Teleport(player.NetTransform, usedLocations[availableLocations!.PopRandom()]);
+        Refresh();
+        Utils.Teleport(player.NetTransform, GetRandomLocation());
     }
 
     public MonoRpc SpawnDeferred(PlayerControl player)
     {
-        if (availableLocations == null || availableLocations.Count <= 0) ResetLocations();
-        return Utils.TeleportDeferred(player.NetTransform, usedLocations[availableLocations!.PopRandom()]);
+        Refresh();
+        return Utils.TeleportDeferred(player.NetTransform, GetRandomLocation());
     }
 
 }

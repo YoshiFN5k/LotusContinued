@@ -39,6 +39,12 @@ public static class ModConstants
 
     public const string DiscordInvite = "https://discord.gg/projectlotus";
 
+    public const string LinkTree = "https://linktr.ee/lotusau";
+
+    public const string WebsiteLink = "https://lotusau.top/";
+
+    public const string SupportEmail = "theta@eps.lol";
+
     public static class Palette
     {
         public static Color InfinityColor = new(0.77f, 0.71f, 1f);
@@ -95,6 +101,9 @@ public static class ModConstants
 
         [Localized(nameof(Parried))]
         public static string Parried = "Parried";
+
+        [Localized(nameof(Sniped))]
+        public static string Sniped = "Sniped";
     }
 
     public static class Localization

@@ -5,7 +5,7 @@ using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Crew.Potions;
 
-public class PotionVoting: Potion
+public class PotionVoting : Potion
 {
     [Localized("Voting")]
     private static string PotionName = "Leader Potion";
@@ -20,7 +20,7 @@ public class PotionVoting: Potion
 
     public override bool Use(PlayerControl user)
     {
-        user.GetCustomRole<Alchemist>().ExtraVotes += 1;
+        user.PrimaryRole<Alchemist>().ExtraVotes += 1;
         return true;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Lotus.Statuses;
@@ -10,6 +11,7 @@ public class CustomStatus: IStatus
     public string Description { get; set; }
     public StatusFlag StatusFlags { get; set; }
 
+    private List<PlayerControl> players = new();
     private Action<PlayerControl>? applyFunc;
     private Action? clearAction;
 
@@ -27,6 +29,7 @@ public class CustomStatus: IStatus
     {
         applyFunc?.Invoke(player);
     }
+    public IEnumerable<PlayerControl> VisiblePlayers() => players;
 
     public class CustomStatusBuilder
     {
@@ -70,6 +73,12 @@ public class CustomStatus: IStatus
         public CustomStatusBuilder Apply(Action<PlayerControl> applyFunc)
         {
             status.applyFunc = applyFunc;
+            return this;
+        }
+
+        public CustomStatusBuilder AddPlayer(params PlayerControl[] players)
+        {
+            status.players.AddRange(players);
             return this;
         }
 

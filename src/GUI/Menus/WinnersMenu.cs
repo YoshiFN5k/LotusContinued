@@ -43,14 +43,14 @@ public class WinnersMenu
             p.cosmetics.nameText.transform.localScale += new Vector3(1f, 1f);
         });
 
-        HudManager.Instance.GameSettings.sortingOrder = -1;
-        chatParent.BackgroundImage.sortingOrder = -1;
+        // HudManager.Instance.GameSettings.sortingOrder = -1;
+        chatParent.backgroundImage.sortingOrder = -1;
 
-        textMeshProPrefab = UnityOptional<TextMeshPro>.Of(Object.Instantiate(chatParent.TextArea.outputText, gameObject.transform));
+        textMeshProPrefab = UnityOptional<TextMeshPro>.Of(Object.Instantiate(chatParent.freeChatField.textArea.outputText, gameObject.transform));
         textMeshProPrefab.IfPresent(text =>
         {
 
-            text.font = GameStartManager.Instance.startLabelText.font;
+            text.font = GameStartManager.Instance.GameStartText.font;
             text.color = Color.white;
             text.m_fontSizeMin = 8f;
             text.transform.localPosition += new Vector3(-0.85f, 2f);
@@ -95,7 +95,7 @@ public class WinnersMenu
         for (int index = 0; index < allPlayers.Count; index++)
         {
             PlayerHistory playerHistory = allPlayers[index];
-            CustomRole role = playerHistory.Role;
+            CustomRole role = playerHistory.MainRole;
             PoolablePlayer newPlayer = prefabPlayer;//Object.Instantiate(prefabPlayer, prefabPlayer.transform.parent);
             newPlayer.gameObject.SetActive(true);
             newPlayer.UpdateFromPlayerOutfit(playerHistory.Outfit, PlayerMaterial.MaskType.ComplexUI, false, false);

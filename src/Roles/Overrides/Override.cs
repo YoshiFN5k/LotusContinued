@@ -12,6 +12,8 @@ public enum Override
 
     // Game override
     AnonymousVoting,
+    ConfirmEjects,
+
     DiscussionTime,
     VotingTime,
     PlayerSpeedMod,
@@ -31,6 +33,16 @@ public enum Override
 
     EngVentCooldown,
     EngVentDuration,
+
+    TrackerCooldown,
+    TrackerDuration,
+    TrackerDelay,
+
+    NoiseImpGetAlert,
+    NoiseAlertDuration,
+
+    PhantomVanishDuration,
+    PhantomVanishCooldown,
 }
 
 public static class OverrideExtensions
@@ -41,6 +53,7 @@ public static class OverrideExtensions
         {
             Override.CanUseVent => true,
             Override.AnonymousVoting => gameOptions.GetBool(BoolOptionNames.AnonymousVotes),
+            Override.ConfirmEjects => gameOptions.GetBool(BoolOptionNames.ConfirmImpostor),
             Override.DiscussionTime => gameOptions.GetInt(Int32OptionNames.DiscussionTime),
             Override.VotingTime => gameOptions.GetInt(Int32OptionNames.VotingTime),
             Override.PlayerSpeedMod => gameOptions.GetFloat(FloatOptionNames.PlayerSpeedMod),
@@ -56,6 +69,13 @@ public static class OverrideExtensions
             Override.EngVentDuration => gameOptions.GetFloat(FloatOptionNames.EngineerInVentMaxTime),
             Override.VitalsCooldown => gameOptions.GetFloat(FloatOptionNames.ScientistCooldown),
             Override.VitalsBatteryCharge => gameOptions.GetFloat(FloatOptionNames.ScientistBatteryCharge),
+            Override.TrackerCooldown => gameOptions.GetFloat(FloatOptionNames.TrackerCooldown),
+            Override.TrackerDuration => gameOptions.GetFloat(FloatOptionNames.TrackerDuration),
+            Override.TrackerDelay => gameOptions.GetFloat(FloatOptionNames.TrackerDelay),
+            Override.NoiseImpGetAlert => gameOptions.GetBool(BoolOptionNames.NoisemakerImpostorAlert),
+            Override.NoiseAlertDuration => gameOptions.GetFloat(FloatOptionNames.NoisemakerAlertDuration),
+            Override.PhantomVanishDuration => gameOptions.GetFloat(FloatOptionNames.PhantomDuration),
+            Override.PhantomVanishCooldown => gameOptions.GetFloat(FloatOptionNames.PhantomCooldown),
             _ => throw new ArgumentOutOfRangeException(nameof(__override), __override, null)
         };
     }
@@ -69,13 +89,13 @@ public static class OverrideExtensions
             gameOptions.SetBool(boolOptionNames, (bool)value);
             return value;
         }
-        
+
         object SetFloatOption(FloatOptionNames floatOptionNames, float min = 0, float max = float.MaxValue)
         {
             gameOptions.SetFloat(floatOptionNames, Mathf.Clamp((float)value, min, max));
             return value;
         }
-        
+
         object SetIntOption(Int32OptionNames int32OptionNames, int min = 0, int max = int.MaxValue)
         {
             gameOptions.SetInt(int32OptionNames, Mathf.Clamp((int)value, min, max));
@@ -86,6 +106,7 @@ public static class OverrideExtensions
         {
             Override.CanUseVent => false,
             Override.AnonymousVoting => SetBoolOption(BoolOptionNames.AnonymousVotes),
+            Override.ConfirmEjects => SetBoolOption(BoolOptionNames.ConfirmImpostor),
             Override.DiscussionTime => SetIntOption(Int32OptionNames.DiscussionTime),
             Override.VotingTime => SetIntOption(Int32OptionNames.VotingTime),
             Override.PlayerSpeedMod => SetFloatOption(FloatOptionNames.PlayerSpeedMod, 0, 3),
@@ -101,6 +122,13 @@ public static class OverrideExtensions
             Override.EngVentDuration => SetFloatOption(FloatOptionNames.EngineerInVentMaxTime),
             Override.VitalsCooldown => SetFloatOption(FloatOptionNames.ScientistCooldown),
             Override.VitalsBatteryCharge => SetFloatOption(FloatOptionNames.ScientistBatteryCharge),
+            Override.TrackerCooldown => SetFloatOption(FloatOptionNames.TrackerCooldown),
+            Override.TrackerDuration => SetFloatOption(FloatOptionNames.TrackerDuration),
+            Override.TrackerDelay => SetFloatOption(FloatOptionNames.TrackerDelay),
+            Override.NoiseImpGetAlert => SetBoolOption(BoolOptionNames.NoisemakerImpostorAlert),
+            Override.NoiseAlertDuration => SetFloatOption(FloatOptionNames.NoisemakerAlertDuration),
+            Override.PhantomVanishDuration => SetFloatOption(FloatOptionNames.PhantomDuration),
+            Override.PhantomVanishCooldown => SetFloatOption(FloatOptionNames.PhantomCooldown),
             _ => throw new ArgumentOutOfRangeException(nameof(__override), __override, null)
         };
     }

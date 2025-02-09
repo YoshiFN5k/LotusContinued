@@ -21,12 +21,6 @@ public class OptionShower
 
     private static Optional<OptionShower> Instance = Optional<OptionShower>.Null();
 
-
-    [Localized("ActiveRolesList")]
-    private static string ActiveRolesList = "Active Role List";
-    [Localized("NextPage")]
-    private static string NextPageString = "Press (Tab) To Advance Page";
-
     private List<ShowerPage> pages = new();
     private List<string> pageContent = null!;
 
@@ -35,8 +29,7 @@ public class OptionShower
 
     private OptionShower()
     {
-        HotkeyManager.Bind(KeyCode.RightControl, KeyCode.Tab).If(p => p.State(GameState.InLobby)).Do(Previous);
-        HotkeyManager.Bind(KeyCode.Tab).If(p => p.State(GameState.InLobby)).Do(Next);
+
     }
 
     public static OptionShower GetOptionShower()
@@ -62,34 +55,10 @@ public class OptionShower
         pages.Do(p => p.Updated = false);
     }
 
-    public string GetPage()
-    {
-        if (!updated)
-        {
-            pageContent = pages.SelectMany(p => p.GetPages()).ToList();
-            updated = true;
-        }
-
-        string bottomText = $"\n{NextPageString} ({currentPage + 1}/{pageContent.Count})";
-        return pageContent[currentPage] + bottomText;
-    }
-
     public void AddPage(Func<string> contentSupplier)
     {
         updated = false;
         pages.Add(new ShowerPage(contentSupplier));
-    }
-
-    public void Next()
-    {
-        currentPage++;
-        if (currentPage >= pageContent.Count) currentPage = 0;
-    }
-
-    public void Previous()
-    {
-        currentPage--;
-        if (currentPage < 0) currentPage = pageContent.Count - 1;
     }
 }
 
@@ -117,7 +86,8 @@ public class ShowerPage
         string content = supplier();
         List<string> p = new();
         string[] lines = content.Split("\n");
-        if (lines.Length < MaxLines) {
+        if (lines.Length < MaxLines)
+        {
             Updated = true;
             p.Add(content);
             return p;
@@ -132,7 +102,7 @@ public class ShowerPage
             if (line == "")
             {
                 flush = true;
-                for (int j = i + 1; j < lines.Length && (j-i-1) + lineBuffer.Count < MaxLines && flush; j++)
+                for (int j = i + 1; j < lines.Length && (j - i - 1) + lineBuffer.Count < MaxLines && flush; j++)
                     if (lines[j] == "") flush = false;
             }
             lineBuffer.Add(lines[i++]);

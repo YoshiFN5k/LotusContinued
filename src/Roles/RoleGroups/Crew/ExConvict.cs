@@ -1,6 +1,7 @@
 using Lotus.GUI;
 using Lotus.GUI.Name;
 using Lotus.GUI.Name.Holders;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Utilities;
@@ -9,12 +10,13 @@ using Lotus.API.Odyssey;
 using Lotus.Extensions;
 using Lotus.Options;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
-public class ExConvict: Crewmate
+public class ExConvict : Crewmate
 {
     private Vector2? location;
     private bool clearMarkAfterMeeting;
@@ -35,14 +37,14 @@ public class ExConvict: Crewmate
         cooldownHolder.Get(1).SetPrefix("Escape In: ").SetTextColor(Color.cyan);
     }
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     private void PetAction()
     {
         if (location == null) TryMarkLocation();
         else TryEscape();
     }
 
-    [RoleAction(RoleActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundStart)]
     private void ClearMark()
     {
         if (clearMarkAfterMeeting) location = null;
@@ -65,19 +67,39 @@ public class ExConvict: Crewmate
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
-            .SubOption(sub => sub.Name("Cooldown After Mark")
+            .SubOption(sub => sub
+                .KeyName("Cooldown After Mark", Translations.Options.MarkCooldown)
                 .AddFloatRange(0, 60, 2.5f, 2, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(canEscapeCooldown.SetDuration)
                 .Build())
-            .SubOption(sub => sub.Name("Cooldown After Escape")
+            .SubOption(sub => sub
+                .KeyName("Cooldown After Escape", Translations.Options.EscapeCooldown)
                 .AddFloatRange(0, 180, 2.5f, 16, GeneralOptionTranslations.SecondsSuffix)
                 .BindFloat(canMarkCooldown.SetDuration)
                 .Build())
-            .SubOption(sub => sub.Name("Clear Mark After Meeting")
+            .SubOption(sub => sub
+                .KeyName("Clear Mark After Meeting", Translations.Options.ClearAfterMeeting)
                 .AddOnOffValues()
                 .BindBool(b => clearMarkAfterMeeting = b)
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier).RoleColor(new Color(0.43f, 0f, 0.2f));
+        base.Modify(roleModifier).RoleColor(new Color(0.43f, 0f, 0.2f)).RoleAbilityFlags(RoleAbilityFlag.UsesPet);
+
+    [Localized(nameof(ExConvict))]
+    public static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(MarkCooldown))]
+            public static string MarkCooldown = "Cooldown After Mark";
+
+            [Localized(nameof(EscapeCooldown))]
+            public static string EscapeCooldown = "Cooldown After Escape";
+
+            [Localized(nameof(ClearAfterMeeting))]
+            public static string ClearAfterMeeting = "Clear Mark After Meeting";
+        }
+    }
 }

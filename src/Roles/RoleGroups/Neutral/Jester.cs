@@ -5,6 +5,7 @@ using Lotus.API.Odyssey;
 using Lotus.API.Stats;
 using Lotus.Factions;
 using Lotus.Options;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Victory.Conditions;
@@ -16,13 +17,14 @@ using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Logging;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
 public class Jester : CustomRole
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Jester));
     private bool canUseVents;
     private bool impostorVision;
     private int meetingThreshold;
@@ -32,19 +34,18 @@ public class Jester : CustomRole
     [UIComponent(UI.Counter)]
     public string MeetingCounter() => meetingThreshold > 0 ? RoleUtils.Counter(Game.MatchData.MeetingsCalled, meetingThreshold, RoleColor) : "";
 
-    [RoleAction(RoleActionType.SelfExiled)]
+    [RoleAction(LotusActionType.Exiled)]
     public void JesterWin()
     {
         if (Game.MatchData.MeetingsCalled < meetingThreshold) return;
-        VentLogger.Fatal("Forcing Win by Jester");
+        log.Fatal("Forcing Win by Jester");
         ManualWin jesterWin = new(MyPlayer, new WinReason(ReasonType.SoloWinner, TranslationUtil.Colorize(Translations.WinConditionName, RoleColor)), 999);
         jesterWin.Activate();
     }
 
-    [RoleAction(RoleActionType.MeetingCalled)]
-    public void CheckCallMeeting(PlayerControl caller, ActionHandle handle, Optional<GameData.PlayerInfo> deadBody)
+    [RoleAction(LotusActionType.ReportBody)]
+    public void CheckCallMeeting(Optional<NetworkedPlayerInfo> deadBody, ActionHandle handle)
     {
-        if (caller.PlayerId != MyPlayer.PlayerId) return;
         // Cancel if the jester can't call emergency meetings
         if (!deadBody.Exists() && cantCallMeetings) handle.Cancel();
     }
@@ -81,7 +82,7 @@ public class Jester : CustomRole
             .OptionOverride(Override.EngVentCooldown, 0.1f);
     }
 
-    public override List<Statistic> Statistics() => new() {VanillaStatistics.TimesVented };
+    public override List<Statistic> Statistics() => new() { VanillaStatistics.TimesVented };
 
     [Localized(nameof(Jester))]
     private static class Translations

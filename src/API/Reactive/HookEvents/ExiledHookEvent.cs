@@ -2,12 +2,12 @@
 
 namespace Lotus.API.Reactive.HookEvents;
 
-public class ExiledHookEvent: IHookEvent
+public class ExiledHookEvent : IHookEvent
 {
-    public GameData.PlayerInfo ExiledPlayer;
+    public NetworkedPlayerInfo ExiledPlayer;
     public List<byte> Voters;
 
-    public ExiledHookEvent(GameData.PlayerInfo exiledPlayer, List<byte> voters)
+    public ExiledHookEvent(NetworkedPlayerInfo exiledPlayer, List<byte> voters)
     {
         ExiledPlayer = exiledPlayer;
         Voters = voters;

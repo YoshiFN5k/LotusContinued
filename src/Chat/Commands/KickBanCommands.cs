@@ -1,7 +1,5 @@
 using Lotus.Extensions;
 using Lotus.Managers;
-using Lotus.Roles;
-using Lotus.Roles.Interactions;
 using Lotus.Utilities;
 using VentLib.Commands;
 using VentLib.Commands.Attributes;
@@ -14,7 +12,7 @@ using VentLib.Utilities.Optionals;
 namespace Lotus.Chat.Commands;
 
 [Localized("Commands.Admin")]
-[Command(CommandFlag.HostOnly, "kick", "ban")]
+[Command("kick", "ban")]
 public class KickBanCommand : ICommandReceiver
 {
     [Localized("KickMessage")] private static string _kickedMessage = "{0} was kicked by host.";
@@ -22,6 +20,11 @@ public class KickBanCommand : ICommandReceiver
 
     public void Receive(PlayerControl source, CommandContext context)
     {
+        if (!PluginDataManager.ModManager.IsPlayerModded(source) && !source.IsHost())
+        {
+            ChatHandlers.NotPermitted().Send(source);
+            return;
+        }
         bool ban = context.Alias == "ban";
         string message = ban ? _banMessage : _kickedMessage;
 
@@ -36,7 +39,7 @@ public class KickBanCommand : ICommandReceiver
         bool banWithId = false;
         if (int.TryParse(context.Args[0], out int result))
         {
-            targetPlayer = Utils.PlayerById(result);
+            targetPlayer = Utils.PlayerById((byte)result);
             banWithId = true;
         }
         else targetPlayer = PlayerControl.AllPlayerControls.ToArray()
@@ -44,14 +47,25 @@ public class KickBanCommand : ICommandReceiver
 
         targetPlayer.Handle(player =>
         {
+            if (player.IsHost())
+            {
+                ChatHandlers.InvalidCmdUsage("Not able to ban the host from the game.").Send();
+                return;
+            }
             if (LobbyBehaviour.Instance == null) player.RpcExileV2(false);
             if (banWithId && context.Args.Length > 1)
             {
                 string reason = context.Args[1..].Fuse(" ");
-                PluginDataManager.BanManager.BanWithReason(player, reason);
+                if (reason.Trim() == string.Empty) reason = "Host Decision";
+                PluginDataManager.BanManager.BanWithReason(player, reason, $"{player.name} was banned for {reason}.");
             }
-            else AmongUsClient.Instance.KickPlayer(player.GetClientId(), ban);
-            ChatHandler.Of(message.Formatted(player.name), "Announcement").Send();
-        }, () => ChatHandler.Of($"Unable to find player: {text}", "Announcement").Send(source));
+            else
+            {
+                string reason = context.Args[1..].Fuse(" ");
+                if (reason.Trim() == string.Empty) AmongUsClient.Instance.KickPlayer(player.GetClientId(), ban);
+                else AmongUsClient.Instance.KickPlayerWithMessage(player, reason, false);
+            }
+            ChatHandler.Of(message.Formatted(player.name)).Send();
+        }, () => ChatHandler.Of($"Unable to find player: {text}").Send(source));
     }
 }

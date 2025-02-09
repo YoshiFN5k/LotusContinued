@@ -1,12 +1,12 @@
 using System;
-using Lotus.Logging;
 using UnityEngine;
 using VentLib.Localization.Attributes;
 using VentLib.Options;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Options.IO;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
+using Lotus.Extensions;
 
 namespace Lotus.Options.Client;
 
@@ -25,28 +25,48 @@ public class VideoOptions
             _targetFps = value;
         }
     }
+    public bool ChatDarkMode
+    {
+        get => _darkMode;
+        set
+        {
+            darkOption.SetValue(value ? 1 : 0);
+            _darkMode = value;
+        }
+    }
 
     private int _targetFps;
+    private bool _darkMode;
 
     private GameOption fpsOption;
+    private GameOption darkOption;
 
     public VideoOptions()
     {
-        OptionManager optionManager = OptionManager.GetManager();
+        OptionManager optionManager = OptionManager.GetManager(file: "display.txt");
         fpsOption = new GameOptionBuilder()
-            .Key("Max Framerate")
-            .Name("Max Framerate")
+            .Values(2, FpsLimits)
+            .KeyName("Max Framerate", "Max Framerate")
             .Description("Maximum Framerate for the Application")
             .IOSettings(s => s.UnknownValueAction = ADEAnswer.Allow)
-            .Values(2, FpsLimits)
             .BindInt(i =>
             {
                 optionManager.DelaySave(0);
                 Application.targetFrameRate = _targetFps = i;
                 Async.Schedule(() => Application.targetFrameRate = _targetFps, 1f);
             })
-            .BuildAndRegister();
+            .BuildAndRegister(optionManager);
+
+        darkOption = new GameOptionBuilder()
+            .AddBoolean(false)
+            .KeyName("Dark Mode", "Dark Mode")
+            .Description("Whether or not Chat will be dark")
+            .IOSettings(s => s.UnknownValueAction = ADEAnswer.UseDefault)
+            .BindBool(b =>
+            {
+                _darkMode = b;
+                optionManager.DelaySave(0);
+            })
+            .BuildAndRegister(optionManager);
     }
-
-
 }

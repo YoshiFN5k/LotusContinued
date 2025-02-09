@@ -4,13 +4,13 @@ using VentLib.Networking.Interfaces;
 
 namespace Lotus.Addons;
 
-public class AddonInfo: IRpcSendable<AddonInfo>
+public class AddonInfo : IRpcSendable<AddonInfo>
 {
     internal ulong UUID;
-    internal string AssemblyShortName;
-    internal string AssemblyFullName;
-    internal string Name;
-    internal string Version;
+    internal string AssemblyShortName = null!;
+    internal string AssemblyFullName = null!;
+    internal string Name = null!;
+    internal string Version = null!;
     internal Mismatch Mismatches = Mismatch.None;
 
     public AddonInfo Read(MessageReader reader)
@@ -36,15 +36,15 @@ public class AddonInfo: IRpcSendable<AddonInfo>
         writer.Write((int)Mismatches);
     }
 
-    public static AddonInfo From(TOHAddon addon)
+    public static AddonInfo From(LotusAddon addon)
     {
         return new AddonInfo
         {
-            UUID = addon.Uuid,
+            UUID = addon.UUID,
             AssemblyShortName = addon.BundledAssembly.GetName().Name,
             AssemblyFullName = addon.BundledAssembly.GetName().FullName,
-            Name = addon.AddonName(),
-            Version = addon.AddonVersion()
+            Name = addon.Name,
+            Version = addon.Version.ToSimpleName()
         };
     }
 
@@ -54,8 +54,8 @@ public class AddonInfo: IRpcSendable<AddonInfo>
             Mismatches = (Mismatches | Mismatch.Version) & ~Mismatch.None;
     }
 
-    public static bool operator ==(AddonInfo addon1, AddonInfo addon2) => addon1?.Equals(addon2) ?? addon2 is null;
-    public static bool operator !=(AddonInfo addon1, AddonInfo addon2) => !addon1?.Equals(addon2) ?? addon2 is not null;
+    public static bool operator ==(AddonInfo? addon1, AddonInfo? addon2) => addon1?.Equals(addon2) ?? addon2 is null;
+    public static bool operator !=(AddonInfo? addon1, AddonInfo? addon2) => !addon1?.Equals(addon2) ?? addon2 is not null;
 
     public override bool Equals(object? obj)
     {

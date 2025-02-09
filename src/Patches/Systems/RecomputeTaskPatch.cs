@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using HarmonyLib;
+using Lotus.API.Odyssey;
 using Lotus.Extensions;
 using Lotus.Roles.Interfaces;
 using Lotus.Utilities;
-using Lotus.Roles.Legacy;
 using VentLib.Utilities.Extensions;
 
 namespace Lotus.Patches.Systems;
@@ -14,12 +14,13 @@ public class RecomputeTaskPatch
 {
     public static bool Prefix(GameData __instance)
     {
+        if (!Game.InGameStates.Contains(Game.State)) return true;
         __instance.TotalTasks = 0;
         __instance.CompletedTasks = 0;
         __instance.AllPlayers.ToArray()
             .Where(Utils.HasTasks)
-            .Where(p => p.GetCustomRole() is ITaskHolderRole taskHolder && taskHolder.TasksApplyToTotal())
-            .SelectMany(p => p?.Tasks?.ToArray() ?? Array.Empty<GameData.TaskInfo>())
+            .Where(p => p.GetPrimaryRole() is ITaskHolderRole taskHolder && taskHolder.TasksApplyToTotal())
+            .SelectMany(p => p?.Tasks?.ToArray() ?? Array.Empty<NetworkedPlayerInfo.TaskInfo>())
             .ForEach(task =>
             {
                 __instance.TotalTasks++;

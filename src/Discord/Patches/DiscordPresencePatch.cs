@@ -1,15 +1,15 @@
-/*
-using Discord;
 using HarmonyLib;
+using Discord;
 
 namespace Lotus.Discord.Patches;
 
 [HarmonyPatch(typeof(ActivityManager), nameof(ActivityManager.UpdateActivity))]
-public class DiscordPresencePatch
+public class DiscordPatch
 {
-    public static void Prefix(ActivityManager __instance, ref Activity activity)
+    public static string DiscordMessage = "Project Lotus " + (ProjectLotus.DevVersion ? ProjectLotus.DevVersionStr : "v" + ProjectLotus.VisibleVersion);
+    public static void Prefix(ref Activity activity)
     {
-        activity.Details = $"Project Lotus {ProjectLotus.Instance.CurrentVersion.ToSimpleName()}";
+        if (activity.Details == "" || activity.Details == null) activity.Details = DiscordMessage;
+        else activity.Details += $" ({DiscordMessage})";
     }
 }
-*/

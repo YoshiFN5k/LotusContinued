@@ -5,7 +5,7 @@ using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Crew.Potions;
 
-public class PotionSabotage: Potion
+public class PotionSabotage : Potion
 {
     [Localized("Sabotage")]
     public static string PotionName = "Mechanic's Mix";
@@ -20,7 +20,7 @@ public class PotionSabotage: Potion
 
     public override bool Use(PlayerControl user)
     {
-        user.GetCustomRole<Alchemist>().QuickFixSabotage = true;
+        user.PrimaryRole<Alchemist>().QuickFixSabotage = true;
         return true;
     }
 }

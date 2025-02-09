@@ -1,15 +1,16 @@
 using Lotus.Factions;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using UnityEngine;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles.RoleGroups.Madmates.Roles;
 
 public class Parasite : Shapeshifter
 {
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target) => base.TryKill(target);
 
     public override bool CanSabotage() => true;

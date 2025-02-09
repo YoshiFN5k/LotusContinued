@@ -1,12 +1,15 @@
 using Lotus.API.Odyssey;
 using Lotus.Extensions;
 using Lotus.Roles.Interfaces;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Lotus.Roles.Subroles;
 
@@ -23,7 +26,7 @@ public class Flash : Subrole, IVariantSubrole
 
     public bool AssignVariation() => RoleUtils.RandomSpawn(_escalation);
 
-    [RoleAction(RoleActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundStart)]
     private void GameStart(bool isStart)
     {
         if (!isStart) return;
@@ -31,7 +34,7 @@ public class Flash : Subrole, IVariantSubrole
         overrideRemote = Game.MatchData.Roles.AddOverride(MyPlayer.PlayerId, additiveOverride);
     }
 
-    [RoleAction(RoleActionType.MyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath)]
     private void RemoveOverride() => overrideRemote?.Delete();
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
@@ -42,10 +45,11 @@ public class Flash : Subrole, IVariantSubrole
                 .BindFloat(f => playerSpeedIncrease = f)
                 .Build());
 
+    protected override List<CustomRole> LinkedRoles() => base.LinkedRoles().Concat(new List<CustomRole>() { _escalation }).ToList();
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
-            .RoleColor(Color.yellow)
-            .LinkedRoles(_escalation);
+            .RoleColor(Color.yellow);
 
     [Localized(nameof(Flash))]
     private static class Translations

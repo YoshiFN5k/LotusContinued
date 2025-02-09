@@ -5,7 +5,7 @@ using VentLib.Utilities.Attributes;
 namespace Lotus.GUI.Menus.OptionsMenu.Components;
 
 [RegisterInIl2Cpp]
-public class TiledToggleButton: MonoBehaviour
+public class TiledToggleButton : MonoBehaviour
 {
     private GameObject anchorObject;
     private GameObject leftButtonObject;
@@ -44,8 +44,8 @@ public class TiledToggleButton: MonoBehaviour
         rightButton.SetToggleOnAction(SetOnState);
         rightButton.SetToggleOffAction(() => rightButton.SetState(true, true));
 
-        leftButtonObject.transform.localPosition = new Vector3(-1.25f, 0f, 0f);
-        rightButtonObject.transform.localPosition = new Vector3(1.25f, 0f, 0f);
+        leftButtonObject.transform.localPosition = new Vector3(-0.983f, 0.353f, -1);
+        rightButtonObject.transform.localPosition = new Vector3(1.04f, 0.353f, -1);
     }
 
     private void Start()

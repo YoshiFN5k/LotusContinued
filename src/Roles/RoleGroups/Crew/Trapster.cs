@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Lotus.Roles.Interactions;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Interactions.Interfaces;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
@@ -11,10 +12,11 @@ using Lotus.Roles.Internals;
 using Lotus.Roles.Subroles;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using static Lotus.Roles.RoleGroups.Crew.Trapster.TrapsterTranslations.TrapsterOptionTranslations;
+using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -28,14 +30,14 @@ public class Trapster : Crewmate
 
     private byte trappedPlayer = byte.MaxValue;
 
-    [RoleAction(RoleActionType.Interaction)]
+    [RoleAction(LotusActionType.Interaction)]
     private void TrapsterDeath(PlayerControl actor, Interaction interaction)
     {
         if (interaction.Intent is not IFatalIntent) return;
         if (interaction is not LotusInteraction && !trapOnIndirectKill) return;
 
         trappedPlayer = actor.PlayerId;
-        CustomRole actorRole = actor.GetCustomRole();
+        CustomRole actorRole = actor.PrimaryRole();
         Remote<GameOptionOverride> optionOverride = actorRole.AddOverride(new GameOptionOverride(Override.PlayerSpeedMod, 0.01f));
         Async.Schedule(() =>
         {
@@ -45,13 +47,12 @@ public class Trapster : Crewmate
         }, trappedDuration);
     }
 
-    [RoleAction(RoleActionType.AnyReportedBody)]
-    private void PreventReportingOfBody(PlayerControl reporter, GameData.PlayerInfo body, ActionHandle handle)
+    [RoleAction(LotusActionType.ReportBody, ActionFlag.GlobalDetector | ActionFlag.WorksAfterDeath)]
+    private void PreventReportingOfBody(PlayerControl reporter, Optional<NetworkedPlayerInfo> body, ActionHandle handle)
     {
         if (reporter.PlayerId != trappedPlayer) return;
-        if (body.PlayerId != MyPlayer.PlayerId) return;
+        if (body.Exists()) if (body.Get().PlayerId != MyPlayer.PlayerId) return;
         handle.Cancel();
-
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>

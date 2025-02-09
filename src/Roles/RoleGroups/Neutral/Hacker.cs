@@ -11,19 +11,20 @@ using Lotus.Victory.Conditions;
 using Lotus.Extensions;
 using Lotus.Factions;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.RoleGroups.Crew;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Utilities;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using static Lotus.Roles.RoleGroups.Crew.Repairman.RepairmanTranslations.RepairmanOptionTranslations;
 using static Lotus.Roles.RoleGroups.Neutral.Hacker.HackerTranslations.HackerOptionTranslations;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
-public class Hacker: Engineer
+public class Hacker : Engineer
 {
     private List<SabotageType> sabotages = new();
     private int sabotageTotal;
@@ -36,18 +37,17 @@ public class Hacker: Engineer
     [UIComponent(UI.Counter, ViewMode.Additive, GameState.Roaming, GameState.InMeeting)]
     private string HackerCounter() => RoleUtils.Counter(sabotageCount, sabotageTotal, RoleColor);
 
-    [RoleAction(RoleActionType.SabotagePartialFix)]
-    private void HackerFixes(ISabotage sabotage, PlayerControl fixer)
+    [RoleAction(LotusActionType.SabotagePartialFix)]
+    private void HackerFixes(ISabotage sabotage)
     {
-        if (fixer.PlayerId != MyPlayer.PlayerId || !sabotages.Contains(sabotage.SabotageType())) return;
+        if (!sabotages.Contains(sabotage.SabotageType())) return;
         bool result = sabotage is DoorSabotage doorSabotage ? doorSabotage.FixRoom(MyPlayer) : sabotage.Fix(MyPlayer);
         if (result) Game.MatchData.GameHistory.AddEvent(new GenericAbilityEvent(MyPlayer, $"{ModConstants.HColor1.Colorize(MyPlayer.name)} fixed {sabotage.SabotageType()}."));
     }
 
-    [RoleAction(RoleActionType.SabotageFixed)]
-    private void HackerAcquirePoints(ISabotage sabotage, PlayerControl fixer)
+    [RoleAction(LotusActionType.SabotageFixed)]
+    private void HackerAcquirePoints(ISabotage sabotage)
     {
-        if (fixer.PlayerId != MyPlayer.PlayerId) return;
         if (fixingDoorsGivesPoint || sabotage.SabotageType() is not SabotageType.Door) sabotageCount++;
         CheckHackerWin();
     }
@@ -60,7 +60,7 @@ public class Hacker: Engineer
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .Tab(DefaultTabs.NeutralTab)
-            .SubOption(sub => AddVentingOptions(sub.KeyName("Hacker Can Vent", GColor(HackerCanVent))
+            .SubOption(sub => AddVentingOptions(sub.KeyName("Hacker Can Vent", RoleColor.Colorize(RoleName) + " " + RoleTranslations.CanVent)
                 .AddOnOffValues()
                 .BindBool(b => hackerCanVent = b)
                 .ShowSubOptionPredicate(b => (bool)b))
@@ -98,13 +98,11 @@ public class Hacker: Engineer
                 .BindBool(b => fixingDoorsGivesPoint = b)
                 .Build());
 
-    private string GColor(string input) => TranslationUtil.Colorize(input, RoleColor);
-
-    protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        roleModifier.RoleColor(new Color(0.21f, 0.5f, 0.07f))
-            .VanillaRole(hackerCanVent ? RoleTypes.Engineer : RoleTypes.Crewmate)
-            .Faction(FactionInstances.Neutral)
-            .SpecialType(SpecialType.Neutral);
+    protected override RoleModifier Modify(RoleModifier roleModifier) => base
+        .Modify(roleModifier).RoleColor(new Color(0.21f, 0.5f, 0.07f))
+        .VanillaRole(hackerCanVent ? RoleTypes.Engineer : RoleTypes.Crewmate)
+        .Faction(FactionInstances.Neutral)
+        .SpecialType(SpecialType.Neutral);
 
     [Localized(nameof(Hacker))]
     internal static class HackerTranslations
@@ -114,9 +112,6 @@ public class Hacker: Engineer
         {
             [Localized(nameof(HackerSabotagePointAmount))]
             public static string HackerSabotagePointAmount = "Points Needed to Win";
-
-            [Localized(nameof(HackerCanVent))]
-            public static string HackerCanVent = "Hacker::0 Can Vent";
 
             [Localized(nameof(FixingDoorsGivesPoints))]
             public static string FixingDoorsGivesPoints = "Fixing Doors Gives Points";

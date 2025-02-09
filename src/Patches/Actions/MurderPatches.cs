@@ -3,68 +3,111 @@ using System.Collections.Generic;
 using Lotus.API.Odyssey;
 using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
-using Lotus.Gamemodes;
 using Lotus.Managers.History.Events;
 using Lotus.Roles.Internals;
-using Lotus.Roles.Internals.Attributes;
 using Lotus.Extensions;
+using Lotus.Managers.History;
+using Lotus.Options;
+using Lotus.Roles.Internals.Enums;
+using Lotus.Roles.Operations;
+using Lotus.Server;
 using Lotus.Utilities;
-using VentLib.Logging;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Harmony.Attributes;
+using VentLib.Utilities.Optionals;
+using Lotus.Roles.Managers.Interfaces;
+using Lotus.RPC.CustomObjects;
 
 namespace Lotus.Patches.Actions;
 
 
 public static class MurderPatches
 {
-    public static Dictionary<byte, FixedUpdateLock> MurderLocks = new();
-    public static Func<FixedUpdateLock> TimeoutSupplier = () => new FixedUpdateLock(0.25f);
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(MurderPatches));
+
+    public static PlayerControl LastAttacker = null!;
+    private static readonly Dictionary<byte, FixedUpdateLock> MurderLocks = new();
+    private static readonly Func<FixedUpdateLock> TimeoutSupplier = () => new FixedUpdateLock(0.25f);
+
+    public static bool Lock(byte player) => MurderLocks.GetOrCompute(player, TimeoutSupplier).AcquireLock(NetUtils.DeriveDelay(0.25f));
 
     [QuickPrefix(typeof(PlayerControl), nameof(PlayerControl.CheckMurder))]
     public static bool Prefix(PlayerControl __instance, PlayerControl target)
     {
+        //if (__instance.IsHost()) return true;
         if (!AmongUsClient.Instance.AmHost) return false;
         if (__instance == null || target == null) return false;
 
-        VentLogger.Debug($"{__instance.GetNameWithRole()} => {target.GetNameWithRole()}", "CheckMurder");
-        if (Game.CurrentGamemode.IgnoredActions().HasFlag(GameAction.KillPlayers)) return false;
+        if (Game.CurrentGameMode.BlockedActions().HasFlag(GameModes.BlockableGameAction.KillPlayers)) return false;
 
+        log.Debug($"(CheckMurder) {__instance.GetNameWithRole()} => {target.GetNameWithRole()}");
 
-        if (target.Data == null || target.inVent || target.inMovingPlat)
+        if (__instance.Data.Disconnected || !target)
         {
-            VentLogger.Trace($"Unable to kill {target.name}. Invalid Status", "CheckMurder");
+            log.Trace($"Unable to kill {target.name}. Bad Kill.", "CheckMurder");
+            return false;
+        }
+
+        if (target.Data == null || target.inVent || target.inMovingPlat || target.Data.Disconnected)
+        {
+            log.Trace($"Unable to kill {target.name}. Invalid Status", "CheckMurder");
             return false;
         }
         if (!target.IsAlive())
         {
-            VentLogger.Trace($"Unable to kill {target.name}. Player is already dead.", "CheckMurder");
+            log.Trace($"Unable to kill {target.name}. Player is already dead.", "CheckMurder");
             return false;
         }
         if (MeetingHud.Instance != null)
         {
-            VentLogger.Trace($"Unable to kill {target.name}. There is currently a meeting.", "CheckMurder");
+            log.Trace($"Unable to kill {target.name}. There is currently a meeting.", "CheckMurder");
             return false;
+        }
+        if (target.PlayerId == 255 && !target.notRealPlayer)
+        {
+            CustomNetObject netObject = CustomNetObject.ObjectFromPlayer(target);
+            if (netObject != null)
+            {
+                if (!netObject.CanTarget())
+                {
+                    log.Trace($"Unable to kill a NetObject.");
+                    return false;
+                }
+            }
         }
 
         if (__instance.PlayerId == target.PlayerId) return false;
 
-        if (!MurderLocks.GetOrCompute(__instance.PlayerId, TimeoutSupplier).IsUnlocked()) return false;
+        if (!MurderLocks.GetOrCompute(__instance.PlayerId, TimeoutSupplier).IsUnlocked())
+        {
+            log.Trace("Kill was canceled because it's been 0.25 seconds since the last kill.");
+            return false;
+        }
+        Lock(__instance.PlayerId);
 
-        ActionHandle handle = ActionHandle.NoInit();
-        __instance.Trigger(RoleActionType.Attack, ref handle, target);
+        RoleOperations.Current.Trigger(LotusActionType.Attack, __instance, target);
         return false;
     }
 
+    [QuickPrefix(typeof(PlayerControl), nameof(PlayerControl.MurderPlayer))]
+    public static void SaveAttacker(PlayerControl __instance, PlayerControl target, MurderResultFlags resultFlags)
+    {
+        if (resultFlags.HasFlag(MurderResultFlags.Succeeded) || resultFlags.HasFlag(MurderResultFlags.DecisionByHost) && target.protectedByGuardianId > -1)
+            LastAttacker = __instance;
+    }
+
     [QuickPostfix(typeof(PlayerControl), nameof(PlayerControl.MurderPlayer))]
-    public static void MurderPlayer(PlayerControl __instance, PlayerControl target)
+    public static void MurderPlayer(PlayerControl __instance, PlayerControl target, MurderResultFlags resultFlags)
     {
         if (!AmongUsClient.Instance.AmHost) return;
         if (!target.Data.IsDead) return;
-        MurderLocks.GetOrCompute(__instance.PlayerId, TimeoutSupplier).AcquireLock();
+        if (resultFlags.HasFlag(MurderResultFlags.FailedError)) return;
+        if (Game.MatchData.GetFrozenPlayer(target)?.Status is not PlayerStatus.Alive) return;
 
-        VentLogger.Trace($"{__instance.GetNameWithRole()} => {target.GetNameWithRole()}{(target.protectedByGuardian ? "(Protected)" : "")}", "MurderPlayer");
+        MurderPatches.Lock(__instance.PlayerId);
+
+        log.Trace($"(MurderPlayer) {__instance.GetNameWithRole()} => {target.GetNameWithRole()}{(target.protectedByGuardianId > -1 ? "(Protected)" : "")}");
 
         IDeathEvent deathEvent = Game.MatchData.GameHistory.GetCauseOfDeath(target.PlayerId)
             .OrElseGet(() => __instance.PlayerId == target.PlayerId
@@ -75,12 +118,12 @@ public static class MurderPatches
         Game.MatchData.GameHistory.AddEvent(deathEvent);
         Game.MatchData.GameHistory.SetCauseOfDeath(target.PlayerId, deathEvent);
 
+        Game.MatchData.RegenerateFrozenPlayers(target);
 
-        ActionHandle ignored = ActionHandle.NoInit();
-        target.Trigger(RoleActionType.MyDeath, ref ignored, __instance, deathEvent.Instigator(), deathEvent);
-        Game.TriggerForAll(RoleActionType.AnyDeath, ref ignored, target, __instance, deathEvent.Instigator(), deathEvent);
+        RoleOperations.Current.TriggerForAll(LotusActionType.PlayerDeath, target, __instance, deathEvent.Instigator(), deathEvent);
 
-        PlayerMurderHookEvent playerMurderHookEvent = new(__instance, target, deathEvent);
+        PlayerControl killer = deathEvent.Instigator().FlatMap(k => new UnityOptional<PlayerControl>(k.MyPlayer)).OrElse(__instance);
+        PlayerMurderHookEvent playerMurderHookEvent = new(killer, target, deathEvent);
         Hooks.PlayerHooks.PlayerMurderHook.Propagate(playerMurderHookEvent);
         Hooks.PlayerHooks.PlayerDeathHook.Propagate(playerMurderHookEvent);
 

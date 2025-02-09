@@ -9,7 +9,6 @@ using Lotus.Utilities;
 using TMPro;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Logging;
 using VentLib.Utilities.Attributes;
 using VentLib.Utilities.Extensions;
 
@@ -17,8 +16,10 @@ namespace Lotus.GUI.Menus;
 
 [Localized("GUI")]
 [RegisterInIl2Cpp]
-public class ModUpdateMenu: MonoBehaviour
+public class ModUpdateMenu : MonoBehaviour
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(ModUpdateMenu));
+
     private static List<UpdateItem> _updateItems = new();
 
     public SpriteRenderer background;
@@ -49,7 +50,7 @@ public class ModUpdateMenu: MonoBehaviour
         ContinueButton.gameObject.SetActive(false);
         AnchorObject.SetActive(false);
 
-        VentLogger.Trace($"Update ready during Mod Menu Creation: {SplashPatch.UpdateReady}", "ModUpdateMenu");
+        log.Trace($"Update ready during Mod Menu Creation: {SplashPatch.UpdateReady}", "ModUpdateMenu");
         if (SplashPatch.UpdateReady) Open();
     }
 
@@ -117,7 +118,7 @@ public class ModUpdateMenu: MonoBehaviour
 
     public static void AddUpdateItem(string name, string? version, UpdateDelegate updateDelegate, bool autoStartUpdate = false)
     {
-        UpdateItem item = new() { Name = name, Version = version, AutoStartUpdate = autoStartUpdate};
+        UpdateItem item = new() { Name = name, Version = version, AutoStartUpdate = autoStartUpdate };
         _updateItems.Add(item.BindUpdateFunction(updateDelegate));
     }
 

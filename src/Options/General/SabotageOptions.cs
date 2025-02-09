@@ -4,7 +4,7 @@ using Lotus.API.Vanilla.Sabotages;
 using Lotus.Extensions;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Options.General;
 
@@ -43,91 +43,85 @@ public class SabotageOptions
         AllOptions.Add(new GameOptionTitleBuilder()
             .Title(SabotageOptionTranslations.SabotageOptionTitle)
             .Color(_optionColor)
-            .Tab(DefaultTabs.GeneralTab)
             .Build());
 
         AllOptions.Add(new GameOptionBuilder()
+            .AddBoolean(false)
             .IsHeader(true)
             .Name(SabotageOptionTranslations.DisableSabotagesText)
             .Key("Disable Sabotages")
-            .Tab(DefaultTabs.GeneralTab)
             .Color(_optionColor)
-            .AddOnOffValues(false)
             .ShowSubOptionPredicate(b => (bool)b)
             .BindBool(b => this.disableSabotages = b)
             .SubOption(sub => sub
+                .AddBoolean(false)
                 .Key("Disable Reactor")
                 .Name(SabotageOptionTranslations.DisableReactor)
                 .BindBool(FlagSetter(SabotageType.Reactor))
-                .AddOnOffValues(false)
                 .Build())
             .SubOption(sub => sub
+                .AddBoolean(false)
                 .Key("Disable Oxygen")
                 .Name(SabotageOptionTranslations.DisableOxygen)
                 .BindBool(FlagSetter(SabotageType.Oxygen))
-                .AddOnOffValues(false)
                 .Build())
             .SubOption(sub => sub
+                .AddBoolean(false)
                 .Key("Disable Lights")
                 .Name(SabotageOptionTranslations.DisableLights)
                 .BindBool(FlagSetter(SabotageType.Lights))
-                .AddOnOffValues(false)
                 .Build())
             .SubOption(sub => sub
+                .AddBoolean(false)
                 .Key("Disable Communications")
                 .Name(SabotageOptionTranslations.DisableCommunications)
                 .BindBool(FlagSetter(SabotageType.Communications))
-                .AddOnOffValues(false)
                 .Build())
             .SubOption(sub => sub
+                .AddBoolean(false)
                 .Key("Disable Doors")
                 .Name(SabotageOptionTranslations.DisableDoors)
                 .BindBool(FlagSetter(SabotageType.Door))
-                .AddOnOffValues(false)
                 .Build())
             .SubOption(sub => sub
+                .AddBoolean(false)
                 .Key("Disable Helicopters")
                 .Name(SabotageOptionTranslations.DisableHelicopters)
                 .BindBool(FlagSetter(SabotageType.Helicopter))
-                .AddOnOffValues(false)
                 .Build())
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Skeld Reactor Countdown")
             .Name(AuMap.Skeld + " " + SabotageOptionTranslations.ReactorCountdown)
             .BindInt(i => SkeldReactorCountdown = i)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Skeld Oxygen Countdown")
             .Name(AuMap.Skeld + " " + SabotageOptionTranslations.OxygenCountdown)
             .BindInt(i => SkeldOxygenCountdown = i)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Mira Reactor Countdown")
             .Name(AuMap.Mira + " " + SabotageOptionTranslations.ReactorCountdown)
             .BindInt(i => MiraReactorCountdown = i)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Mira Oxygen Countdown")
             .Name(AuMap.Mira + " " + SabotageOptionTranslations.OxygenCountdown)
             .BindInt(i => MiraOxygenCountdown = i)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Polus Reactor Countdown")
             .Name(AuMap.Polus + " " + SabotageOptionTranslations.ReactorCountdown)
             .BindInt(i => PolusReactorCountdown = i)
-            .BuildAndRegister());
+            .Build());
 
         AllOptions.Add(Builder("Airship Crash Course Countdown")
             .Name(AuMap.Airship + " " + SabotageOptionTranslations.CrashCourseCountdown)
             .BindInt(i => AirshipReactorCountdown = i)
-            .BuildAndRegister());
+            .Build());
 
-        additionalOptions.ForEach(o =>
-        {
-            o.Register();
-            AllOptions.Add(o);
-        });
+        AllOptions.AddRange(additionalOptions);
     }
 
     /// <summary>
@@ -149,11 +143,11 @@ public class SabotageOptions
         };
     }
 
-    private GameOptionBuilder Builder(string key) => new GameOptionBuilder().Key(key)
-        .Tab(DefaultTabs.GeneralTab)
-        .Color(_optionColor)
+    private GameOptionBuilder Builder(string key) => new GameOptionBuilder()
         .Value(v => v.Text(SabotageOptionTranslations.DefaultValue).Value(-1).Color(Color.cyan).Build())
-        .AddIntRange(5, 120, 5, 0, GeneralOptionTranslations.SecondsSuffix);
+        .AddIntRange(5, 120, 5, 0, GeneralOptionTranslations.SecondsSuffix)
+        .Key(key)
+        .Color(_optionColor);
 
     [Localized("Sabotage")]
     private static class SabotageOptionTranslations

@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Lotus.Chat;
 using Lotus.Extensions;
-using Lotus.Logging;
 using Lotus.Managers.Templates.Models;
-using VentLib.Logging;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
 
@@ -15,6 +12,8 @@ namespace Lotus.Managers.Templates;
 
 public class TemplateCommandMigrator
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(TemplateCommandMigrator));
+
     private FileInfo file;
     private Dictionary<string, string> commandAliases = null!;
     private OrderedDictionary<string, List<string>> aliasDictionary = new();
@@ -60,7 +59,7 @@ public class TemplateCommandMigrator
             }
             catch (Exception e)
             {
-                VentLogger.Exception(e, "Could not parse template command!");
+                log.Exception("Could not parse template command!", e);
             }
         });
     }

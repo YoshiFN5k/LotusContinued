@@ -7,28 +7,43 @@ using Lotus.Roles;
 using Lotus.Roles.Interfaces;
 using Lotus.Utilities;
 using Lotus.Extensions;
-using Lotus.Logging;
+using Lotus.Options.General;
+using Lotus.Options;
+using VentLib.Utilities.Extensions;
+using Lotus.API.Odyssey;
+using Lotus.GameModes.Standard;
+using Sentry.Unity.NativeUtils;
+using System.Linq;
 
 namespace Lotus.Patches.Systems;
 
-[HarmonyPatch(typeof(GameData), nameof(GameData.RpcSetTasks))]
+[HarmonyPatch(typeof(NetworkedPlayerInfo), nameof(NetworkedPlayerInfo.RpcSetTasks))]
 public class RpcSetTasksPatch
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(RpcSetTasksPatch));
+    internal static Dictionary<byte, byte> ReplacedCommonTasks = new();
     internal static readonly Queue<TasksOverride> TaskQueue = new();
 
-    public static bool Prefix(GameData __instance, byte playerId, ref Il2CppStructArray<byte> taskTypeIds)
+    public static void OnGameStart()
+    {
+        ReplacedCommonTasks = new();
+    }
+
+    public static bool Prefix(NetworkedPlayerInfo __instance, ref Il2CppStructArray<byte> taskTypeIds)
     {
         if (!AmongUsClient.Instance.AmHost) return true;
+        if (Game.CurrentGameMode is StandardGameMode) taskTypeIds = RemoveIllegalTasks(taskTypeIds);
 
-        CustomRole? role = Utils.GetPlayerById(playerId)?.GetCustomRole();
+        CustomRole? role = Utils.GetPlayerById(__instance.PlayerId)?.PrimaryRole();
         // This function mostly deals with override, so if not overriding immediately exit
 
         TasksOverride? tasksOverride = TaskQueue.Count == 0 ? null : TaskQueue.Dequeue();
 
+        bool hasCommonTasks = false;
+        bool overrideTasks = false;
         int shortTaskCount = -1;
         int longTaskCount = -1;
-        bool overrideTasks = false;
-        bool hasCommonTasks = false;
+
         bool hasTasks = tasksOverride != null;
 
         switch (role)
@@ -45,12 +60,11 @@ public class RpcSetTasksPatch
                 break;
         }
 
-        DevLogger.Log("Hello!!!");
         if (!hasTasks) return true;
+        log.Debug($"Setting tasks for player {__instance.Object?.name ?? __instance.PlayerName}.");
 
         if (shortTaskCount == -1 || !overrideTasks) shortTaskCount = AUSettings.NumShortTasks();
         if (longTaskCount == -1 || !overrideTasks) longTaskCount = AUSettings.NumLongTasks();
-
 
         if (tasksOverride != null)
         {
@@ -68,22 +82,23 @@ public class RpcSetTasksPatch
             }
         }
         else if (!overrideTasks) return true;
+        log.Debug($"Overriding tasks for player {__instance.Object?.name ?? __instance.PlayerName}.");
 
         Il2CppSystem.Collections.Generic.List<byte> tasksList = new();
         foreach (byte num in taskTypeIds) tasksList.Add(num);
 
-        if (hasCommonTasks) tasksList.RemoveRange(AUSettings.NumCommonTasks(), tasksList.Count - AUSettings.NumCommonTasks());
+        if (hasCommonTasks && tasksList.Count > 0) tasksList.RemoveRange(AUSettings.NumCommonTasks(), tasksList.Count - AUSettings.NumCommonTasks());
         else tasksList.Clear();
 
         Il2CppSystem.Collections.Generic.HashSet<TaskTypes> usedTaskTypes = new();
 
         Il2CppSystem.Collections.Generic.List<NormalPlayerTask> longTasks = new();
-        foreach (var task in ShipStatus.Instance.LongTasks)
+        foreach (var task in ShipStatus.Instance.LongTasks.Where(t => !CheckIllegalTask(t)))
             longTasks.Add(task);
         Shuffle(longTasks);
 
         Il2CppSystem.Collections.Generic.List<NormalPlayerTask> shortTasks = new();
-        foreach (var task in ShipStatus.Instance.NormalTasks)
+        foreach (var task in ShipStatus.Instance.ShortTasks.Where(t => !CheckIllegalTask(t)))
             shortTasks.Add(task);
         Shuffle(shortTasks);
 
@@ -111,8 +126,81 @@ public class RpcSetTasksPatch
         return true;
     }
 
+    private static bool CheckIllegalTask(NormalPlayerTask task)
+    {
+        if (Game.CurrentGameMode is not StandardGameMode) return false;
+        return IsTaskIllegal(task);
+    }
 
-    private static void WriteTaskArray(Il2CppStructArray<byte> taskIds, MessageWriter writer) => writer.WriteBytesAndSize(taskIds);
+    private static bool IsTaskIllegal(NormalPlayerTask task)
+    {
+        switch (task.TaskType)
+        {
+            case TaskTypes.SubmitScan when GeneralOptions.GameplayOptions.DisabledTaskFlag.HasFlag(DisabledTask.MedScan):
+            case TaskTypes.UnlockSafe when GeneralOptions.GameplayOptions.DisabledTaskFlag.HasFlag(DisabledTask.UnlockSafe):
+            case TaskTypes.UploadData when GeneralOptions.GameplayOptions.DisabledTaskFlag.HasFlag(DisabledTask.UploadData):
+            case TaskTypes.StartReactor when GeneralOptions.GameplayOptions.DisabledTaskFlag.HasFlag(DisabledTask.StartReactor):
+            case TaskTypes.ResetBreakers when GeneralOptions.GameplayOptions.DisabledTaskFlag.HasFlag(DisabledTask.ResetBreaker):
+            case TaskTypes.SwipeCard when GeneralOptions.GameplayOptions.DisabledTaskFlag.HasFlag(DisabledTask.CardSwipe):
+            case TaskTypes.FixWiring when GeneralOptions.GameplayOptions.DisabledTaskFlag.HasFlag(DisabledTask.FixWiring):
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static Il2CppStructArray<byte> RemoveIllegalTasks(Il2CppStructArray<byte> taskTypeIds)
+    {
+        if (!GeneralOptions.GameplayOptions.DisableTasks) return taskTypeIds;
+        List<byte> newTasks = new(taskTypeIds.Count);
+        taskTypeIds.ForEach(idx =>
+        {
+            NormalPlayerTask taskById = ShipStatus.Instance.GetTaskById(idx);
+            switch (taskById.TaskType)
+            {
+                // long and short tasks
+                case TaskTypes.SubmitScan when GeneralOptions.GameplayOptions.DisabledTaskFlag.HasFlag(DisabledTask.MedScan):
+                case TaskTypes.UnlockSafe when GeneralOptions.GameplayOptions.DisabledTaskFlag.HasFlag(DisabledTask.UnlockSafe):
+                case TaskTypes.UploadData when GeneralOptions.GameplayOptions.DisabledTaskFlag.HasFlag(DisabledTask.UploadData):
+                case TaskTypes.StartReactor when GeneralOptions.GameplayOptions.DisabledTaskFlag.HasFlag(DisabledTask.StartReactor):
+                case TaskTypes.ResetBreakers when GeneralOptions.GameplayOptions.DisabledTaskFlag.HasFlag(DisabledTask.ResetBreaker):
+                    switch (taskById.Length)
+                    {
+                        case NormalPlayerTask.TaskLength.Long:
+                            NormalPlayerTask? replacedLongTask = ShipStatus.Instance.LongTasks.Where(t => !IsTaskIllegal(t)).FirstOrDefault();
+                            if (replacedLongTask != null) newTasks.Add((byte)replacedLongTask.Index);
+                            else newTasks.Add(idx);
+                            break;
+                        case NormalPlayerTask.TaskLength.Short:
+                            NormalPlayerTask? replacedShortTask = ShipStatus.Instance.ShortTasks.Where(t => !IsTaskIllegal(t)).FirstOrDefault();
+                            if (replacedShortTask != null) newTasks.Add((byte)replacedShortTask.Index);
+                            else newTasks.Add(idx);
+                            break;
+                    }
+                    break;
+                // common tasks are a bit more in depth. as we need to align with everyone elses tasks
+                case TaskTypes.SwipeCard when GeneralOptions.GameplayOptions.DisabledTaskFlag.HasFlag(DisabledTask.CardSwipe):
+                case TaskTypes.FixWiring when GeneralOptions.GameplayOptions.DisabledTaskFlag.HasFlag(DisabledTask.FixWiring):
+                    if (ReplacedCommonTasks.TryGetValue(idx, out byte replacedTaskId)) newTasks.Add(replacedTaskId);
+                    else
+                    {
+                        byte newTaskId = idx; // just take the L if we dont have enough common tasks
+                        NormalPlayerTask? replacedTask = ShipStatus.Instance.CommonTasks.Where(t => !IsTaskIllegal(t)).FirstOrDefault();
+                        if (replacedTask != null) newTaskId = (byte)replacedTask.Index;
+                        ReplacedCommonTasks.Add(idx, newTaskId);
+                        newTasks.Add(newTaskId);
+                    }
+                    break;
+                default:
+                    newTasks.Add(idx);
+                    break;
+            }
+        });
+
+        taskTypeIds = new Il2CppStructArray<byte>(newTasks.Count);
+        for (int i = 0; i < newTasks.Count; i++) taskTypeIds[i] = newTasks[i];
+        return taskTypeIds;
+    }
 
     public static void Shuffle<T>(Il2CppSystem.Collections.Generic.List<T> list)
     {

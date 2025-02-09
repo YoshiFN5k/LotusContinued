@@ -2,18 +2,20 @@ using System;
 using HarmonyLib;
 using Lotus.Extensions;
 using UnityEngine;
-using VentLib.Logging;
 using Object = UnityEngine.Object;
+using System.Text;
 
 namespace Lotus.Patches;
 
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CheckProtect))]
 class CheckProtectPatch
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(CheckProtectPatch));
+
     public static bool Prefix(PlayerControl __instance, [HarmonyArgument(0)] PlayerControl target)
     {
         if (!AmongUsClient.Instance.AmHost) return false;
-        VentLogger.Trace($"Check Protect: {__instance.GetNameWithRole()} => {target.GetNameWithRole()}", "CheckProtect");
+        log.Trace($"Check Protect: {__instance.GetNameWithRole()} => {target.GetNameWithRole()}", "CheckProtect");
         return true;
     }
 }
@@ -28,18 +30,11 @@ class PlayerStartPatch
     }
 }
 
-[HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.RemoveProtection))]
-class PlayerControlRemoveProtectionPatch
-{
-    public static void Postfix(PlayerControl __instance)
-    {
-        VentLogger.Old($"{__instance.GetNameWithRole()}", "RemoveProtection");
-    }
-}
-
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.ResetForMeeting))]
 public static class ResetForMeetingPatch
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(ResetForMeetingPatch));
+
     public static bool Prefix(PlayerControl __instance)
     {
         try
@@ -55,7 +50,7 @@ public static class ResetForMeetingPatch
 
             __instance.RemoveProtection();
             __instance.NetTransform.enabled = true;
-            __instance.MyPhysics.ResetMoveState();
+            __instance.MyPhysics.ResetMoveState(true);
             for (int index = 0; index < __instance.currentRoleAnimations.Count; ++index)
             {
                 if ((Object)__instance.currentRoleAnimations[index] != null &&
@@ -66,11 +61,26 @@ public static class ResetForMeetingPatch
                 }
             }
 
+            __instance.isKilling = false;
+            __instance.inMovingPlat = false;
             __instance.currentRoleAnimations.Clear();
         }
         catch (Exception exception)
         {
-            VentLogger.Exception(exception);
+            log.Exception(exception);
+            log.Fatal($"Errored Player: {__instance.name}");
+            log.Fatal($"Current Outfit Type: {__instance.CurrentOutfitType.ToString()}");
+            var keysBuilder = new StringBuilder();
+
+            foreach (var key in __instance.Data.Outfits.Keys)
+            {
+                if (keysBuilder.Length > 0)
+                {
+                    keysBuilder.Append(", ");
+                }
+                keysBuilder.Append(key.ToString());
+            }
+            log.Fatal($"All Outfits: {keysBuilder.ToString()}");
         }
 
         return false;

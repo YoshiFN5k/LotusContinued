@@ -7,14 +7,16 @@ using Lotus.GUI.Name;
 using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name.Holders;
 using Lotus.Roles.Interactions;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.Overrides;
 using Lotus.Roles.RoleGroups.NeutralKilling;
 using UnityEngine;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles.Subroles.Romantics;
 
-public class RuthlessRomantic: NeutralKillingBase
+public class RuthlessRomantic : NeutralKillingBase
 {
     [UIComponent(UI.Cooldown)]
     private Cooldown cooldown;
@@ -26,10 +28,10 @@ public class RuthlessRomantic: NeutralKillingBase
         cooldown.SetDuration(GetOverride(Override.KillCooldown)?.GetValue() as float? ?? AUSettings.KillCooldown());
     }
 
-    [RoleAction(RoleActionType.Attack)]
+    [RoleAction(LotusActionType.Attack)]
     public override bool TryKill(PlayerControl target) => base.TryKill(target);
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     public void EnablePetKill()
     {
         if (!usesPetToKill || cooldown.NotReady()) return;
@@ -39,8 +41,13 @@ public class RuthlessRomantic: NeutralKillingBase
         MyPlayer.InteractWith(MyPlayer, new UnblockedInteraction(new FatalIntent(), this));
     }
 
+    protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) => AddKillCooldownOptions(base.RegisterOptions(optionStream));
+
+    protected override RoleType GetRoleType() => RoleType.Variation;
+
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .RoleFlags(RoleFlag.VariationRole)
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet)
             .RoleColor(new Color(0.23f, 0f, 0.24f, 0.98f));
 }

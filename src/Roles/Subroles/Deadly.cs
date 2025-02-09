@@ -1,29 +1,23 @@
 ﻿using Lotus.API.Odyssey;
 using Lotus.Extensions;
+using Lotus.GameModes.Standard;
 using Lotus.Managers;
 using Lotus.Roles.Internals.Attributes;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Overrides;
 using UnityEngine;
 using VentLib.Localization.Attributes;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 
 namespace Lotus.Roles.Subroles;
 
-public class Deadly: Subrole
+public class Deadly : Subrole
 {
-    public bool AssignableToNonKilling;
     public int CooldownReduction;
 
     public override string Identifier() => "乂";
 
-    protected override void PostSetup()
-    {
-        CustomRole playerRole = MyPlayer.GetCustomRole();
-        if (playerRole.RoleAbilityFlags.HasFlag(RoleAbilityFlag.IsAbleToKill)) return;
-        OverridenRoleName = CustomRoleManager.Mods.Honed.RoleName;
-    }
-
-    [RoleAction(RoleActionType.RoundStart)]
+    [RoleAction(LotusActionType.RoundStart)]
     private void GameStart(bool isStart)
     {
         if (!isStart) return;
@@ -34,7 +28,7 @@ public class Deadly: Subrole
     public override bool IsAssignableTo(PlayerControl player)
     {
         if (!player.GetVanillaRole().IsImpostor()) return false;
-        if (!AssignableToNonKilling && !player.GetCustomRole().RoleAbilityFlags.HasFlag(RoleAbilityFlag.IsAbleToKill)) return false;
+        if (!player.PrimaryRole().RoleAbilityFlags.HasFlag(RoleAbilityFlag.IsAbleToKill)) return false;
         return base.IsAssignableTo(player);
     }
 
@@ -43,11 +37,6 @@ public class Deadly: Subrole
             .SubOption(sub => sub.KeyName("Cooldown Reduction", DeadlyTranslations.Options.CooldownReduction)
                 .AddIntRange(0, 100, 5, 5, "%")
                 .BindInt(i => CooldownReduction = i)
-                .Build())
-            .SubOption(sub => sub
-                .KeyName("Assignable to Non-Killing", DeadlyTranslations.Options.AssignableToNonKilling)
-                .AddOnOffValues()
-                .BindBool(b => AssignableToNonKilling = b)
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>

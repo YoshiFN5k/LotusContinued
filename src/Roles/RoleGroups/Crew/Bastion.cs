@@ -3,25 +3,25 @@ using Lotus.API.Odyssey;
 using Lotus.GUI.Name;
 using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name.Holders;
-using Lotus.GUI.Name.Impl;
 using Lotus.Roles.Events;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Extensions;
 using Lotus.Options;
 using VentLib.Localization.Attributes;
-using VentLib.Logging;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Options.IO;
 using VentLib.Utilities.Collections;
 using static Lotus.Roles.RoleGroups.Crew.Bastion.BastionTranslations.BastionOptionTranslations;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
-public class Bastion: Engineer
+public class Bastion : Engineer
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Bastion));
     private int bombsPerRounds;
     // Here we can use the vent button as cooldown
     [NewOnSetup] private HashSet<int> bombedVents;
@@ -35,14 +35,14 @@ public class Bastion: Engineer
         if (bombsPerRounds == -1) return;
         CounterHolder counterHolder = MyPlayer.NameModel().GetComponentHolder<CounterHolder>();
         LiveString ls = new(() => RoleUtils.Counter(currentBombs, bombsPerRounds, ModConstants.Palette.GeneralColor2));
-        counterRemote = counterHolder.Add(new CounterComponent(ls,new[] { GameState.Roaming }, ViewMode.Additive, MyPlayer));
+        counterRemote = counterHolder.Add(new CounterComponent(ls, new[] { GameState.Roaming }, ViewMode.Additive, MyPlayer));
     }
 
-    [RoleAction(RoleActionType.AnyEnterVent)]
-    private void EnterVent(Vent vent, PlayerControl player, ActionHandle handle)
+    [RoleAction(LotusActionType.VentEntered, ActionFlag.GlobalDetector)]
+    private void EnterVent(PlayerControl player, Vent vent, ActionHandle handle)
     {
         bool isBombed = bombedVents.Remove(vent.Id);
-        VentLogger.Trace($"Bombed Vent Check: (player={player.name}, isBombed={isBombed})", "BastionAbility");
+        log.Trace($"Bombed Vent Check: (player={player.name}, isBombed={isBombed})", "BastionAbility");
         if (isBombed) MyPlayer.InteractWith(player, CreateInteraction(player));
         else if (player.PlayerId == MyPlayer.PlayerId)
         {
@@ -53,14 +53,14 @@ public class Bastion: Engineer
         }
     }
 
-    [RoleAction(RoleActionType.RoundStart, triggerAfterDeath: true)]
+    [RoleAction(LotusActionType.RoundStart, ActionFlag.WorksAfterDeath)]
     private void RefreshBastion()
     {
         currentBombs = bombsPerRounds;
         bombedVents.Clear();
     }
 
-    [RoleAction(RoleActionType.MyDeath)]
+    [RoleAction(LotusActionType.PlayerDeath)]
     private void ClearCounter() => counterRemote?.Delete();
 
     private IndirectInteraction CreateInteraction(PlayerControl deadPlayer)
@@ -86,7 +86,8 @@ public class Bastion: Engineer
 
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier).RoleColor("#524f4d");
+        base.Modify(roleModifier)
+        .RoleColor("#524f4d");
 
     [Localized(nameof(Bastion))]
     internal static class BastionTranslations

@@ -13,20 +13,23 @@ using Lotus.Options;
 using Lotus.Roles.Events;
 using Lotus.Roles.Interactions;
 using Lotus.Roles.Internals;
+using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Internals.Attributes;
 using Lotus.Roles.RoleGroups.Vanilla;
 using Lotus.Utilities;
 using Lotus.Extensions;
 using UnityEngine;
 using VentLib.Logging;
-using VentLib.Options.Game;
+using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
+using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
 public class Transporter : Crewmate
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Transporter));
     private int totalTransports;
     private int transportsRemaining;
     private TextComponent textComponent;
@@ -39,11 +42,11 @@ public class Transporter : Crewmate
 
     protected override void PostSetup()
     {
-        VentLogger.Fatal($"Total Transports: {totalTransports}");
+        log.Fatal($"Total Transports: {totalTransports}");
         transportsRemaining = totalTransports;
     }
 
-    [RoleAction(RoleActionType.OnPet)]
+    [RoleAction(LotusActionType.OnPet)]
     public void TransportSelect(ActionHandle handle)
     {
         if (this.transportsRemaining == 0 || !transportCooldown.IsReady()) return;
@@ -73,8 +76,8 @@ public class Transporter : Crewmate
         if (target2.IsAlive())
             Utils.Teleport(target2.NetTransform, new Vector2(player1Position.x, player1Position.y + 0.3636f));
 
-        target1.InteractWith(target2, new TransportInteraction(target1));
-        target2.InteractWith(target1, new TransportInteraction(target2));
+        target1.InteractWith(target2, new TransportInteraction(target1, MyPlayer));
+        target2.InteractWith(target1, new TransportInteraction(target2, MyPlayer));
 
         target1.moveable = true;
         target2.moveable = true;
@@ -89,17 +92,20 @@ public class Transporter : Crewmate
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
         base.RegisterOptions(optionStream)
             .Tab(DefaultTabs.CrewmateTab)
-            .SubOption(sub => sub.Name("Number of Transports")
+            .SubOption(sub => sub
+                .KeyName("Number of Transports", Translations.Options.TotalTransports)
                 .Bind(v => this.totalTransports = (int)v)
                 .Values(4, 5, 10, 15, 20, 25).Build())
-            .SubOption(sub => sub.Name("Transport Cooldown")
+            .SubOption(sub => sub
+                .KeyName("Transport Cooldown", Translations.Options.TransportCooldown)
                 .Bind(v => this.transportCooldown.Duration = Convert.ToSingle((int)v))
                 .Values(4, 10, 15, 20, 25, 30).Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
         base.Modify(roleModifier)
             .VanillaRole(RoleTypes.Crewmate)
-            .RoleColor("#00EEFF");
+            .RoleColor("#00EEFF")
+            .RoleAbilityFlags(RoleAbilityFlag.UsesPet);
 
 
     private class TransportedEvent : AbilityEvent, IMultiTargetEvent
@@ -122,7 +128,23 @@ public class Transporter : Crewmate
         public override string Message() => $"{Game.GetName(target1)} and {Game.GetName(target2)} were transported by {Game.GetName(Player())}.";
     }
 
-    public class TransportInteraction : LotusInteraction {
-        public TransportInteraction(PlayerControl actor) : base(new NeutralIntent(), actor.GetCustomRole()) { }
+    public class TransportInteraction : LotusInteraction
+    {
+        public PlayerControl transporter;
+        public TransportInteraction(PlayerControl actor, PlayerControl transporter) : base(new NeutralIntent(), actor.PrimaryRole()) { this.transporter = transporter; }
+    }
+
+    [Localized(nameof(Transporter))]
+    public static class Translations
+    {
+        [Localized(ModConstants.Options)]
+        public static class Options
+        {
+            [Localized(nameof(TotalTransports))]
+            public static string TotalTransports = "Number of Transports";
+
+            [Localized(nameof(TransportCooldown))]
+            public static string TransportCooldown = "Transport Cooldown";
+        }
     }
 }

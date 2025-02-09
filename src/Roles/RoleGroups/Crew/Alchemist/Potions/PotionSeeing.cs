@@ -10,7 +10,7 @@ using VentLib.Utilities;
 
 namespace Lotus.Roles.RoleGroups.Crew.Potions;
 
-public class PotionSeeing: Potion
+public class PotionSeeing : Potion
 {
     [Localized("Sight")]
     public static string PotionName = "Potion of Sight";
@@ -27,7 +27,7 @@ public class PotionSeeing: Potion
 
     public override bool Use(PlayerControl user)
     {
-        Alchemist alchemist = user.GetCustomRole<Alchemist>();
+        Alchemist alchemist = user.PrimaryRole<Alchemist>();
         if (SabotagePatch.CurrentSabotage != null && SabotageVariant(alchemist, SabotagePatch.CurrentSabotage)) return true;
         alchemist.VisionMod += 0.5f;
         alchemist.SyncOptions();

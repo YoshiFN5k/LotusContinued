@@ -1,8 +1,9 @@
 using HarmonyLib;
 using Lotus.API.Odyssey;
+using Lotus.API.Player;
 using Lotus.API.Vanilla.Meetings;
+using Lotus.Server;
 using Lotus.Options;
-using VentLib.Logging;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 
@@ -25,21 +26,33 @@ class SetHighlightedPatch
 [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.OnDestroy))]
 class MeetingHudOnDestroyPatch
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(MeetingHudOnDestroyPatch));
+
     public static void Postfix()
     {
         if (!AmongUsClient.Instance.AmHost) return;
-        VentLogger.Debug("------------End of Meeting------------", "Phase");
+        log.Debug("------------End of Meeting------------", "Phase");
+        MeetingDelegate meetingDelegate = MeetingDelegate.Instance;
 
-        MeetingDelegate.Instance.BlackscreenResolver.BeginProcess();
+        if (meetingDelegate.ExiledPlayer != null && meetingDelegate.ExiledPlayer.Object != null)
+            meetingDelegate.CheckAndSetConfirmEjectText(meetingDelegate.ExiledPlayer.Object);
+
+        /*Players.GetPlayers().Where(p =>
+        {
+            p.RpcRevertShapeshift(false);
+            return p.PlayerId != meetingDelegate.ExiledPlayer?.PlayerId;
+        }).ForEach(p => p.RpcSetName(p.name));*/
+
+        meetingDelegate.BlackscreenResolver.OnMeetingDestroy();
         Async.Schedule(PostMeetingSetups, NetUtils.DeriveDelay(0.5f));
     }
 
 
     private static void PostMeetingSetups()
     {
-        bool randomSpawn = GeneralOptions.MayhemOptions.RandomSpawn;
+        bool randomSpawn = GeneralOptions.MayhemOptions.UseRandomSpawn;
 
-        Game.GetAllPlayers().ForEach(p =>
+        Players.GetPlayers().ForEach(p =>
         {
             if (randomSpawn) Game.RandomSpawn.Spawn(p);
         });
