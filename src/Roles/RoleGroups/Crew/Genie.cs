@@ -99,6 +99,7 @@ public class Genie : Crewmate, IInfoResender
                 break;
             case VoteResultType.Confirmed:
                 TryGrantWish(Players.FindPlayerById(result.Selected));
+                if (!selectedPlayer) voteSelector.Reset();
                 break;
         }
     }
@@ -106,12 +107,14 @@ public class Genie : Crewmate, IInfoResender
     private void TryGrantWish(PlayerControl? target)
     {
         if (target == null) return;
-        IEnumerable<string> allowedSubRoleNames = SubroleAllowedDictionary.Where(kvp => kvp.Value).Select(kvp => kvp.Key);
-        if (allowedSubRoleNames.Any()) return;
 
-        IEnumerable<Subrole> allowedSubRoles = allowedSubRoleNames.Select(n => (Subrole)StandardRoles.Instance.AllRoles.First(r => r.EnglishRoleName == n)).Where(r => r.IsAssignableTo(target));
-        if (allowedSubRoles.Any()) return;
-        Subrole chosenSubRole = allowedSubRoles.ToList().GetRandom();
+        IEnumerable<string> allowedSubRoleNames = SubroleAllowedDictionary.Where(kvp => kvp.Value).Select(kvp => kvp.Key);
+        if (!allowedSubRoleNames.Any()) return;
+
+        IEnumerable<ISubrole> allowedSubRoles = allowedSubRoleNames.Select(n => (ISubrole)StandardRoles.Instance.AllRoles.First(r => r.EnglishRoleName == n)).Where(r => r.IsAssignableTo(target));
+        if (!allowedSubRoles.Any()) return;
+
+        CustomRole chosenSubRole = (CustomRole)allowedSubRoles.ToList().GetRandom();
 
         selectedPlayer = true;
         remainingWishes -= 1;
