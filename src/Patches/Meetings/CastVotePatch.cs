@@ -49,16 +49,7 @@ public class CastVotePatch
     {
         log.Trace($"Clearing vote for: {target.GetNameWithRole()}");
         hud.playerStates.Where(ps => ps.TargetPlayerId == target.PlayerId).ForEach(ps => ps.VotedFor = byte.MaxValue);
-        MessageWriter writer = MessageWriter.Get(SendOption.Reliable);
-        writer.StartMessage(6);
-        writer.Write(AmongUsClient.Instance.GameId);
-        writer.WritePacked(target.GetClientId());
-        {
-            writer.StartMessage(2);
-            writer.WritePacked(hud.NetId);
-            writer.WritePacked((uint)RpcCalls.ClearVote);
-        }
-
+        var writer = AmongUsClient.Instance.StartRpcImmediately(hud.NetId, (byte)RpcCalls.ClearVote, SendOption.Reliable, target.OwnerId);
         AmongUsClient.Instance.FinishRpcImmediately(writer);
     }
 }
