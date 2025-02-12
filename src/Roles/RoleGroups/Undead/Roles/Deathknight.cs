@@ -62,7 +62,7 @@ public class Deathknight : UndeadRole
         if (influenceCount == 0) return;
         influenceCooldown.Start();
         handle.Cancel();
-        for (int i = 0; i < influenceCount; i++) InitiateUndead(inRangePlayers[i]);
+        for (int i = 0; i < influenceCount; i++) InitiateConvertToUndead(inRangePlayers[i]);
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>

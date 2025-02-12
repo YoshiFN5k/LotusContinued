@@ -1,5 +1,6 @@
 using Lotus.Factions.Interfaces;
 using Lotus.GUI.Name.Components;
+using VentLib.Utilities.Collections;
 
 namespace Lotus.Factions.Undead;
 
@@ -8,12 +9,12 @@ public partial class TheUndead
     public class Unconverted : TheUndead, ISubFaction<TheUndead>
     {
         public IFaction PreviousFaction { get; }
-        public IndicatorComponent UnconvertedName { get; }
+        public Remote<IndicatorComponent> Indicator { get; }
 
-        public Unconverted(IFaction previousFaction, IndicatorComponent unconvertedName)
+        public Unconverted(IFaction previousFaction, Remote<IndicatorComponent> indicator)
         {
             this.PreviousFaction = previousFaction;
-            this.UnconvertedName = unconvertedName;
+            this.Indicator = indicator;
         }
 
         public Relation MainFactionRelationship() => Relation.SharedWinners;

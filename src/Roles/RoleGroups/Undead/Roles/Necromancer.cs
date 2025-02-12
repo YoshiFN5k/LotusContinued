@@ -59,7 +59,7 @@ public class Necromancer : UndeadRole
         MyPlayer.RpcMark(target);
         log.Debug($"Is first convert? {isFirstConvert} - {target.GetNameWithRole()}");
         if (isFirstConvert) return ConvertToDeathknight(target);
-        ConvertToUndead(target);
+        FinishConversionToUndead(target);
         return false;
     }
 
@@ -101,8 +101,8 @@ public class Necromancer : UndeadRole
     {
         isFirstConvert = false;
 
-        ConvertToUndead(target);
-        InitiateUndead(target);
+        InitiateConvertToUndead(target);
+        ConvertToDeathknight(target);
 
         deathknightOriginal = target.PrimaryRole();
         Game.MatchData.Roles.AddSubrole(target.PlayerId, deathknightOriginal);
