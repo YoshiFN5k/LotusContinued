@@ -33,7 +33,7 @@ public class Investigator : Crewmate
 {
     public static List<(Func<CustomRole, bool> predicate, GameOptionBuilder builder)> RoleTypeBuilders = new()
     {
-        (r => r.SpecialType is SpecialType.NeutralKilling, new GameOptionBuilder()
+        (r => r.SpecialType is SpecialType.NeutralKilling or SpecialType.Undead, new GameOptionBuilder()
             .KeyName("Neutral Killing Are Red", TranslationUtil.Colorize(NeutralKillingRed, Color.red, ModConstants.Palette.NeutralColor, ModConstants.Palette.KillingColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
