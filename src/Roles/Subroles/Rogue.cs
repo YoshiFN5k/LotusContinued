@@ -22,6 +22,7 @@ using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using Lotus.Options.Roles;
+using Lotus.Roles.RoleGroups.Undead.Roles;
 
 namespace Lotus.Roles.Subroles;
 
@@ -41,7 +42,10 @@ public class Rogue : Subrole
         typeof(Copycat),
         typeof(Taskrunner),
         typeof(Postman),
-        typeof(Terrorist)
+        typeof(Terrorist),
+        typeof(Necromancer),
+        typeof(Altruist),
+        typeof(Charmer)
     };
 
     private bool restrictedToCompatibleRoles;
