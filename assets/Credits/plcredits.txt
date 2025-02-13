@@ -7,9 +7,10 @@ person,Shiftyrose,Honorary Contributor & Translator
 person,Tealeaf,Honorary Contributor
 person,Det,Honorary Contributor
 person,eur mom,Contributor & Translator (Eng)
-person,Crewbait,Contributor
-person,GD,Contributor
-person,miniduikboot,Contributor
+person,Crewbait,Major Contributor
+person,GD,Major Contributor
+person,miniduikboot,Major Contributor
+person,NikoCat233,Minor Contributor
 person,Essence,Translator (Eng)
 person,Spike MS,Translator (Spanish)
 person,CreepPower,Translator (Spanish)
