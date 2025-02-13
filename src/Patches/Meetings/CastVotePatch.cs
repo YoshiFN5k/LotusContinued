@@ -3,15 +3,15 @@ using HarmonyLib;
 using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
 using Lotus.API.Vanilla.Meetings;
-using Lotus.Roles.Internals;
-using Lotus.Utilities;
 using Lotus.Extensions;
+using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Operations;
+using Lotus.Utilities;
+using VentLib.Networking.RPC;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
-using VentLib.Networking.RPC;
 
 namespace Lotus.Patches.Meetings;
 
