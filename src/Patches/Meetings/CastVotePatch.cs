@@ -1,7 +1,5 @@
 using System.Linq;
 using HarmonyLib;
-using Hazel;
-using Lotus.API.Odyssey;
 using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
 using Lotus.API.Vanilla.Meetings;
@@ -13,6 +11,7 @@ using Lotus.Roles.Operations;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
+using VentLib.Networking.RPC;
 
 namespace Lotus.Patches.Meetings;
 
@@ -49,7 +48,6 @@ public class CastVotePatch
     {
         log.Trace($"Clearing vote for: {target.GetNameWithRole()}");
         hud.playerStates.Where(ps => ps.TargetPlayerId == target.PlayerId).ForEach(ps => ps.VotedFor = byte.MaxValue);
-        var writer = AmongUsClient.Instance.StartRpcImmediately(hud.NetId, (byte)RpcCalls.ClearVote, SendOption.Reliable, target.OwnerId);
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
+        RpcV3.Immediate(hud.NetId, RpcCalls.ClearVote).Send(target.OwnerId);
     }
 }
