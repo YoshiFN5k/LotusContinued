@@ -48,14 +48,7 @@ public static class DesyncOptions
                 foreach (GameLogicComponent com in GameManager.Instance.LogicComponents)
                     if (com.TryCast(out LogicOptions lo))
                     {
-                        if (ConnectionManager.IsVanillaServer) lo.SetGameOptions(options);
-                        else
-                        {
-                            // Custom servers don't like SetGameOptions unfortunately.
-                            if (com.TryCast(out LogicOptionsNormal normalOpt)) normalOpt.GameOptions = options.Cast<NormalGameOptionsV08>();
-                            else if (com.TryCast(out LogicOptionsHnS hnsOpt)) hnsOpt.GameOptions = options.Cast<HideNSeekGameOptionsV08>();
-                            else log.Warn("Option cast failed. Could not set options for host.");
-                        }
+                        lo.SetGameOptions(options);
                     }
             }
             catch (Exception ex)
