@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using HarmonyLib;
@@ -14,11 +15,13 @@ public static class CreditsControllerPatch
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(CreditsControllerPatch));
 
+    private const bool TestCredits = false;
+
     private static string GetCreditsText()
     {
         string creditsText = "";
 
-        using System.IO.Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Lotus.assets.Credits.plcredits.txt")!;
+        using System.IO.Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"Lotus.assets.Credits.{(TestCredits ? "testcredits" : "plcredits")}.txt")!;
         byte[] buffer = new byte[stream.Length];
         stream.Read(buffer, 0, buffer.Length);
 
@@ -51,6 +54,11 @@ public static class CreditsControllerPatch
     {
         __instance.initialDelay = 1f;
         __instance.remainingDelay = __instance.initialDelay;
+        if (TestCredits)
+        {
+            __instance.startPos = -800f;
+            __instance.OnEnable();
+        }
         log.Debug("First Credit: " + __instance.credits[0].columns[0]);
         GameObject mainObject = __instance.gameObject;
         PassCreditsController(mainObject);
@@ -77,17 +85,41 @@ public static class CreditsControllerPatch
                 else if (format.creditType == CreditsController.CreditType.IMAGE)
                 {
                     string creditsPath = __instance.credits[i].columns[j];
-                    if (!creditsPath.Contains("Lotus.assets"))
-                        gameObject3.GetComponent<Image>().sprite = Resources.Load<Sprite>("Credits/" + __instance.credits[i].columns[j]);
+                    if (!creditsPath.Contains("Lotus.assets")) gameObject3.GetComponent<Image>().sprite = Resources.Load<Sprite>("Credits/" + __instance.credits[i].columns[j]);
                     else
                     {
                         string[] assetSplit = creditsPath.Split(";;");
                         gameObject3.GetComponent<Image>().sprite = AssetLoader.LoadSprite(assetSplit[1], float.Parse(assetSplit[0]), true);
+                        if (assetSplit.Length > 2)
+                        {
+                            float[] sizeValues = assetSplit[2].Split(";").Select(float.Parse).ToArray();
+                            gameObject3.transform.localScale = new Vector3(sizeValues[0], sizeValues[1], sizeValues[2]);
+                        }
                     }
+
                     gameObject3.GetComponent<Image>().preserveAspect = true;
                 }
             }
         }
+        return false;
+    }
+
+    [QuickPrefix(typeof(CreditsController), nameof(CreditsController.FixedUpdate))]
+    public static bool FixedUpdate(CreditsController __instance)
+    {
+        if (!TestCredits) return true;
+        if (__instance.paused) return false;
+        if (__instance.remainingDelay > 0f)
+        {
+            __instance.remainingDelay -= Time.unscaledDeltaTime;
+            return false;
+        }
+
+        float endHeight = __instance.creditsRect.rect.height * 2.5f;
+        float num = Mathf.Clamp(__instance.creditMainPanel.transform.localPosition.y + __instance.creditScrollSpeed, float.MinValue, endHeight);
+        __instance.creditMainPanel.transform.localPosition = new Vector2(__instance.creditMainPanel.transform.localPosition.x, num);
+
+        if (__instance.creditsRect.localPosition.y >= endHeight && __instance.OnFinish != null) return true;
         return false;
     }
 }

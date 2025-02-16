@@ -142,7 +142,7 @@ public class Copycat : CustomRole
     private void AddCatToWinners(WinDelegate winDelegate)
     {
         if (turnedAttacker == null) winDelegate.RemoveWinner(MyPlayer);
-        else if (winDelegate.GetWinners().Concat(winDelegate.GetAdditionalWinners()).Any(p => p.PlayerId == turnedAttacker.PlayerId)) winDelegate.AddAdditionalWinner(MyPlayer);
+        else if (winDelegate.GetAllWinners().Any(p => p.PlayerId == turnedAttacker.PlayerId)) winDelegate.AddAdditionalWinner(MyPlayer);
         else winDelegate.RemoveWinner(MyPlayer);
     }
 

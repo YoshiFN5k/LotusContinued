@@ -71,6 +71,7 @@ public class Rogue : Subrole
         string newRoleName = _psychoGradient.Apply(role.RoleName);
         roleHolder.Add(new RoleComponent(new LiveString(newRoleName), Game.InGameStates, ViewMode.Replace, MyPlayer));
         role.Faction = FactionInstances.Neutral;
+        role.RoleFlags &= ~RoleFlag.CannotWinAlone;
         new RoleModifier(role).SpecialType(SpecialType.NeutralKilling);
         if (role.RealRole.IsCrewmate())
         {
