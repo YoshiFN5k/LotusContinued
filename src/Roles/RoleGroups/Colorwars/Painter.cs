@@ -54,7 +54,7 @@ public class Painter : NeutralKillingBase
         .VanillaRole(AmongUs.GameOptions.RoleTypes.Impostor)
         .Faction(ColorFaction.Instance)
         .RoleColor(Color.white)
-        .CanVent(true);
+        .CanVent(ExtraGamemodeOptions.ColorwarsOptions.CanVent);
 
     [Localized(nameof(Painter))]
     public static class Translations
