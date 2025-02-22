@@ -108,8 +108,10 @@ public class MiscellaneousOptions
             .BindBool(b => AutoDisplayCOD = b)
             .Build());
 
-        AllOptions.Add(Builder("Enable Random Maps")
+        AllOptions.Add(new GameOptionBuilder()
+            .Builder("Enable Random Map", _optionColor)
             .Name(Translations.RandomMapModeText)
+            .AddBoolean(false)
             .BindBool(b => randomMapOn = b)
             .ShowSubOptionPredicate(b => (bool)b)
             .SubOption(sub => sub
@@ -182,8 +184,6 @@ public class MiscellaneousOptions
             else RandomMaps &= ~map;
         };
     }
-
-    private GameOptionBuilder Builder(string key) => new GameOptionBuilder().Key(key).Color(_optionColor);
 
     [Localized("Miscellaneous")]
     private static class MiscOptionTranslations
