@@ -70,13 +70,15 @@ public class Rogue : Subrole
         RoleHolder roleHolder = MyPlayer.NameModel().GetComponentHolder<RoleHolder>();
         string newRoleName = _psychoGradient.Apply(role.RoleName);
         roleHolder.Add(new RoleComponent(new LiveString(newRoleName), Game.InGameStates, ViewMode.Replace, MyPlayer));
-        role.Faction = FactionInstances.Neutral;
         role.RoleFlags &= ~RoleFlag.CannotWinAlone;
-        new RoleModifier(role).SpecialType(SpecialType.NeutralKilling);
+        new RoleModifier(role)
+            .SpecialType(SpecialType.NeutralKilling)
+            .Faction(FactionInstances.Neutral)
+            .RoleAbilityFlags(RoleAbilityFlag.IsAbleToKill);
         if (role.RealRole.IsCrewmate())
         {
             role.DesyncRole = RoleTypes.Impostor;
-            MyPlayer.GetTeamInfo().MyRole = role.DesyncRole.Value;
+            MyPlayer.GetTeamInfo().MyRole = RoleTypes.Impostor;
         }
         requiresBaseKillMethod = !role.GetActions(LotusActionType.Attack).Any();
     }
