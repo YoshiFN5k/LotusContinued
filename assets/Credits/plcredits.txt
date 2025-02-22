@@ -12,13 +12,15 @@ person,GD,Major Contributor
 person,miniduikboot,Major Contributor
 person,NikoCat233,Minor Contributor
 person,Essence,Translator (Eng)
-person,Spike MS,Translator (Spanish)
+person,Skarlat,Translator (Spanish)
 person,CreepPower,Translator (Spanish)
 person,Shapmaster,Translator (French) & Hat Artist
 person,Gotzon,Translator (French)
 person,Fate,Translator (SChinese)
 person,Pigoletto,Hat Artist
 person,tori#1277,Hat Artist
+person,sweetrolled,Hat Artist
+person,Ophidian,Hat Artist
 image,100;;Lotus.assets.Credits.Images.testerstitle.png,
 person,AnonWorks,
 person,AlunnyBunny,
