@@ -36,10 +36,10 @@ public class MayhemOptions
             .BindBool(b => randomSpawnOn = b)
             .Build());
 
-        AllOptions.Add(Builder("Camo Comms")
-            .Name(Translations.CamoCommText)
-            .BindBool(b => CamoComms = b)
-            .Build());
+        // AllOptions.Add(Builder("Camo Comms")
+        //     .Name(Translations.CamoCommText)
+        //     .BindBool(b => CamoComms = b)
+        //     .Build());
 
         AllOptions.AddRange(additionalOptions);
     }
