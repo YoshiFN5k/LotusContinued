@@ -148,7 +148,7 @@ public class Romantic : Subrole, IInfoResender
     [RoleAction(LotusActionType.MeetingEnd)]
     public void KillIfUndecided(bool _, bool isForceEnd)
     {
-        if (partner == byte.MaxValue && !isForceEnd) ProtectedRpc.CheckMurder(MyPlayer, MyPlayer);
+        if (!partnerLockedIn && !isForceEnd) ProtectedRpc.CheckMurder(MyPlayer, MyPlayer);
     }
 
     private void InterceptWinCondition(WinDelegate winDelegate)
