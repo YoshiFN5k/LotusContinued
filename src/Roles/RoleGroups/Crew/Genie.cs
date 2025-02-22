@@ -114,6 +114,9 @@ public class Genie : Crewmate, IInfoResender
         IEnumerable<ISubrole> allowedSubRoles = allowedSubRoleNames.Select(n => (ISubrole)StandardRoles.Instance.AllRoles.First(r => r.EnglishRoleName == n)).Where(r => r.IsAssignableTo(target));
         if (!allowedSubRoles.Any()) return;
 
+        allowedSubRoles = allowedSubRoles.Where(r => target.GetSubroles().All(s => s.GetType() != r.GetType()));
+        if (!allowedSubRoles.Any()) return;
+
         CustomRole chosenSubRole = (CustomRole)allowedSubRoles.ToList().GetRandom();
 
         selectedPlayer = true;
