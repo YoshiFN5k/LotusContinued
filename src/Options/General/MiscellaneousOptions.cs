@@ -9,7 +9,9 @@ using VentLib.Options.IO;
 using System;
 using Lotus.Managers.Blackscreen;
 using System.Linq;
+using Lotus.API.Odyssey;
 using VentLib.Utilities.Extensions;
+using static Lotus.Options.General.MayhemOptions;
 
 namespace Lotus.Options.General;
 
@@ -24,6 +26,8 @@ public class MiscellaneousOptions
         {"New", () => ProjectLotus.Instance.SetBlackscreenResolver(md => new BlackscreenResolver(md))},
     };
 
+    public AuMap RandomMaps;
+
     public string AssignedPet = null!;
     public int ChangeNameUsers;
     public int AllowTeleportInLobby;
@@ -33,6 +37,9 @@ public class MiscellaneousOptions
     public int SuffixMode;
     public bool ColoredNameMode;
     public string CurrentResolver;
+
+    public bool UseRandomMap => randomMapOn && RandomMaps != 0;
+    private bool randomMapOn;
 
     public List<GameOption> AllOptions = new();
 
@@ -101,6 +108,33 @@ public class MiscellaneousOptions
             .BindBool(b => AutoDisplayCOD = b)
             .Build());
 
+        AllOptions.Add(Builder("Enable Random Maps")
+            .Name(Translations.RandomMapModeText)
+            .BindBool(b => randomMapOn = b)
+            .ShowSubOptionPredicate(b => (bool)b)
+            .SubOption(sub => sub
+                .KeyName("Skeld", Translations.MapNameSkeld)
+                .AddBoolean()
+                .BindBool(FlagSetter(AuMap.Skeld))
+                .Build())
+            .SubOption(sub => sub
+                .KeyName("Mira", Translations.MapNameMira)
+                .AddBoolean()
+                .BindBool(FlagSetter(AuMap.Mira))
+                .Build())
+            .SubOption(sub => sub
+                .KeyName("Polus", Translations.MapNamePolus)
+                .AddBoolean()
+                .BindBool(FlagSetter(AuMap.Polus))
+                .Build())
+            .SubOption(sub => sub
+                .KeyName("Airship", Translations.MapNameAirship)
+                .AddBoolean()
+                .BindBool(FlagSetter(AuMap.Airship))
+                .Build())
+            .IsHeader(true)
+            .Build());
+
         AllOptions.Add(new GameOptionBuilder()
             .AddBoolean(false)
             .Builder("Color Names", _optionColor)
@@ -140,6 +174,15 @@ public class MiscellaneousOptions
     /// <param name="onSelect">The action that runs when option is chosen.</param>
     public static void AddBlackscreenResolver(string name, Action onSelect) => BlackscreenResolvers.Add(name, onSelect);
 
+    private Action<bool> FlagSetter(AuMap map)
+    {
+        return b =>
+        {
+            if (b) RandomMaps |= map;
+            else RandomMaps &= ~map;
+        };
+    }
+
     private GameOptionBuilder Builder(string key) => new GameOptionBuilder().Key(key).Color(_optionColor);
 
     [Localized("Miscellaneous")]
@@ -176,4 +219,13 @@ public class MiscellaneousOptions
         public static string BlackscreenResolver = "Blackscreen Resolver";
     }
 
+}
+
+[Flags]
+public enum AuMap
+{
+    Skeld = 1,
+    Mira = 2,
+    Polus = 4,
+    Airship = 8
 }
