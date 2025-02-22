@@ -102,7 +102,7 @@ public class Necromancer : UndeadRole
         isFirstConvert = false;
 
         InitiateConvertToUndead(target);
-        ConvertToDeathknight(target);
+        FinishConversionToUndead(target);
 
         deathknightOriginal = target.PrimaryRole();
         Game.MatchData.Roles.AddSubrole(target.PlayerId, deathknightOriginal);
