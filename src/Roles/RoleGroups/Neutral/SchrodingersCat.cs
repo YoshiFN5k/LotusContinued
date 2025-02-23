@@ -74,8 +74,8 @@ public class SchrodingersCat : CustomRole
             return;
         }
         bool winnerContainsKiller;
-        if (turnedAttacker != null) winnerContainsKiller = winDelegate.GetWinners().Concat(winDelegate.GetAdditionalWinners()).Any(p => p.PlayerId == turnedAttacker.PlayerId);
-        else winnerContainsKiller = winDelegate.GetWinners().Concat(winDelegate.GetAdditionalWinners()).SelectMany(p => p.GetSubroles().Concat([p.PrimaryRole()])).Any(r => r.GetType() == turnedType);
+        if (turnedAttacker != null) winnerContainsKiller = winDelegate.GetAllWinners().Any(p => p.PlayerId == turnedAttacker.PlayerId);
+        else winnerContainsKiller = winDelegate.GetAllWinners().SelectMany(p => p.GetSubroles().Concat([p.PrimaryRole()])).Any(r => r.GetType() == turnedType);
 
         if (winnerContainsKiller) winDelegate.AddAdditionalWinner(MyPlayer);
         else winDelegate.RemoveWinner(MyPlayer);

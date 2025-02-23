@@ -41,7 +41,8 @@ public class HelpAllCommand : CommandTranslations
                 new("/m", MyRoleCommandDescription),
                 new("/o", RoleOptionCommandDescription),
                 new("/desc", DescCommandDescription),
-                new("/info", InfoCommandDescription)
+                new("/info", InfoCommandDescription),
+                new($"/status [{NameParameter} | ID]", StatusCommandDescription)
             } },
 
             { CommandSection.Lobby, new List<CommandHelp>
@@ -49,7 +50,8 @@ public class HelpAllCommand : CommandTranslations
                 new("/last", LastResultCommandDescription),
                 new("/winner", WinnerCommandDescription),
                 new("/death", DeathCommandDescription),
-                new($"/death [{NameParameter}]", DeathOtherCommandDescription)
+                new($"/death [{NameParameter}]", DeathOtherCommandDescription),
+                new("/history", HistoryCommandDescription)
             } },
 
             { CommandSection.Other, new List<CommandHelp>
@@ -184,8 +186,13 @@ public class HelpAllCommand : CommandTranslations
 
         [Localized(nameof(InfoCommandDescription))]
         public static string InfoCommandDescription = "Resend information that your role displayed in chat at the start of the round.";
-    }
 
+        [Localized(nameof(StatusCommandDescription))]
+        public static string StatusCommandDescription = "Check what an icon means on you or another player's name.";
+
+        [Localized(nameof(HistoryCommandDescription))]
+        public static string HistoryCommandDescription = "View the entire log of the last game with timestamps from the start.";
+    }
 }
 
 public class CommandHelp

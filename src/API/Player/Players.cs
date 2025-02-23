@@ -27,7 +27,8 @@ public static class Players
         if (filter.HasFlag(PlayerFilter.NonPhantom)) players = players.Where(p => !(p.PrimaryRole() is IPhantomRole phantomRole) || phantomRole.IsCountedAsPlayer());
         if (filter.HasFlag(PlayerFilter.Alive)) players = players.Where(p => p.IsAlive());
         if (filter.HasFlag(PlayerFilter.Dead)) players = players.Where(p => !p.IsAlive());
-        if (filter.HasFlag(PlayerFilter.Impostor)) players = players.Where(p => p.PrimaryRole().Faction.GetType() == typeof(ImpostorFaction));
+        if (filter.HasFlag(PlayerFilter.Impostor)) players = players.Where(p => p.PrimaryRole().Faction.GetType() == typeof(ImpostorFaction)
+            && p.PrimaryRole().SpecialType is SpecialType.None);
         if (filter.HasFlag(PlayerFilter.Crewmate)) players = players.Where(p => p.PrimaryRole().Faction is Crewmates);
         // if (filter.HasFlag(PlayerFilter.Neutral)) players = players.Where(p => p.PrimaryRole().Metadata.Get(LotusKeys.AuxiliaryRoleType) is SpecialType.Neutral);
         // if (filter.HasFlag(PlayerFilter.NeutralKilling)) players = players.Where(p => p.PrimaryRole().Metadata.Get(LotusKeys.AuxiliaryRoleType) is SpecialType.NeutralKilling);

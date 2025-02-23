@@ -39,7 +39,7 @@ namespace Lotus.Roles.Subroles;
 public class Guesser : Subrole
 {
     private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(Guesser));
-    [NewOnSetup] private MeetingPlayerSelector voteSelector = null!;
+    [NewOnSetup(true)] private MeetingPlayerSelector voteSelector  = new();
 
     public override string Identifier() => "⌘";
 
@@ -67,7 +67,7 @@ public class Guesser : Subrole
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())
             .Value(v => v.Text(GeneralOptionTranslations.CustomText).Value(2).Color(new Color(0.73f, 0.58f, 1f)).Build())
             .ShowSubOptionPredicate(i => (int)i == 2)),
-        (r => r.SpecialType is SpecialType.NeutralKilling, new GameOptionBuilder()
+        (r => r.SpecialType is SpecialType.NeutralKilling or SpecialType.Undead, new GameOptionBuilder()
             .KeyName("Neutral Killing Settings", TranslationUtil.Colorize(Translations.Options.NeutralKillingSetting, ModConstants.Palette.NeutralColor, ModConstants.Palette.KillingColor))
             .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
             .Value(v => v.Text(GeneralOptionTranslations.AllText).Value(1).Color(Color.green).Build())

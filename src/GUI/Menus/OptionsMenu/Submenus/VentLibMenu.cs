@@ -1,5 +1,6 @@
 using System;
 using Lotus.GUI.Menus.OptionsMenu.Components;
+using Lotus.Network.PrivacyPolicy;
 using TMPro;
 using Lotus.Utilities;
 using UnityEngine;
@@ -85,6 +86,7 @@ public class VentLibMenu : MonoBehaviour, IBaseOptionMenuComponent
             PrivacyPolicyPatch.EditPrivacyPolicy(PrivacyPolicyEditType.LobbyDiscovery, false);
             NetworkRules.AllowRoomDiscovery = false;
         });
+        NetworkRules.AllowRoomDiscovery = PrivacyPolicyInfo.Instance.LobbyDiscovery;
         allowLobbySending.SetState(NetworkRules.AllowRoomDiscovery);
 
         anchorObject.SetActive(false);

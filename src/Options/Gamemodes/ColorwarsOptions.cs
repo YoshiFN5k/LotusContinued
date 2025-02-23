@@ -21,6 +21,7 @@ public class ColorwarsOptions
     public bool PreferSmall;
     public bool RandomSpawn;
     public bool CustomTeams;
+    public bool CanVent;
 
     public GameOption CustomTeamsOption;
 
@@ -73,6 +74,12 @@ public class ColorwarsOptions
             .Key("Random Spawn")
             .AddBoolean()
             .BindBool(b => RandomSpawn = b)
+            .Build());
+
+        AllOptions.Add(new GameOptionBuilder()
+            .KeyName("Can Vent", RoleTranslations.CanVent)
+            .AddBoolean()
+            .BindBool(b => CanVent = b)
             .Build());
 
         CustomTeamsOption = new GameOptionBuilder()

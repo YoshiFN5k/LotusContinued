@@ -20,7 +20,8 @@ public class Madmate : Impostor
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
-        base.Modify(roleModifier)
+        roleModifier
+            .CanVent(true)
             .VanillaRole(canSabotage ? RoleTypes.Impostor : RoleTypes.Engineer)
             .SpecialType(SpecialType.Madmate)
             .RoleColor(ModConstants.Palette.MadmateColor)

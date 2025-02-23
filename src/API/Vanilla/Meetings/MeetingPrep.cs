@@ -43,6 +43,7 @@ public class MeetingPrep
     /// </summary>
     /// <param name="reporter">Optional player, if provided, uses rpc to call meeting</param>
     /// <param name="deadBody">Optional reported body</param>
+    /// <param name="checkReportBodyCancel">Triggers a ReportBody event to make sure the report isn't canceled.</param>
     /// <returns>the current meeting delegate</returns>
     public static MeetingDelegate? PrepMeeting(PlayerControl? reporter = null, NetworkedPlayerInfo? deadBody = null, bool checkReportBodyCancel = true)
     {

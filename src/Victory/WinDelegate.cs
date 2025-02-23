@@ -26,6 +26,7 @@ public class WinDelegate
 
     public List<PlayerControl> GetWinners() => winners;
     public List<PlayerControl> GetAdditionalWinners() => additionalWinners;
+    public IEnumerable<PlayerControl> GetAllWinners() => winners.Concat(additionalWinners);
 
     public WinReason GetWinReason() => winReason;
 

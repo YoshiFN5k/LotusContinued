@@ -22,6 +22,7 @@ using VentLib.Options.UI;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using Lotus.Options.Roles;
+using Lotus.Roles.RoleGroups.Undead.Roles;
 
 namespace Lotus.Roles.Subroles;
 
@@ -41,7 +42,10 @@ public class Rogue : Subrole
         typeof(Copycat),
         typeof(Taskrunner),
         typeof(Postman),
-        typeof(Terrorist)
+        typeof(Terrorist),
+        typeof(Necromancer),
+        typeof(Altruist),
+        typeof(Charmer)
     };
 
     private bool restrictedToCompatibleRoles;
@@ -66,12 +70,15 @@ public class Rogue : Subrole
         RoleHolder roleHolder = MyPlayer.NameModel().GetComponentHolder<RoleHolder>();
         string newRoleName = _psychoGradient.Apply(role.RoleName);
         roleHolder.Add(new RoleComponent(new LiveString(newRoleName), Game.InGameStates, ViewMode.Replace, MyPlayer));
-        role.Faction = FactionInstances.Neutral;
-        new RoleModifier(role).SpecialType(SpecialType.NeutralKilling);
+        role.RoleFlags &= ~RoleFlag.CannotWinAlone;
+        new RoleModifier(role)
+            .SpecialType(SpecialType.NeutralKilling)
+            .Faction(FactionInstances.Neutral)
+            .RoleAbilityFlags(RoleAbilityFlag.IsAbleToKill);
         if (role.RealRole.IsCrewmate())
         {
             role.DesyncRole = RoleTypes.Impostor;
-            MyPlayer.GetTeamInfo().MyRole = role.DesyncRole.Value;
+            MyPlayer.GetTeamInfo().MyRole = RoleTypes.Impostor;
         }
         requiresBaseKillMethod = !role.GetActions(LotusActionType.Attack).Any();
     }

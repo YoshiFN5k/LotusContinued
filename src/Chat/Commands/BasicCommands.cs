@@ -16,6 +16,7 @@ using Lotus.Roles.Interfaces;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Managers.Interfaces;
 using Lotus.Roles.Subroles;
+using Lotus.Victory;
 using UnityEngine;
 using VentLib.Commands;
 using VentLib.Commands.Attributes;
@@ -23,12 +24,15 @@ using VentLib.Localization.Attributes;
 using VentLib.Utilities;
 using VentLib.Utilities.Collections;
 using VentLib.Utilities.Extensions;
+using VentLib.Networking.RPC;
 
 namespace Lotus.Chat.Commands;
 
 [Localized("Commands")]
 public class BasicCommands : CommandTranslations
 {
+    private static readonly StandardLogger log = LoggerFactory.GetLogger<StandardLogger>(typeof(BasicCommands));
+
     [Localized("Color.NotInRange")] public static string ColorNotInRangeMessage = "{0} is not in range of valid colors.";
     [Localized(nameof(Winners))] public static string Winners = "Winners";
     [Localized("Dump.Success")] public static string DumpSuccess = "Successfully dumped log. Check your logs folder for a \"dump.log!\"";
@@ -213,7 +217,7 @@ public class BasicCommands : CommandTranslations
     }
 
     [Command(CommandFlag.HostOnly | CommandFlag.InGameOnly, "fix")]
-    public static void FixPlayer(PlayerControl source, CommandContext context, byte id)
+    public static void FixPlayer(PlayerControl source, CommandContext context)
     {
         if (context.Args.Length == 0)
         {
@@ -221,16 +225,78 @@ public class BasicCommands : CommandTranslations
             return;
         }
 
+        if (!byte.TryParse(context.Args[0], out byte id))
+        {
+            ChatHandler.Of(PlayerNotFoundText.Formatted(id), CommandError).LeftAlign().Send(source);
+            return;
+        }
+
         PlayerControl? player = Players.FindPlayerById(id);
-        if (player == null) ChatHandler.Of(PlayerNotFoundText.Formatted(id), CommandError).LeftAlign().Send(source);
-        else if (!LegacyResolver.PerformForcedReset(player)) ChatHandler.Of("Unable to perform forced Blackscreen Fix. No players have died yet.", CommandError).LeftAlign().Send(source);
-        else ChatHandler.Of($"Successfully cleared blackscreen of \"{player.name}\"").LeftAlign().Send(source);
-    }
+        if (player == null)
+        {
+            ChatHandler.Of(PlayerNotFoundText.Formatted(id), CommandError).LeftAlign().Send(source);
+            return;
+        }
+
+        if (context.Args.Length < 2)
+        {
+            if (!LegacyResolver.PerformForcedReset(player)) ChatHandler.Of("Unable to perform forced Blackscreen Fix. No players have died yet.", CommandError).LeftAlign().Send(source);
+            else ChatHandler.Of($"Successfully cleared blackscreen of \"{player.name}\"").LeftAlign().Send(source);
+        }
+        else
+        {
+            string choice = context.Args[1];
+            if (choice.StartsWith("s"))
+            {
+                ChatHandler.Of($"Starting fix of blackscreen caused by game start for \"{player.name}\"").LeftAlign().Send(source);
+                List<PlayerControl> players = Players.GetAllPlayers().ToList();
+                PlayerControl lastPlayer = players.Last();
+
+                log.Debug("Assigning roles...");
+                players.Where(p => p != lastPlayer).ForEach(p => p.PrimaryRole().Assign());
+                log.Debug("Assigned everyone but the last player.");
+
+                Async.Schedule(() =>
+                {
+                    Dictionary<byte, bool> Disconnected = new();
+                    CheckEndGamePatch.Deferred = true;
+                    players.ForEach(pc =>
+                    {
+                        Disconnected[pc.PlayerId] = pc.Data.Disconnected;
+                        pc.Data.Disconnected = true;
+                    });
+                    log.Debug("Sending Disconncted Data.");
+                    GeneralRPC.SendGameData();
+                    players.ForEach(pc => pc.Data.Disconnected = Disconnected[pc.PlayerId]);
+                    ChatHandler.Of("Step 1 finished.\n(Setup Stage)").Send(source);
+                }, NetUtils.DeriveDelay(0.5f));
+                Async.Schedule(() =>
+                {
+                    log.Debug("Sending the last player's role info...");
+                    lastPlayer.PrimaryRole().Assign();
+                    log.Debug("Sent! Cleaning up in a second...");
+                    ChatHandler.Of("Step 2 finished.\n(they should see the \"shhhh\" screen now)").Send(source);
+                    CheckEndGamePatch.Deferred = false;
+                }, NetUtils.DeriveDelay(1f));
+                Async.Schedule(() =>
+                {
+                    GeneralRPC.SendGameData();
+                    ChatHandler.Of("Step 3 finished.\n(Cleanup Stage)").Send(source);
+                }, NetUtils.DeriveDelay(1.5f));
+            }
+            else
+            {
+
+                if (!LegacyResolver.PerformForcedReset(player)) ChatHandler.Of("Unable to perform forced Blackscreen Fix. No players have died yet.", CommandError).LeftAlign().Send(source);
+                else ChatHandler.Of($"Successfully cleared blackscreen of \"{player.name}\"").LeftAlign().Send(source);
+            }
+        }
+}
 
     [Command(CommandFlag.InGameOnly, "info", "i")]
     public static void ResendRoleMessages(PlayerControl source)
     {
-        if (source.GetSubroles().Concat([source.PrimaryRole()]).Where(r =>
+        if (!source.GetSubroles().Concat([source.PrimaryRole()]).Where(r =>
             {
                 if (r is IInfoResender infoResender)
                 {
@@ -238,6 +304,6 @@ public class BasicCommands : CommandTranslations
                     return true;
                 }
                 return false;
-            }).Count() == 0) ChatHandler.Of(NoInfoMessage).LeftAlign().Send(source);
+            }).Any()) ChatHandler.Of(NoInfoMessage).LeftAlign().Send(source);
     }
 }

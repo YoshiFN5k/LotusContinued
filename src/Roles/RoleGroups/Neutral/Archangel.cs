@@ -21,6 +21,7 @@ using VentLib.Utilities.Extensions;
 using Lotus.API.Player;
 using Lotus.GameModes.Standard;
 using Lotus.Factions;
+using Lotus.Managers.History.Events;
 using VentLib.Localization.Attributes;
 using static Lotus.Roles.RoleGroups.Neutral.Archangel.Translations;
 using static Lotus.Roles.RoleGroups.Neutral.Archangel.Translations.Options;
@@ -29,6 +30,7 @@ using Lotus.Roles.Events;
 using Lotus.Roles.Interactions;
 using VentLib.Utilities.Collections;
 using Lotus.Victory;
+using VentLib.Localization;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
 
@@ -131,26 +133,26 @@ public class Archangel : CustomRole
         indicatorRemote?.Delete();
         if (roleChangeWhenTargetDies is ArchangelRoleChange.None) return;
 
-        StandardRoles roleHolder = StandardGameMode.Instance.RoleManager.RoleHolder;
-
-        switch (roleChangeWhenTargetDies)
+        StandardRoles roleHolder = StandardRoles.Instance;
+        CustomRole newRole = roleChangeWhenTargetDies switch
         {
-            case ArchangelRoleChange.Jester:
-                Game.AssignRole(MyPlayer, roleHolder.Static.Jester);
-                break;
-            case ArchangelRoleChange.Opportunist:
-                Game.AssignRole(MyPlayer, roleHolder.Static.Opportunist);
-                break;
-            case ArchangelRoleChange.SchrodingerCat:
-                Game.AssignRole(MyPlayer, roleHolder.Static.Copycat);
-                break;
-            case ArchangelRoleChange.Crewmate:
-                Game.AssignRole(MyPlayer, roleHolder.Static.Crewmate);
-                break;
-            case ArchangelRoleChange.None:
-            default:
-                break;
-        }
+            ArchangelRoleChange.Jester => roleHolder.Static.Jester,
+            ArchangelRoleChange.Opportunist => roleHolder.Static.Opportunist,
+            ArchangelRoleChange.SchrodingerCat => roleHolder.Static.SchrodingersCat,
+            ArchangelRoleChange.Crewmate => roleHolder.Static.Crewmate,
+            ArchangelRoleChange.Amnesiac => roleHolder.Static.Amnesiac,
+            ArchangelRoleChange.Survivor => roleHolder.Static.Survivor,
+            ArchangelRoleChange.Madmate => roleHolder.Static.Madmate,
+            _ => this
+        };
+
+        target = null;
+        if (newRole == this) return;
+        Game.AssignRole(MyPlayer, newRole);
+
+        CustomRole assignedRole = MyPlayer.PrimaryRole();
+        if (ProjectLotus.AdvancedRoleAssignment) assignedRole.Assign();
+        Game.MatchData.GameHistory.AddEvent(new RoleChangeEvent(MyPlayer, assignedRole, this));
     }
 
     private void SendProtection()
@@ -201,11 +203,14 @@ public class Archangel : CustomRole
             .SubOption(sub => sub
                 .KeyName("Role Change When Target Dies", RoleChangeWhenTargetDies)
                 .BindInt(v => roleChangeWhenTargetDies = (ArchangelRoleChange)v)
-                .Value(v => v.Text("Jester").Value(1).Color(new Color(0.93f, 0.38f, 0.65f)).Build())
-                .Value(v => v.Text("Opportunist").Value(2).Color(Color.green).Build())
-                .Value(v => v.Text("Schrodinger's Cat").Value(3).Color(Color.black).Build())
-                .Value(v => v.Text("Crewmate").Value(4).Color(new Color(0.71f, 0.94f, 1f)).Build())
-                .Value(v => v.Text("Off").Value(0).Color(Color.red).Build())
+                .Value(v => v.Text(Localizer.Translate("Roles.Jester.RoleName")).Value(1).Color(new Color(0.93f, 0.38f, 0.65f)).Build())
+                .Value(v => v.Text(Localizer.Translate("Roles.Opportunist.RoleName")).Value(2).Color(Color.green).Build())
+                .Value(v => v.Text(Localizer.Translate("Roles.SchrodingersCat.RoleName")).Value(3).Color(new Color(0.41f, 0.41f, 0.41f)).Build())
+                .Value(v => v.Text(Localizer.Translate("Roles.Crewmate.RoleName")).Value(4).Color(new Color(0.71f, 0.94f, 1f)).Build())
+                .Value(v => v.Text(Localizer.Translate("Roles.Amnesiac.RoleName")).Value(5).Color(new Color(0.51f, 0.87f, 0.99f)).Build())
+                .Value(v => v.Text(Localizer.Translate("Roles.Survivor.RoleName")).Value(6).Color(new Color(1f, 0.9f, 0.3f)).Build())
+                .Value(v => v.Text(Localizer.Translate("Roles.Madmate.RoleName")).Value(7).Color(ModConstants.Palette.MadmateColor).Build())
+                .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
                 .Build())
             .SubOption(sub => sub
                 .KeyName("Should Cancel Which Interactions", ShouldCancelWhichInteractions)
@@ -262,7 +267,9 @@ public class Archangel : CustomRole
         Opportunist,
         SchrodingerCat,
         Crewmate,
-        Fatal
+        Amnesiac,
+        Survivor,
+        Madmate
     }
 
     private enum InteractionCancels

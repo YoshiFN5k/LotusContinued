@@ -109,7 +109,7 @@ public class StandardRoleOperations : RoleOperations
             if (handle.Cancellation is not (ActionHandle.CancelType.None or ActionHandle.CancelType.Soft)) continue;
             if (!roleAction.CanExecute(myPlayer, source)) continue;
 
-            if (roleAction.Attribute.ActionType.IsPlayerAction())
+            if (roleAction.Attribute.ActionType.IsPlayerAction() && source == myPlayer)
             {
                 Hooks.PlayerHooks.PlayerActionHook.Propagate(new PlayerActionHookEvent(myPlayer, roleAction, parameters));
                 Trigger(LotusActionType.PlayerAction, myPlayer, handle, roleAction, parameters);

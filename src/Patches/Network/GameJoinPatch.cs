@@ -2,6 +2,7 @@ using System.Linq;
 using AmongUs.Data;
 using HarmonyLib;
 using Lotus.Addons;
+using Lotus.API;
 using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
 using Lotus.Managers;
@@ -32,6 +33,7 @@ class GameJoinPatch
             gameJoinHookEvent.Loaded = true;
             AddonManager.SendAddonsToHost();
             PluginDataManager.TitleManager.ApplyTitleWithChatFix(p);
+            if (AmongUsClient.Instance.AmHost) ModVersion.AddVersionShowerToPlayer(p, ModVersion.Version);
         }, 0.1f, 20);
         if (!AmongUsClient.Instance.AmHost) return;
 

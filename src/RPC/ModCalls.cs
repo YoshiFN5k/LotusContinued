@@ -8,6 +8,7 @@ public enum ModCalls : uint
     AddSubrole,
     Debug,
     SetKillCooldown,
+    ShowPlayerVersion,
 
 
     SetChatName = 93

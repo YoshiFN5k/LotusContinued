@@ -1,5 +1,7 @@
 using HarmonyLib;
 using Hazel;
+using Lotus.Extensions;
+using static InnerNet.InnerNetClient;
 
 namespace Lotus.Patches;
 
@@ -12,6 +14,13 @@ class GameManagerSerializeFix
         for (int index = 0; index < __instance.LogicComponents.Count; ++index)
         {
             GameLogicComponent logicComponent = __instance.LogicComponents[index];
+
+            if (!initialState && AmongUsClient.Instance.GameState is GameStates.Started && logicComponent.TryCast(out LogicOptions _))
+            {
+                logicComponent.ClearDirtyFlag();
+                continue;
+            }
+
             if (initialState || logicComponent.IsDirty)
             {
                 flag = true;
@@ -24,17 +33,5 @@ class GameManagerSerializeFix
         __instance.ClearDirtyBits();
         __result = flag;
         return false;
-    }
-}
-[HarmonyPatch(typeof(LogicOptions), nameof(LogicOptions.Serialize))]
-class LogicOptionsSerializePatch
-{
-    public static bool Prefix(LogicOptions __instance, ref bool __result, MessageWriter writer, bool initialState)
-    {
-        // 初回以外はブロックし、CustomSyncSettingsでのみ同期する
-        if (initialState) return true;
-        __result = false;
-        return false;
-
     }
 }

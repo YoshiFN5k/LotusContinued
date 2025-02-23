@@ -40,14 +40,13 @@ public static class SabotagePatch
         [HarmonyArgument(2)] byte amount)
     {
         if (!AmongUsClient.Instance.AmHost) return true;
-        if (Game.CurrentGameMode.BlockedActions().HasFlag(GameModes.BlockableGameAction.CallSabotage)) return false;
         ActionHandle handle = ActionHandle.NoInit();
         ISystemType systemInstance;
         log.Trace($"Update System: {systemType} | Player: {player.name} | Amount: {amount}");
         switch (systemType)
         {
             case SystemTypes.Sabotage:
-                // if (ProjectLotus.GameModeManager.CurrentGameMode.IgnoredActions().HasFlag(GameAction.CallSabotage)) return false;
+                if (Game.CurrentGameMode.BlockedActions().HasFlag(GameModes.BlockableGameAction.CallSabotage)) return false;
                 if (player.PrimaryRole() is not ISabotagerRole sabotager || !sabotager.CanSabotage()) return false;
                 if (player.PrimaryRole().RoleAbilityFlags.HasFlag(RoleAbilityFlag.CannotSabotage)) return false;
                 if (MeetingPrep.Prepped) return false;
@@ -192,7 +191,6 @@ class WriterSabotagePatch
         [HarmonyArgument(2)] MessageReader reader)
     {
         if (!AmongUsClient.Instance.AmHost) return true;
-        if (Game.CurrentGameMode.BlockedActions().HasFlag(GameModes.BlockableGameAction.CallSabotage)) return false;
         if (!WatchedSystems.Contains(systemType))
         {
             SabotagePatch.LogItem($"Skipped Update System: {systemType} | Player: {player.name}");

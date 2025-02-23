@@ -91,11 +91,11 @@ public class GameStartRandomMap
     {
         AUSettings.StaticOptions.SetFloat(FloatOptionNames.ProtectionDurationSeconds, 3600f);
         AUSettings.StaticOptions.SetBool(BoolOptionNames.ImpostorsCanSeeProtect, false);
-        if (!GeneralOptions.MayhemOptions.UseRandomMap) return true;
+        if (!GeneralOptions.MiscellaneousOptions.UseRandomMap) return true;
 
         List<byte> randomMaps = new();
 
-        AuMap map = GeneralOptions.MayhemOptions.RandomMaps;
+        AuMap map = GeneralOptions.MiscellaneousOptions.RandomMaps;
         if (map.HasFlag(AuMap.Skeld)) randomMaps.Add(0);
         if (map.HasFlag(AuMap.Mira)) randomMaps.Add(1);
         if (map.HasFlag(AuMap.Polus)) randomMaps.Add(2);

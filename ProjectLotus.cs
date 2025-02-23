@@ -30,11 +30,15 @@ using VentLib.Version.BuiltIn;
 using VentLib.Options.UI.Controllers.Search;
 using Lotus.Utilities;
 using System;
+using System.Linq;
+using Lotus.API.Player;
 using Lotus.Managers.Blackscreen.Interfaces;
 using Lotus.Managers.Blackscreen;
 using Lotus.API.Vanilla.Meetings;
 using VentLib.Lobbies;
 using Lotus.Network;
+using Lotus.RPC;
+using VentLib.Utilities.Extensions;
 #if !DEBUG
 using VentLib.Utilities.Debug.Profiling;
 #endif
@@ -54,16 +58,16 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 
     public const string MajorVersion = "1";
     public const string MinorVersion = "1"; // Update with each release
-    public const string PatchVersion = "0";
-    public const string BuildNumber = "2753";
+    public const string PatchVersion = "1";
+    public const string BuildNumber = "0046";
 
     public static string PluginVersion = typeof(ProjectLotus).Assembly.GetName().Version!.ToString();
 
-    public readonly GitVersion CurrentVersion = new();
+    public readonly GitVersion CurrentVersion = new(typeof(ProjectLotus).Assembly);
 
     public static readonly string ModName = "Project Lotus";
     public static readonly string ModColor = "#4FF918";
-    public static readonly string DevVersionStr = "Dev February 5 2025";
+    public static readonly string DevVersionStr = "Dev February 11 2025";
 
     public static bool DevVersion;
 
@@ -186,6 +190,11 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
         {
             //ModRPC rpc = Vents.FindRPC((uint)ModCalls.SendOptionPreview)!;
             //rpc.Send(new[] { player.GetClientId() }, new BatchList<Option>(OptionManager.GetManager().GetOptions()));
+            ModVersion.AddVersionShowerToPlayer(player, version);
+            Players.GetAllPlayers()
+                .Where(p => p.PlayerId != player.PlayerId && (p.IsModded() | p.IsHost()))
+                .ForEach(p => Vents.FindRPC((uint)ModCalls.ShowPlayerVersion)
+                    ?.Send([player.OwnerId], p, ModVersion.VersionControl.GetPlayerVersion(p.PlayerId)));
         }
 
         PluginDataManager.TemplateManager.GetTemplates("lobby-join")?.ForEach(t =>

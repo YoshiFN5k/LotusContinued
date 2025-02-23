@@ -109,9 +109,9 @@ public class ColorwarsGamemode : GameMode
         refreshing = true;
 
         // Remove Options from list which effectively destroys them.
-        playerOptions.Do(DefaultTabs.ColorwarsTab.RemoveOption);
         playerOptions.Do(opt =>
         {
+            ExtraGamemodeOptions.ColorwarsOptions.CustomTeamsOption.Children.Remove(opt);
             if (opt.BehaviourExists()) opt.GetBehaviour().gameObject.Destroy();
         });
         playerOptions.Clear();

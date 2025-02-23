@@ -16,15 +16,11 @@ public class MayhemOptions
     private static Color _optionColor = new(0.84f, 0.8f, 1f);
     private static List<GameOption> additionalOptions = new();
 
-    public AuMap RandomMaps;
     public bool AllRolesCanVent;
     public bool CamoComms;
 
     public bool UseRandomSpawn => randomSpawnOn && Game.CurrentGameMode is StandardGameMode;
     private bool randomSpawnOn;
-
-    public bool UseRandomMap => randomMapOn && RandomMaps != 0 && Game.CurrentGameMode is StandardGameMode;
-    private bool randomMapOn;
 
     public List<GameOption> AllOptions = new();
 
@@ -35,42 +31,15 @@ public class MayhemOptions
             .Color(_optionColor)
             .Build());
 
-        AllOptions.Add(Builder("Enable Random Maps")
-            .Name(Translations.RandomMapModeText)
-            .BindBool(b => randomMapOn = b)
-            .ShowSubOptionPredicate(b => (bool)b)
-            .SubOption(sub => sub
-                .KeyName("Skeld", Translations.MapNameSkeld)
-                .AddBoolean()
-                .BindBool(FlagSetter(AuMap.Skeld))
-                .Build())
-            .SubOption(sub => sub
-                .KeyName("Mira", Translations.MapNameMira)
-                .AddBoolean()
-                .BindBool(FlagSetter(AuMap.Mira))
-                .Build())
-            .SubOption(sub => sub
-                .KeyName("Polus", Translations.MapNamePolus)
-                .AddBoolean()
-                .BindBool(FlagSetter(AuMap.Polus))
-                .Build())
-            .SubOption(sub => sub
-                .KeyName("Airship", Translations.MapNameAirship)
-                .AddBoolean()
-                .BindBool(FlagSetter(AuMap.Airship))
-                .Build())
-            .IsHeader(true)
-            .Build());
-
         AllOptions.Add(Builder("Random Spawn")
             .Name(Translations.RandomSpawnText)
             .BindBool(b => randomSpawnOn = b)
             .Build());
 
-        AllOptions.Add(Builder("Camo Comms")
-            .Name(Translations.CamoCommText)
-            .BindBool(b => CamoComms = b)
-            .Build());
+        // AllOptions.Add(Builder("Camo Comms")
+        //     .Name(Translations.CamoCommText)
+        //     .BindBool(b => CamoComms = b)
+        //     .Build());
 
         AllOptions.AddRange(additionalOptions);
     }
@@ -83,15 +52,6 @@ public class MayhemOptions
     public static void AddAdditionalOption(GameOption option)
     {
         additionalOptions.Add(option);
-    }
-
-    private Action<bool> FlagSetter(AuMap map)
-    {
-        return b =>
-        {
-            if (b) RandomMaps |= map;
-            else RandomMaps &= ~map;
-        };
     }
 
     private GameOptionBuilder Builder(string key) => new GameOptionBuilder().AddBoolean(false).Builder(key, _optionColor);
@@ -119,13 +79,4 @@ public class MayhemOptions
         [Localized("Polus")] public static string MapNamePolus = "Polus";
         [Localized("Airship")] public static string MapNameAirship = "Airship";
     }
-}
-
-[Flags]
-public enum AuMap
-{
-    Skeld = 1,
-    Mira = 2,
-    Polus = 4,
-    Airship = 8
 }

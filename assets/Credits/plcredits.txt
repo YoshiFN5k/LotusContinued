@@ -2,20 +2,25 @@
 image,100;;Lotus.assets.Credits.Images.topcredits.png,
 person,Discussions,Owner and Lead Developer
 person,Theta,Bot Developer & Translator (Eng)
-person,Piggy B,Art Director
+person,Piggy B,Art Director & Hats
 person,Shiftyrose,Honorary Contributor & Translator
 person,Tealeaf,Honorary Contributor
 person,Det,Honorary Contributor
 person,eur mom,Contributor & Translator (Eng)
-person,Crewbait,Contributor
-person,GD,Contributor
-person,miniduikboot,Contributor
+person,Crewbait,Major Contributor
+person,GD,Major Contributor
+person,miniduikboot,Major Contributor
+person,NikoCat233,Minor Contributor
 person,Essence,Translator (Eng)
-person,Spike MS,Translator (Spanish)
+person,Skarlat,Translator (Spanish)
 person,CreepPower,Translator (Spanish)
-person,Shapmaster,Translator (French)
+person,Shapmaster,Translator (French) & Hat Artist
 person,Gotzon,Translator (French)
 person,Fate,Translator (SChinese)
+person,Pigoletto,Hat Artist
+person,tori#1277,Hat Artist
+person,sweetrolled,Hat Artist
+person,Ophidian,Hat Artist
 image,100;;Lotus.assets.Credits.Images.testerstitle.png,
 person,AnonWorks,
 person,AlunnyBunny,

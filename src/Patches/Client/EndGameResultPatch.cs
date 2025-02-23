@@ -7,6 +7,7 @@ using Lotus.Chat.Commands;
 using Lotus.Extensions;
 using Lotus.Managers.History;
 using Lotus.Managers.History.Events;
+using Lotus.Options;
 using Lotus.Roles;
 using Lotus.Roles.Builtins;
 using Lotus.Roles.Interfaces;
@@ -59,24 +60,28 @@ public class EndGameResultPatch
 
         var position = Camera.main.ViewportToWorldPoint(new Vector3(0f, 1f, Camera.main.nearClipPlane));
 
-        GameObject gameLog = UnityEngine.Object.Instantiate(__instance.WinText.gameObject);
-        gameLog.transform.position = new Vector3(__instance.Navigation.PlayAgainButton.transform.position.x + 0.1f, position.y - 0.1f, -14f);
-        gameLog.transform.localScale = new Vector3(1f, 1f, 1f);
+        if (GeneralOptions.MiscellaneousOptions.EventLogType != 2)
+        {
+            GameObject gameLog = UnityEngine.Object.Instantiate(__instance.WinText.gameObject);
+            gameLog.transform.position = new Vector3(__instance.Navigation.PlayAgainButton.transform.position.x + 0.1f, position.y - 0.1f, -14f);
+            gameLog.transform.localScale = new Vector3(1f, 1f, 1f);
 
-        TMPro.TMP_Text gameLogTextMesh = gameLog.GetComponent<TMPro.TMP_Text>();
-        gameLogTextMesh.alignment = TMPro.TextAlignmentOptions.TopRight;
-        gameLogTextMesh.color = Color.white;
-        gameLogTextMesh.fontSizeMin = 1.5f;
-        gameLogTextMesh.fontSizeMax = 1.5f;
-        gameLogTextMesh.fontSize = 1.5f;
-        gameLogTextMesh.text = "Event Log:\n";
+            TMPro.TMP_Text gameLogTextMesh = gameLog.GetComponent<TMPro.TMP_Text>();
+            gameLogTextMesh.alignment = TMPro.TextAlignmentOptions.TopRight;
+            gameLogTextMesh.color = Color.white;
+            gameLogTextMesh.fontSizeMin = 1.5f;
+            gameLogTextMesh.fontSizeMax = 1.5f;
+            gameLogTextMesh.fontSize = 1.5f;
+            gameLogTextMesh.text = "Event Log:\n";
 
-        var gameLogTextMeshRectTransform = gameLogTextMesh.GetComponent<RectTransform>();
-        gameLogTextMeshRectTransform.anchoredPosition = new Vector2(position.x + 7.2f, position.y - 0.1f);
+            var gameLogTextMeshRectTransform = gameLogTextMesh.GetComponent<RectTransform>();
+            gameLogTextMeshRectTransform.anchoredPosition = new Vector2(position.x + 7.2f, position.y - 0.1f);
 
-        List<IHistoryEvent> historyEvents = Game.MatchData.GameHistory.Events;
-        if (historyEvents.Any()) historyEvents.ForEach(history => gameLogTextMesh.text += history.GenerateMessage() + "\n");
-        else gameLogTextMesh.text += "No events for this session.";
+            List<IHistoryEvent> historyEvents = Game.MatchData.GameHistory.Events;
+            if (GeneralOptions.MiscellaneousOptions.EventLogType == 1) historyEvents = historyEvents.Where(h => h is IKillEvent).ToList();
+            if (historyEvents.Any()) historyEvents.ForEach(history => gameLogTextMesh.text += history.GenerateMessage() + "\n");
+            else gameLogTextMesh.text += "No events for this session.";
+        }
 
         GameObject roleSummary = UnityEngine.Object.Instantiate(__instance.WinText.gameObject);
         roleSummary.transform.position = new Vector3(__instance.Navigation.ExitButton.transform.position.x + 0.1f, position.y - 0.1f, -14f);

@@ -25,64 +25,38 @@ public class UndeadRole : Impostor
 
     public override bool CanSabotage() => false;
 
-    public void ConvertToUndead(PlayerControl target)
+    public void InitiateConvertToUndead(PlayerControl target)
     {
+        CustomRole role = target.PrimaryRole();
+        if (IsUnconvertedUndead(target)) return; //already converted
         List<PlayerControl> viewers = Players.GetAlivePlayers().Where(IsConvertedUndead).ToList();
 
         INameModel nameModel = target.NameModel();
+        IndicatorComponent indicatorComponent = new(new LiveString("◎", new Color(0.46f, 0.58f, 0.6f)), Game.InGameStates, ViewMode.Additive, () => viewers);
 
-        IndicatorComponent indicatorComponent = new(new LiveString("◎", new Color(0.46f, 0.58f, 0.6f)), new[] { GameState.Roaming, GameState.InMeeting }, ViewMode.Additive, () => viewers);
-
-        nameModel.GetComponentHolder<IndicatorHolder>().Add(indicatorComponent);
-        viewers.ForEach(v => nameModel.GetComponentHolder<RoleHolder>()[0].AddViewer(v));
-
-        CustomRole role = target.PrimaryRole();
-        role.Faction = new TheUndead.Unconverted(role.Faction, indicatorComponent);
+        role.Faction = new TheUndead.Unconverted(role.Faction, nameModel.GetComponentHolder<IndicatorHolder>().Add(indicatorComponent));
         role.SpecialType = SpecialType.Undead;
-        Game.MatchData.GameHistory.AddEvent(new ConvertEvent(MyPlayer, target));
+        Game.MatchData.GameHistory.AddEvent(new InitiateEvent(MyPlayer, target));
     }
 
-    public void InitiateUndead(PlayerControl target)
+    public void FinishConversionToUndead(PlayerControl target)
     {
+        CustomRole role = target.PrimaryRole();
+        if (role.SpecialType != SpecialType.Undead) return;
+        if (role.Faction is not TheUndead.Unconverted undeadFaction) return;
         List<PlayerControl> undead = Players.GetAlivePlayers().Where(IsConvertedUndead).ToList();
-        List<PlayerControl> viewers = new() { target };
 
-        // LiveString undeadPlayerName = new(target.name, UndeadColor);
+        undeadFaction.Indicator.Delete();
 
-        if (target.PrimaryRole().Faction is TheUndead.Unconverted unconverted)
-        {
-            IndicatorComponent oldComponent = unconverted.UnconvertedName;
-            // oldComponent.SetMainText(undeadPlayerName);
-            oldComponent.AddViewer(target);
-        }
-        else
-        {
-            IndicatorComponent newComponent = new(new LiveString("●", UndeadColor), new[] { GameState.Roaming, GameState.InMeeting }, ViewMode.Replace, () => viewers);
-            target.NameModel().GetComponentHolder<IndicatorHolder>().Add(newComponent);
-        }
+        INameModel nameModel = target.NameModel();
+        role.Faction = FactionInstances.TheUndead;
 
-        target.PrimaryRole().Faction = FactionInstances.TheUndead;
         undead.ForEach(p =>
         {
-            log.Debug($"undead namemodel update - {p.GetNameWithRole()}");
-            INameModel nameModel = p.NameModel();
-            nameModel.GetComponentHolder<RoleHolder>()[0].AddViewer(target);
-
-            switch (p.PrimaryRole().Faction)
-            {
-                case TheUndead.Converted converted:
-                    converted.NameComponent.AddViewer(target);
-                    break;
-                case TheUndead.Unconverted:
-                    log.Debug($"unconverted {nameModel.GetComponentHolder<IndicatorHolder>().Count}");
-                    nameModel.GetComponentHolder<IndicatorHolder>()[0].AddViewer(target);
-                    break;
-                default: // origin
-                    nameModel.GetComponentHolder<IndicatorHolder>().Add(new IndicatorComponent(new LiveString("●", UndeadColor), [GameState.Roaming, GameState.InMeeting], ViewMode.Replace, viewers: () => viewers));
-                    break;
-            }
+            nameModel.GetComponentHolder<RoleHolder>()[0].AddViewer(p);
+            p.NameModel().GetComponentHolder<RoleHolder>().Last().AddViewer(target);
         });
-        Game.MatchData.GameHistory.AddEvent(new InitiateEvent(MyPlayer, target));
+        Game.MatchData.GameHistory.AddEvent(new ConvertEvent(MyPlayer, target));
     }
 
     protected static bool IsUnconvertedUndead(PlayerControl player) => player.PrimaryRole().Faction is TheUndead.Unconverted;

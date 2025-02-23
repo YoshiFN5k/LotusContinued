@@ -22,6 +22,8 @@ using VentLib.Options.UI;
 using VentLib.Utilities.Extensions;
 using Lotus.API.Player;
 using Lotus.GameModes.Standard;
+using Lotus.Managers.History.Events;
+using VentLib.Localization;
 using VentLib.Localization.Attributes;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
@@ -66,27 +68,27 @@ public class Executioner : CustomRole
     private void CheckChangeRole(PlayerControl dead)
     {
         if (roleChangeWhenTargetDies == 0 || target == null || target.PlayerId != dead.PlayerId) return;
-        StandardRoles roleHolder = StandardGameMode.Instance.RoleManager.RoleHolder as StandardRoles;
-        switch ((ExeRoleChange)roleChangeWhenTargetDies)
+
+        StandardRoles roleHolder = StandardRoles.Instance;
+        CustomRole newRole = ((ExeRoleChange)roleChangeWhenTargetDies) switch
         {
-            case ExeRoleChange.Jester:
-                Game.AssignRole(MyPlayer, roleHolder.Static.Jester);
-                break;
-            case ExeRoleChange.Opportunist:
-                Game.AssignRole(MyPlayer, roleHolder.Static.Opportunist);
-                break;
-            case ExeRoleChange.SchrodingersCat:
-                Game.AssignRole(MyPlayer, roleHolder.Static.SchrodingersCat);
-                break;
-            case ExeRoleChange.Crewmate:
-                Game.AssignRole(MyPlayer, roleHolder.Static.Crewmate);
-                break;
-            case ExeRoleChange.None:
-            default:
-                break;
-        }
+            ExeRoleChange.Jester => roleHolder.Static.Jester,
+            ExeRoleChange.Opportunist => roleHolder.Static.Opportunist,
+            ExeRoleChange.SchrodingerCat => roleHolder.Static.SchrodingersCat,
+            ExeRoleChange.Crewmate => roleHolder.Static.Crewmate,
+            ExeRoleChange.Amnesiac => roleHolder.Static.Amnesiac,
+            ExeRoleChange.Survivor => roleHolder.Static.Survivor,
+            ExeRoleChange.Madmate => roleHolder.Static.Madmate,
+            _ => this
+        };
 
         target = null;
+        if (newRole == this) return;
+        Game.AssignRole(MyPlayer, newRole);
+
+        CustomRole assignedRole = MyPlayer.PrimaryRole();
+        if (ProjectLotus.AdvancedRoleAssignment) assignedRole.Assign();
+        Game.MatchData.GameHistory.AddEvent(new RoleChangeEvent(MyPlayer, assignedRole, this));
     }
 
     protected override GameOptionBuilder RegisterOptions(GameOptionBuilder optionStream) =>
@@ -103,11 +105,14 @@ public class Executioner : CustomRole
             .SubOption(sub => sub
                 .KeyName("Role Change When Target Dies", Translations.Options.RoleChange)
                 .Bind(v => roleChangeWhenTargetDies = (int)v)
-                .Value(v => v.Text("Jester").Value(1).Color(new Color(0.93f, 0.38f, 0.65f)).Build())
-                .Value(v => v.Text("Opportunist").Value(2).Color(Color.green).Build())
-                .Value(v => v.Text("Copycat").Value(3).Color(new Color(1f, 0.7f, 0.67f)).Build())
-                .Value(v => v.Text("Crewmate").Value(4).Color(new Color(0.71f, 0.94f, 1f)).Build())
-                .Value(v => v.Text("Off").Value(0).Color(Color.red).Build())
+                .Value(v => v.Text(Localizer.Translate("Roles.Jester.RoleName")).Value(1).Color(new Color(0.93f, 0.38f, 0.65f)).Build())
+                .Value(v => v.Text(Localizer.Translate("Roles.Opportunist.RoleName")).Value(2).Color(Color.green).Build())
+                .Value(v => v.Text(Localizer.Translate("Roles.SchrodingersCat.RoleName")).Value(3).Color(new Color(0.41f, 0.41f, 0.41f)).Build())
+                .Value(v => v.Text(Localizer.Translate("Roles.Crewmate.RoleName")).Value(4).Color(new Color(0.71f, 0.94f, 1f)).Build())
+                .Value(v => v.Text(Localizer.Translate("Roles.Amnesiac.RoleName")).Value(5).Color(new Color(0.51f, 0.87f, 0.99f)).Build())
+                .Value(v => v.Text(Localizer.Translate("Roles.Survivor.RoleName")).Value(6).Color(new Color(1f, 0.9f, 0.3f)).Build())
+                .Value(v => v.Text(Localizer.Translate("Roles.Madmate.RoleName")).Value(7).Color(ModConstants.Palette.MadmateColor).Build())
+                .Value(v => v.Text(GeneralOptionTranslations.OffText).Value(0).Color(Color.red).Build())
                 .Build());
 
     protected override RoleModifier Modify(RoleModifier roleModifier) =>
@@ -123,8 +128,11 @@ public class Executioner : CustomRole
         None,
         Jester,
         Opportunist,
-        SchrodingersCat,
-        Crewmate
+        SchrodingerCat,
+        Crewmate,
+        Amnesiac,
+        Survivor,
+        Madmate
     }
 
     [Localized(nameof(Executioner))]

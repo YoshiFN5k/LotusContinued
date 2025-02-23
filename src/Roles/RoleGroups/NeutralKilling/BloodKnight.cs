@@ -29,7 +29,7 @@ public class BloodKnight : NeutralKillingBase
     public void Reset() => isProtected = false;
 
     [RoleAction(LotusActionType.Attack)]
-    public new bool TryKill(PlayerControl target)
+    public override bool TryKill(PlayerControl target)
     {
         // Call to Impostor.TryKill()
         bool killed = base.TryKill(target);

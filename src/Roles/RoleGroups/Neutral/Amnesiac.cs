@@ -26,6 +26,7 @@ using Object = UnityEngine.Object;
 using Lotus.Logging;
 using Lotus.GameModes.Standard;
 using System.Collections.Generic;
+using Lotus.Managers.History.Events;
 using VentLib.Utilities.Optionals;
 
 namespace Lotus.Roles.RoleGroups.Neutral;
@@ -83,6 +84,7 @@ public class Amnesiac : CustomRole, IVariableRole
         CustomRole role = MyPlayer.PrimaryRole();
         if (ProjectLotus.AdvancedRoleAssignment) role.Assign();
         else role.DesyncRole = RoleTypes.Impostor;
+        Game.MatchData.GameHistory.AddEvent(new RoleChangeEvent(MyPlayer, role, this));
 
         arrowComponent?.Delete();
         handle.Cancel();

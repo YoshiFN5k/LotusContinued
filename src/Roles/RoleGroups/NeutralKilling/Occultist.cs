@@ -53,7 +53,7 @@ public class Occultist : NeutralKillingBase
         if (MyPlayer.InteractWith(target, LotusInteraction.HostileInteraction.Create(this)) is InteractionResult.Halt) return false;
         if (cursedPlayers.ContainsKey(target.PlayerId)) return false;
 
-        CustomStatus status = CustomStatus.Of(RoleName).Description(Translations.CursedStatusDescription).Color(RoleColor).Build();
+        CustomStatus status = CustomStatus.Of(Translations.HexedCauseOfDeath).Description(Translations.CursedStatusDescription).Color(Color.red).Build();
         cursedPlayers.Add(target.PlayerId, Game.MatchData.AddStatus(target, status, MyPlayer));
         indicators.GetValueOrDefault(target.PlayerId)?.Delete();
         indicators[target.PlayerId] = target.NameModel().GCH<IndicatorHolder>().Add(new SimpleIndicatorComponent("†", Color.red, GameState.InMeeting));
@@ -82,6 +82,7 @@ public class Occultist : NeutralKillingBase
     }
 
     [RoleAction(LotusActionType.RoundStart, ActionFlag.WorksAfterDeath)]
+    [RoleAction(LotusActionType.PlayerDeath)]
     private void ClearCursedPlayers()
     {
         cursedPlayers.ForEach(c => c.Value?.Delete());

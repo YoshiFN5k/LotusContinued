@@ -1,15 +1,14 @@
 using System.Linq;
 using HarmonyLib;
-using Hazel;
-using Lotus.API.Odyssey;
 using Lotus.API.Reactive;
 using Lotus.API.Reactive.HookEvents;
 using Lotus.API.Vanilla.Meetings;
-using Lotus.Roles.Internals;
-using Lotus.Utilities;
 using Lotus.Extensions;
+using Lotus.Roles.Internals;
 using Lotus.Roles.Internals.Enums;
 using Lotus.Roles.Operations;
+using Lotus.Utilities;
+using VentLib.Networking.RPC;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using VentLib.Utilities.Optionals;
@@ -37,6 +36,8 @@ public class CastVotePatch
             return true;
         }
 
+        if (handle.Cancellation is ActionHandle.CancelType.Soft) return true;
+
         __instance.playerStates.ToArray().FirstOrDefault(state => state.TargetPlayerId == srcPlayerId)?.UnsetVote();
 
         log.Debug($"Canceled Vote from {voter.GetNameWithRole()}");
@@ -49,16 +50,6 @@ public class CastVotePatch
     {
         log.Trace($"Clearing vote for: {target.GetNameWithRole()}");
         hud.playerStates.Where(ps => ps.TargetPlayerId == target.PlayerId).ForEach(ps => ps.VotedFor = byte.MaxValue);
-        MessageWriter writer = MessageWriter.Get(SendOption.Reliable);
-        writer.StartMessage(6);
-        writer.Write(AmongUsClient.Instance.GameId);
-        writer.WritePacked(target.GetClientId());
-        {
-            writer.StartMessage(2);
-            writer.WritePacked(hud.NetId);
-            writer.WritePacked((uint)RpcCalls.ClearVote);
-        }
-
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
+        RpcV3.Immediate(hud.NetId, RpcCalls.ClearVote).Send(target.OwnerId);
     }
 }

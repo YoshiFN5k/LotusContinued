@@ -229,7 +229,7 @@ public class DelayNetworkedData
                 }
                 else
                 {
-                    messageWriter.CancelMessage();
+                    messageWriter.Recycle();
                     player.ClearDirtyBits();
                     return;
                 }
