@@ -37,6 +37,7 @@ public class MiscellaneousOptions
     public int SuffixMode;
     public bool ColoredNameMode;
     public string CurrentResolver;
+    public int EventLogType;
 
     public bool UseRandomMap => randomMapOn && RandomMaps != 0;
     private bool randomMapOn;
@@ -155,6 +156,16 @@ public class MiscellaneousOptions
             })
             .Build());
 
+        AllOptions.Add(new GameOptionBuilder()
+            .Builder("Event Log", _optionColor)
+            .Value(v => v.Value(0).Text(GeneralOptionTranslations.AllText).Color(Color.green).Build())
+            .Value(v => v.Value(1).Text(MiscOptionTranslations.KillsOnly).Color(Color.cyan).Build())
+            .Value(v => v.Value(2).Text(GeneralOptionTranslations.NoneText).Color(Color.red).Build())
+            .IOSettings(io => io.UnknownValueAction = ADEAnswer.UseDefault)
+            .Name(MiscOptionTranslations.EventLog)
+            .BindInt(i => EventLogType = i)
+            .Build());
+
         AllOptions.AddRange(additionalOptions);
         AllOptions.Where(o => !o.Attributes.ContainsKey("Title")).ForEach(o => GeneralOptions.StandardOptionManager.Register(o, VentLib.Options.OptionLoadMode.LoadOrCreate));
     }
@@ -217,6 +228,12 @@ public class MiscellaneousOptions
 
         [Localized(nameof(BlackscreenResolver))]
         public static string BlackscreenResolver = "Blackscreen Resolver";
+
+        [Localized(nameof(EventLog))]
+        public static string EventLog = "Log Events";
+
+        [Localized(nameof(KillsOnly))]
+        public static string KillsOnly = "Only Kills";
     }
 
 }
