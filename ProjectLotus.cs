@@ -30,11 +30,15 @@ using VentLib.Version.BuiltIn;
 using VentLib.Options.UI.Controllers.Search;
 using Lotus.Utilities;
 using System;
+using System.Linq;
+using Lotus.API.Player;
 using Lotus.Managers.Blackscreen.Interfaces;
 using Lotus.Managers.Blackscreen;
 using Lotus.API.Vanilla.Meetings;
 using VentLib.Lobbies;
 using Lotus.Network;
+using Lotus.RPC;
+using VentLib.Utilities.Extensions;
 #if !DEBUG
 using VentLib.Utilities.Debug.Profiling;
 #endif
@@ -59,7 +63,7 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
 
     public static string PluginVersion = typeof(ProjectLotus).Assembly.GetName().Version!.ToString();
 
-    public readonly GitVersion CurrentVersion = new();
+    public readonly GitVersion CurrentVersion = new(typeof(ProjectLotus).Assembly);
 
     public static readonly string ModName = "Project Lotus";
     public static readonly string ModColor = "#4FF918";
@@ -186,6 +190,11 @@ public class ProjectLotus : BasePlugin, IGitVersionEmitter
         {
             //ModRPC rpc = Vents.FindRPC((uint)ModCalls.SendOptionPreview)!;
             //rpc.Send(new[] { player.GetClientId() }, new BatchList<Option>(OptionManager.GetManager().GetOptions()));
+            ModVersion.AddVersionShowerToPlayer(player, version);
+            Players.GetAllPlayers()
+                .Where(p => p.PlayerId != player.PlayerId && (p.IsModded() | p.IsHost()))
+                .ForEach(p => Vents.FindRPC((uint)ModCalls.ShowPlayerVersion)
+                    ?.Send([player.OwnerId], p, ModVersion.VersionControl.GetPlayerVersion(p.PlayerId)));
         }
 
         PluginDataManager.TemplateManager.GetTemplates("lobby-join")?.ForEach(t =>
