@@ -94,9 +94,9 @@ public abstract class TaskRoleBase : CustomRole, IOverridenTaskHolderRole, ITask
     {
         return builder.SubOption(sub => sub
             .KeyName($"Override {EnglishRoleName}'s Tasks", CrewmateTranslations.CrewmateOptionTranslations.OverrideRoleTasks.Formatted(RoleColor.Colorize(RoleName)))
-            .Bind(v => HasOverridenTasks = (bool)v)
-            .ShowSubOptionPredicate(v => (bool)v == true)
             .AddBoolean(false)
+            .Bind(v => HasOverridenTasks = (bool)v)
+            .ShowSubOptionPredicate(v => (bool)v)
             .SubOption(sub2 => sub2
                 .KeyName("Allow Common Tasks", CrewmateTranslations.CrewmateOptionTranslations.AllowCommonTasks)
                 .Bind(v => HasCommonTasks = (bool)v)

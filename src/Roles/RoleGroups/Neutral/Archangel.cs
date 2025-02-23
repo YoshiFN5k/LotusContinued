@@ -205,7 +205,7 @@ public class Archangel : CustomRole
                 .BindInt(v => roleChangeWhenTargetDies = (ArchangelRoleChange)v)
                 .Value(v => v.Text(Localizer.Translate("Roles.Jester.RoleName")).Value(1).Color(new Color(0.93f, 0.38f, 0.65f)).Build())
                 .Value(v => v.Text(Localizer.Translate("Roles.Opportunist.RoleName")).Value(2).Color(Color.green).Build())
-                .Value(v => v.Text(Localizer.Translate("Roles.SchrodingersCat.RoleName")).Value(3).Color(Color.black).Build())
+                .Value(v => v.Text(Localizer.Translate("Roles.SchrodingersCat.RoleName")).Value(3).Color(new Color(0.41f, 0.41f, 0.41f)).Build())
                 .Value(v => v.Text(Localizer.Translate("Roles.Crewmate.RoleName")).Value(4).Color(new Color(0.71f, 0.94f, 1f)).Build())
                 .Value(v => v.Text(Localizer.Translate("Roles.Amnesiac.RoleName")).Value(5).Color(new Color(0.51f, 0.87f, 0.99f)).Build())
                 .Value(v => v.Text(Localizer.Translate("Roles.Survivor.RoleName")).Value(6).Color(new Color(1f, 0.9f, 0.3f)).Build())

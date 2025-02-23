@@ -34,7 +34,7 @@ public class KillEvent : IKillEvent
 
     public bool IsCompletion() => successful;
 
-    public virtual string Message() => $"{Game.GetName(killer)} killed {Game.GetName(victim)}.";
+    public virtual string Message() => $"{Game.GetName(killer)} {(successful ? "killed" : "tried to kill")} {Game.GetName(victim)}.";
 
     public FrozenPlayer Target() => victim;
 

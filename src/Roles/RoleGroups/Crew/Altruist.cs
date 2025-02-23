@@ -24,6 +24,7 @@ using VentLib.Utilities.Collections;
 using Lotus.GUI.Name.Components;
 using Lotus.GUI.Name;
 using Lotus.GUI.Name.Holders;
+using Lotus.Roles.Events;
 
 namespace Lotus.Roles.RoleGroups.Crew;
 
@@ -62,6 +63,9 @@ public class Altruist : Scientist, IRoleCandidate
         log.Debug($"Reviving player: {player.name}");
         reviedPlayerId = player.PlayerId;
         if (MyPlayer.IsAlive()) MyPlayer.InteractWith(MyPlayer, new UnblockedInteraction(new FatalIntent(causeOfDeath: () => new SuicideEvent(MyPlayer)), this));
+
+        Game.MatchData.GameHistory.AddEvent(new GenericTargetedEvent(MyPlayer, player, $"{MyPlayer.name} revived {player.GetNameWithRole()} successfully."));
+
         Game.MatchData.UnreportableBodies.Add(MyPlayer.PlayerId);
         Game.MatchData.UnreportableBodies.Add(reviedPlayerId);
         Vector2 position = MyPlayer.GetTruePosition();
@@ -79,7 +83,7 @@ public class Altruist : Scientist, IRoleCandidate
         player.PrimaryRole().Assign(); // resends their role info to all players
         deadPlayers.Remove(player);
         // act like they never died smh
-        IDeathEvent causeofDeath = Game.MatchData.GameHistory.GetCauseOfDeath(player.PlayerId).OrElse(null!);
+        IDeathEvent? causeofDeath = Game.MatchData.GameHistory.GetCauseOfDeath(player.PlayerId).OrElse(null!);
         Game.MatchData.GameHistory.ClearCauseOfDeath(player.PlayerId);
         if (player.PrimaryRole().RealRole.IsImpostor())
         {

@@ -36,6 +36,8 @@ public class CastVotePatch
             return true;
         }
 
+        if (handle.Cancellation is ActionHandle.CancelType.Soft) return true;
+
         __instance.playerStates.ToArray().FirstOrDefault(state => state.TargetPlayerId == srcPlayerId)?.UnsetVote();
 
         log.Debug($"Canceled Vote from {voter.GetNameWithRole()}");
