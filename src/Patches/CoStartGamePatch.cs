@@ -52,6 +52,7 @@ class CoStartGamePatch
             Game.State = GameState.InIntro;
             Players.GetPlayers().Do(p => Game.MatchData.Roles.MainRoles[p.PlayerId] = IRoleManager.Current.FallbackRole());
             Players.GetPlayers().Do(p => Game.MatchData.Roles.SubRoles[p.PlayerId] = new List<Roles.CustomRole>());
+            Players.GetPlayers().Do(p => p.FindChildOrEmpty<SpriteRenderer>("Background").IfPresent(s => s.gameObject.Destroy()));
         }
         catch (Exception exception)
         {
