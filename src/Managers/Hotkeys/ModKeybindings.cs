@@ -110,6 +110,11 @@ public class ModKeybindings
         Bind(KeyCode.H)
             .If(p => p.State(GameState.InLobby))
             .Do(ToggleHistoryButton);
+
+        // Toggle Chat
+        Bind(KeyCode.LeftShift, KeyCode.LeftControl, KeyCode.C)
+            .If(p => p.HostOnly().State(GameState.Roaming, GameState.InMeeting))
+            .Do(ToggleChat);
     }
 
     private static void DumpLog()
@@ -178,5 +183,11 @@ public class ModKeybindings
         if (DestroyableSingleton<HudManager>.Instance.Chat.IsOpenOrOpening) return;
         HM2 historyMenu = DestroyableSingleton<HudManager>.Instance.GetComponent<HM2>();
         if (historyMenu != null) historyMenu.ToggleMenu();
+    }
+
+    private static void ToggleChat()
+    {
+        if (!DestroyableSingleton<HudManager>.InstanceExists) return;
+        DestroyableSingleton<HudManager>.Instance.Chat.gameObject.SetActive(!DestroyableSingleton<HudManager>.Instance.Chat.gameObject.activeSelf);
     }
 }
