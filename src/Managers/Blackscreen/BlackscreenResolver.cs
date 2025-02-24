@@ -16,6 +16,7 @@ using VentLib.Networking.RPC;
 using VentLib.Utilities;
 using VentLib.Utilities.Extensions;
 using AmongUs.GameOptions;
+using HarmonyLib;
 using Lotus.Managers.Blackscreen.Interfaces;
 using Sentry.Internal.Extensions;
 
@@ -92,8 +93,11 @@ internal class BlackscreenResolver : IBlackscreenResolver
         }
         if (unpatchable.Count == 0) return;
 
-        log.Debug($"Unpatchable Players: {unpatchable.Filter(Utils.PlayerById).Select(p => p.name).Fuse()}");
-        log.Debug($"These players WILL blackscreen unfortunately. Currently nothing is done to prevent this.");
+        log.Debug($"Trying to patch Unpatchable Players: {unpatchable.Filter(Utils.PlayerById).Select(p => p.name).Fuse()}");
+        unpatchable.Filter(Utils.PlayerById).Do(p =>
+        {
+            if (!LegacyResolver.PerformForcedReset(p)) log.Debug($"Could not patch {p.name}.");
+        });
     }
 
     public virtual void FixBlackscreens(Action runOnFinish)

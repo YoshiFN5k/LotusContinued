@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AmongUs.GameOptions;
 using Lotus.API;
 using Lotus.API.Odyssey;
 using Lotus.API.Player;
 using Lotus.Chat.Patches;
 using Lotus.Extensions;
+using Lotus.Factions;
+using Lotus.Factions.Impostors;
 using Lotus.Factions.Neutrals;
 using Lotus.Logging;
 using Lotus.Managers;
@@ -253,7 +256,7 @@ public class BasicCommands : CommandTranslations
                 PlayerControl lastPlayer = players.Last();
 
                 log.Debug("Assigning roles...");
-                players.Where(p => p != lastPlayer).ForEach(p => p.PrimaryRole().Assign());
+                players.Where(p => p != lastPlayer).ForEach(p => SingleAssign(p.PrimaryRole()));
                 log.Debug("Assigned everyone but the last player.");
 
                 Async.Schedule(() =>
@@ -266,21 +269,21 @@ public class BasicCommands : CommandTranslations
                         pc.Data.Disconnected = true;
                     });
                     log.Debug("Sending Disconncted Data.");
-                    GeneralRPC.SendGameData();
+                    GeneralRPC.SendGameData(player.OwnerId);
                     players.ForEach(pc => pc.Data.Disconnected = Disconnected[pc.PlayerId]);
                     ChatHandler.Of("Step 1 finished.\n(Setup Stage)").Send(source);
                 }, NetUtils.DeriveDelay(0.5f));
                 Async.Schedule(() =>
                 {
                     log.Debug("Sending the last player's role info...");
-                    lastPlayer.PrimaryRole().Assign();
+                    SingleAssign(lastPlayer.PrimaryRole());
                     log.Debug("Sent! Cleaning up in a second...");
                     ChatHandler.Of("Step 2 finished.\n(they should see the \"shhhh\" screen now)").Send(source);
                     CheckEndGamePatch.Deferred = false;
                 }, NetUtils.DeriveDelay(1f));
                 Async.Schedule(() =>
                 {
-                    GeneralRPC.SendGameData();
+                    GeneralRPC.SendGameData(player.OwnerId);
                     ChatHandler.Of("Step 3 finished.\n(Cleanup Stage)").Send(source);
                 }, NetUtils.DeriveDelay(1.5f));
             }
@@ -291,7 +294,24 @@ public class BasicCommands : CommandTranslations
                 else ChatHandler.Of($"Successfully cleared blackscreen of \"{player.name}\"").LeftAlign().Send(source);
             }
         }
-}
+
+        void SingleAssign(CustomRole role)
+        {
+            if (role.RealRole.IsCrewmate())
+                RpcV3.Immediate(role.MyPlayer.NetId, RpcCalls.SetRole).Write((ushort)role.RealRole).Write(ProjectLotus.AdvancedRoleAssignment).Send(player.OwnerId);
+            else if (player.GetVanillaRole().IsCrewmate())
+                RpcV3.Immediate(role.MyPlayer.NetId, RpcCalls.SetRole).Write((ushort)(role.Faction is ImpostorFaction ? role.RealRole : RoleTypes.Crewmate)).Write(ProjectLotus.AdvancedRoleAssignment).Send(player.OwnerId);
+            else
+            {
+                PlayerControl[] alliedPlayers = Players.GetPlayers().Where(p => role.Relationship(p) is Relation.FullAllies).ToArray();
+                HashSet<byte> alliedPlayerIds = alliedPlayers.Where(role.Faction.CanSeeRole).Select(p => p.PlayerId).ToHashSet();
+
+                if (alliedPlayerIds.Contains(player.PlayerId))
+                    RpcV3.Immediate(role.MyPlayer.NetId, RpcCalls.SetRole).Write((ushort)role.RealRole).Write(ProjectLotus.AdvancedRoleAssignment).Send(player.OwnerId);
+                else RpcV3.Immediate(role.MyPlayer.NetId, RpcCalls.SetRole).Write((ushort)RoleTypes.Crewmate).Write(ProjectLotus.AdvancedRoleAssignment).Send(player.OwnerId);
+            }
+        }
+    }
 
     [Command(CommandFlag.InGameOnly, "info", "i")]
     public static void ResendRoleMessages(PlayerControl source)
